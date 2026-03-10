@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TaskEng Multi-Profile</title>
+    <title>TaskEng Pro - Clean</title>
     <style>
         :root {
             --bg: #0f172a;
             --card: #1e293b;
             --primary: #7986cb;
-            --accent: #69f0ae;
             --text: #f1f5f9;
         }
 
@@ -18,231 +17,172 @@
             background: var(--bg);
             color: var(--text);
             margin: 0;
-            padding-bottom: 90px;
+            padding: 20px;
         }
 
-        /* --- PANTALLA DE PERFILES --- */
-        .profile-overlay {
-            position: fixed; inset: 0; background: var(--bg);
-            z-index: 2000; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; padding: 20px;
-        }
-
-        .profile-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 400px;
-        }
-
-        .profile-card {
-            background: var(--card); padding: 25px; border-radius: 20px;
-            text-align: center; cursor: pointer; border: 2px solid transparent;
-            transition: 0.3s;
-        }
-
-        .profile-card:hover { border-color: var(--primary); transform: translateY(-5px); }
-
-        /* --- CONTENEDOR PRINCIPAL --- */
-        .container { max-width: 500px; margin: auto; padding: 20px; }
-
-        .header-status {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;
-        }
-
-        /* Bloque azul de tu imagen */
-        .blue-section {
-            background: var(--primary); color: white; padding: 20px;
-            border-radius: 25px; box-shadow: 0 10px 30px rgba(121, 134, 203, 0.3);
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 25px;
         }
 
-        .module { display: none; }
-        .module.active { display: block; animation: slideIn 0.3s ease; }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Estilo de Inputs como tu imagen */
-        input, textarea, select {
-            width: 100%; padding: 14px; margin: 10px 0; border-radius: 15px;
-            border: none; background: rgba(255,255,255,0.1); color: white;
-            font-size: 1em; box-sizing: border-box;
+        /* Selector de perfil tipo "Píldora" */
+        .profile-selector {
+            background: var(--card);
+            padding: 5px;
+            border-radius: 50px;
+            display: flex;
+            gap: 5px;
         }
 
-        .blue-section input { background: white; color: #333; }
+        .p-btn {
+            padding: 8px 15px;
+            border-radius: 40px;
+            border: none;
+            background: none;
+            color: #64748b;
+            font-weight: bold;
+            font-size: 0.7em;
+            cursor: pointer;
+        }
 
-        .btn-main {
+        .p-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* El bloque azul de tu imagen */
+        .blue-section {
+            background: var(--primary);
+            color: white;
+            padding: 25px;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(121, 134, 203, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .blue-section label { font-size: 0.7em; font-weight: 800; opacity: 0.9; text-transform: uppercase; }
+
+        input, textarea {
+            width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px;
+            border: none; background: rgba(255,255,255,0.15); color: white;
+            font-size: 1em; box-sizing: border-box; outline: none;
+        }
+
+        input::placeholder { color: rgba(255,255,255,0.6); }
+
+        .btn-white {
             background: white; color: var(--primary); border: none;
-            padding: 14px; border-radius: 12px; font-weight: bold;
-            width: 100%; cursor: pointer; text-transform: uppercase;
+            padding: 15px; border-radius: 12px; font-weight: 900;
+            width: 100%; cursor: pointer; margin-top: 10px;
         }
 
-        /* NAVEGACIÓN INFERIOR */
-        .nav-bar {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: var(--card); display: flex; justify-content: space-around;
-            padding: 15px 10px 30px; border-top: 1px solid rgba(255,255,255,0.1);
+        /* Bloc de notas estilo tarjeta */
+        .notes-section {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 20px;
+            margin-top: 20px;
         }
 
-        .nav-btn {
-            background: none; border: none; color: #64748b;
-            font-size: 0.75em; font-weight: bold; cursor: pointer;
+        textarea {
+            background: transparent;
+            min-height: 150px;
+            padding: 0;
+            margin: 10px 0 0;
+            line-height: 1.5;
+            color: #cbd5e1;
+            resize: none;
         }
 
-        .nav-btn.active { color: var(--primary); }
-
-        .note-pad {
-            width: 100%; min-height: 300px; background: #1e293b;
-            color: #cbd5e1; border: 1px solid #334155; padding: 20px;
-            border-radius: 20px; font-family: 'Courier New', Courier, monospace;
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.7em;
+            font-weight: bold;
+            background: rgba(255,255,255,0.1);
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
-    <div id="profileOverlay" class="profile-overlay">
-        <h2 style="margin-bottom: 30px;">🛰️ Panel de Acceso</h2>
-        <div class="profile-grid">
-            <div class="profile-card" onclick="initApp('Tester_Alfa')">
-                <div style="font-size: 2em;">🛡️</div>
-                <p>Alfa</p>
-            </div>
-            <div class="profile-card" onclick="initApp('Tester_Beta')">
-                <div style="font-size: 2em;">🧬</div>
-                <p>Beta</p>
-            </div>
-        </div>
-        <p style="margin-top: 40px; font-size: 0.8em; opacity: 0.5;">v2.0 Multi-User System</p>
-    </div>
-
-    <div class="container">
-        <div class="header-status">
-            <span id="userName" style="color: var(--primary); font-weight: bold;"></span>
-            <button onclick="location.reload()" style="background:none; border:none; color: gray;">Cerrar Sesión</button>
-        </div>
-
-        <div id="mod-alerts" class="module active">
-            <div class="blue-section">
-                <small style="font-weight: bold; opacity: 0.8;">RECORDATORIO CON HORARIO</small>
-                <input type="text" id="remText" placeholder="Ej: Estudiar para examen...">
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <input type="time" id="remTime" style="flex: 2;">
-                    <button class="btn-main" onclick="setAlarm()" style="flex: 1.5;">PROGRAMAR</button>
-                </div>
-            </div>
-            <div id="alarmHistory"></div>
-        </div>
-
-        <div id="mod-tasks" class="module">
-            <h3>📖 Tareas Académicas</h3>
-            <div style="background: var(--card); padding: 20px; border-radius: 20px;">
-                <input type="text" id="taskName" placeholder="Materia o Proyecto">
-                <select id="taskLevel">
-                    <option value="A">Urgente (Cat A)</option>
-                    <option value="B">Próximo (Cat B)</option>
-                    <option value="C">Normal (Cat C)</option>
-                </select>
-                <button onclick="saveTask()" class="btn-main" style="background: var(--primary); color: white;">Guardar Tarea</button>
-            </div>
-            <div id="taskList" style="margin-top: 20px;"></div>
-        </div>
-
-        <div id="mod-notes" class="module">
-            <h3>📝 Bloc de Notas Rápidas</h3>
-            <textarea id="mainNotes" class="note-pad" placeholder="Escribe aquí tus apuntes..." oninput="autoSaveNotes()"></textarea>
-            <p style="font-size: 0.7em; opacity: 0.5; text-align: center;">Se guarda automáticamente en tu perfil.</p>
+    <div class="header">
+        <h2 style="margin:0; font-size: 1.2em;">TaskEng Pro</h2>
+        <div class="profile-selector">
+            <button id="btn-T1" class="p-btn active" onclick="switchProfile('Tester_1')">TESTER 1</button>
+            <button id="btn-T2" class="p-btn" onclick="switchProfile('Tester_2')">TESTER 2</button>
         </div>
     </div>
 
-    <nav class="nav-bar">
-        <button class="nav-btn active" onclick="nav('alerts', this)">ALERTAS</button>
-        <button class="nav-btn" onclick="nav('tasks', this)">TAREAS</button>
-        <button class="nav-btn" onclick="nav('notes', this)">NOTAS</button>
-    </nav>
+    <div class="blue-section">
+        <label>Recordatorio con Horario</label>
+        <input type="text" id="remText" placeholder="¿Qué quieres recordar?">
+        <div style="display: flex; gap: 10px;">
+            <input type="time" id="remTime" style="flex: 1;">
+            <button class="btn-white" style="flex: 1.2; margin-top: 10px;" onclick="setAlarm()">PROGRAMAR</button>
+        </div>
+    </div>
+
+    <div class="notes-section">
+        <span class="badge" id="profileBadge">PERFIL ACTUAL: TESTER 1</span>
+        <label style="display:block; font-size: 0.8em; font-weight: bold; color: var(--primary);">NOTAS RÁPIDAS</label>
+        <textarea id="notesArea" placeholder="Escribe tus apuntes aquí..." oninput="autoSave()"></textarea>
+    </div>
 
     <script>
-        let currentProfile = "";
-        let userData = { alarms: [], tasks: [], notes: "" };
+        let currentProfile = "Tester_1";
 
-        function initApp(name) {
-            currentProfile = name;
-            document.getElementById('profileOverlay').style.display = 'none';
-            document.getElementById('userName').innerText = "📍 " + name;
+        window.onload = () => {
+            loadProfileData();
+        };
+
+        function switchProfile(id) {
+            currentProfile = id;
+            // UI
+            document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + (id == 'Tester_1' ? 'T1' : 'T2')).classList.add('active');
+            document.getElementById('profileBadge').innerText = "PERFIL ACTUAL: " + id.replace('_', ' ');
             
-            // Cargar datos específicos del perfil
-            const saved = localStorage.getItem('TaskData_' + name);
-            if(saved) {
-                userData = JSON.parse(saved);
-                document.getElementById('mainNotes').value = userData.notes || "";
-                renderTasks();
-            }
+            loadProfileData();
         }
 
-        function nav(id, btn) {
-            document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('mod-' + id).classList.add('active');
-            btn.classList.add('active');
+        function autoSave() {
+            const content = document.getElementById('notesArea').value;
+            localStorage.setItem(currentProfile + '_notes', content);
         }
 
-        // --- SISTEMA DE NOTAS ---
-        function autoSaveNotes() {
-            userData.notes = document.getElementById('mainNotes').value;
-            sync();
+        function loadProfileData() {
+            const savedNotes = localStorage.getItem(currentProfile + '_notes') || "";
+            document.getElementById('notesArea').value = savedNotes;
         }
 
-        // --- SISTEMA DE TAREAS ---
-        function saveTask() {
-            const name = document.getElementById('taskName').value;
-            const level = document.getElementById('taskLevel').value;
-            if(!name) return;
-            userData.tasks.push({id: Date.now(), name, level});
-            document.getElementById('taskName').value = "";
-            renderTasks();
-            sync();
-        }
-
-        function renderTasks() {
-            const list = document.getElementById('taskList');
-            list.innerHTML = "";
-            userData.tasks.forEach(t => {
-                const color = t.level == 'A' ? '#ff5252' : (t.level == 'B' ? '#ffd740' : '#69f0ae');
-                list.innerHTML += `
-                    <div style="background:var(--card); padding:15px; border-radius:15px; margin-bottom:10px; border-left: 5px solid ${color}; display:flex; justify-content:space-between;">
-                        <span>${t.name}</span>
-                        <button onclick="delTask(${t.id})" style="background:none; border:none; color:gray;">x</button>
-                    </div>`;
-            });
-        }
-
-        function delTask(id) {
-            userData.tasks = userData.tasks.filter(t => t.id !== id);
-            renderTasks();
-            sync();
-        }
-
-        // --- ALERTAS (Ajustado para Service Worker) ---
         function setAlarm() {
             const txt = document.getElementById('remText').value;
             const time = document.getElementById('remTime').value;
             if(!txt || !time) return;
 
-            const now = new Date();
-            const [h, m] = time.split(':');
-            let target = new Date();
-            target.setHours(h, m, 0, 0);
-            if (target <= now) target.setDate(target.getDate() + 1);
-            
-            const delay = target - now;
-
-            if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+            // Lógica de notificación (la misma de Android que ya tienes)
+            if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.ready.then(reg => {
-                    reg.active.postMessage({ type: 'SCHEDULE_REMINDER', text: txt, time: time, delay: delay });
+                    const now = new Date();
+                    const [h, m] = time.split(':');
+                    let target = new Date();
+                    target.setHours(h, m, 0, 0);
+                    if (target <= now) target.setDate(target.getDate() + 1);
+                    
+                    reg.active.postMessage({
+                        type: 'SCHEDULE_REMINDER',
+                        text: txt,
+                        time: time,
+                        delay: target - now
+                    });
                 });
-                alert("Alarma guardada en segundo plano para " + time);
+                alert("Programado para el " + currentProfile);
+                document.getElementById('remText').value = "";
             }
-        }
-
-        function sync() {
-            localStorage.setItem('TaskData_' + currentProfile, JSON.stringify(userData));
         }
     </script>
 </body>
