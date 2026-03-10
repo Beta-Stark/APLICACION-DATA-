@@ -4,224 +4,246 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TaskEng Multi-Profile</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1a237e">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
     <style>
-        :root { 
-            --primary: #3949ab; --accent: #ff4081;
-            --bg: #f0f2f5; --card: #ffffff; --text: #1a1a1a;
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #7986cb;
+            --accent: #69f0ae;
+            --text: #f1f5f9;
         }
 
-        @media (prefers-color-scheme: dark) {
-            :root { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --primary: #818cf8; }
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding-bottom: 90px;
         }
 
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; transition: 0.3s; }
-        
-        /* GESTIÓN DE PERFILES */
-        .profile-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .profile-card { background: var(--card); padding: 20px; border-radius: 20px; width: 100%; max-width: 300px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 15px; cursor: pointer; border: 2px solid transparent; }
-        .profile-card:hover { border-color: var(--primary); }
+        /* --- PANTALLA DE PERFILES --- */
+        .profile-overlay {
+            position: fixed; inset: 0; background: var(--bg);
+            z-index: 2000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px;
+        }
 
+        .profile-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 400px;
+        }
+
+        .profile-card {
+            background: var(--card); padding: 25px; border-radius: 20px;
+            text-align: center; cursor: pointer; border: 2px solid transparent;
+            transition: 0.3s;
+        }
+
+        .profile-card:hover { border-color: var(--primary); transform: translateY(-5px); }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
         .container { max-width: 500px; margin: auto; padding: 20px; }
-        .module { display: none; animation: fadeIn 0.3s ease; }
-        .module.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .header-status {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;
+        }
+
+        /* Bloque azul de tu imagen */
+        .blue-section {
+            background: var(--primary); color: white; padding: 20px;
+            border-radius: 25px; box-shadow: 0 10px 30px rgba(121, 134, 203, 0.3);
+            margin-bottom: 25px;
+        }
+
+        .module { display: none; }
+        .module.active { display: block; animation: slideIn 0.3s ease; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Estilo de Inputs como tu imagen */
+        input, textarea, select {
+            width: 100%; padding: 14px; margin: 10px 0; border-radius: 15px;
+            border: none; background: rgba(255,255,255,0.1); color: white;
+            font-size: 1em; box-sizing: border-box;
+        }
+
+        .blue-section input { background: white; color: #333; }
+
+        .btn-main {
+            background: white; color: var(--primary); border: none;
+            padding: 14px; border-radius: 12px; font-weight: bold;
+            width: 100%; cursor: pointer; text-transform: uppercase;
+        }
 
         /* NAVEGACIÓN INFERIOR */
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); display: flex; justify-content: space-around; padding: 15px; box-shadow: 0 -2px 15px rgba(0,0,0,0.1); border-top: 1px solid rgba(255,255,255,0.1); }
-        .nav-btn { background: none; border: none; color: #888; font-weight: bold; font-size: 0.7em; text-transform: uppercase; cursor: pointer; }
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--card); display: flex; justify-content: space-around;
+            padding: 15px 10px 30px; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-btn {
+            background: none; border: none; color: #64748b;
+            font-size: 0.75em; font-weight: bold; cursor: pointer;
+        }
+
         .nav-btn.active { color: var(--primary); }
 
-        /* UI COMPONENTS */
-        .card { background: var(--card); padding: 20px; border-radius: 18px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        h2 { margin-top: 0; color: var(--primary); font-size: 1.2em; }
-        input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: var(--bg); color: var(--text); box-sizing: border-box; }
-        .btn { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; }
-        
-        /* BLOC DE NOTAS */
-        #noteArea { min-height: 200px; font-family: inherit; resize: none; }
+        .note-pad {
+            width: 100%; min-height: 300px; background: #1e293b;
+            color: #cbd5e1; border: 1px solid #334155; padding: 20px;
+            border-radius: 20px; font-family: 'Courier New', Courier, monospace;
+        }
     </style>
 </head>
 <body>
 
     <div id="profileOverlay" class="profile-overlay">
-        <h1 style="color: var(--primary)">¿Quién eres hoy?</h1>
-        <div class="profile-card" onclick="selectProfile('Tester_1')">
-            <div style="font-size: 3em;">👨‍💻</div>
-            <h3>Tester Alfa</h3>
+        <h2 style="margin-bottom: 30px;">🛰️ Panel de Acceso</h2>
+        <div class="profile-grid">
+            <div class="profile-card" onclick="initApp('Tester_Alfa')">
+                <div style="font-size: 2em;">🛡️</div>
+                <p>Alfa</p>
+            </div>
+            <div class="profile-card" onclick="initApp('Tester_Beta')">
+                <div style="font-size: 2em;">🧬</div>
+                <p>Beta</p>
+            </div>
         </div>
-        <div class="profile-card" onclick="selectProfile('Tester_2')">
-            <div style="font-size: 3em;">🕵️‍♂️</div>
-            <h3>Tester Beta</h3>
-        </div>
-        <button class="btn" style="max-width: 300px; background: #666;" onclick="createNewProfile()">+ Crear Nuevo Perfil</button>
+        <p style="margin-top: 40px; font-size: 0.8em; opacity: 0.5;">v2.0 Multi-User System</p>
     </div>
 
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <small id="userDisplay" style="font-weight: bold; color: var(--primary);"></small>
-            <button onclick="logout()" style="background:none; border:none; color:red; font-size:0.7em;">SALIR</button>
+        <div class="header-status">
+            <span id="userName" style="color: var(--primary); font-weight: bold;"></span>
+            <button onclick="location.reload()" style="background:none; border:none; color: gray;">Cerrar Sesión</button>
         </div>
 
-        <div id="mod-dash" class="module active">
-            <h2>🔔 Recordatorios</h2>
-            <div class="card">
-                <input type="text" id="remText" placeholder="¿Qué debo avisarte?">
-                <input type="time" id="remTime">
-                <button class="btn" onclick="scheduleReminder()">Programar Alerta</button>
+        <div id="mod-alerts" class="module active">
+            <div class="blue-section">
+                <small style="font-weight: bold; opacity: 0.8;">RECORDATORIO CON HORARIO</small>
+                <input type="text" id="remText" placeholder="Ej: Estudiar para examen...">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="time" id="remTime" style="flex: 2;">
+                    <button class="btn-main" onclick="setAlarm()" style="flex: 1.5;">PROGRAMAR</button>
+                </div>
             </div>
-            <div id="reminderList"></div>
+            <div id="alarmHistory"></div>
         </div>
 
         <div id="mod-tasks" class="module">
-            <h2>📅 Tareas Diarias</h2>
-            <div class="card">
-                <input type="text" id="taskName" placeholder="Nueva tarea...">
-                <select id="taskCat">
-                    <option value="A">Prioridad A (Urgente)</option>
-                    <option value="B">Prioridad B (Media)</option>
-                    <option value="C">Prioridad C (Baja)</option>
+            <h3>📖 Tareas Académicas</h3>
+            <div style="background: var(--card); padding: 20px; border-radius: 20px;">
+                <input type="text" id="taskName" placeholder="Materia o Proyecto">
+                <select id="taskLevel">
+                    <option value="A">Urgente (Cat A)</option>
+                    <option value="B">Próximo (Cat B)</option>
+                    <option value="C">Normal (Cat C)</option>
                 </select>
-                <button class="btn" onclick="addTask()">Añadir a la lista</button>
+                <button onclick="saveTask()" class="btn-main" style="background: var(--primary); color: white;">Guardar Tarea</button>
             </div>
-            <div id="taskList"></div>
+            <div id="taskList" style="margin-top: 20px;"></div>
         </div>
 
         <div id="mod-notes" class="module">
-            <h2>📝 Bloc de Notas</h2>
-            <div class="card">
-                <textarea id="noteArea" placeholder="Escribe tus ideas aquí... se guardan solas." oninput="saveNotes()"></textarea>
-            </div>
+            <h3>📝 Bloc de Notas Rápidas</h3>
+            <textarea id="mainNotes" class="note-pad" placeholder="Escribe aquí tus apuntes..." oninput="autoSaveNotes()"></textarea>
+            <p style="font-size: 0.7em; opacity: 0.5; text-align: center;">Se guarda automáticamente en tu perfil.</p>
         </div>
     </div>
 
     <nav class="nav-bar">
-        <button class="nav-btn active" onclick="showModule('dash', this)">Alertas</button>
-        <button class="nav-btn" onclick="showModule('tasks', this)">Tareas</button>
-        <button class="nav-btn" onclick="showModule('notes', this)">Notas</button>
+        <button class="nav-btn active" onclick="nav('alerts', this)">ALERTAS</button>
+        <button class="nav-btn" onclick="nav('tasks', this)">TAREAS</button>
+        <button class="nav-btn" onclick="nav('notes', this)">NOTAS</button>
     </nav>
 
-<script>
-    let currentUser = "";
-    let data = { reminders: [], tasks: [], notes: "" };
+    <script>
+        let currentProfile = "";
+        let userData = { alarms: [], tasks: [], notes: "" };
 
-    // --- SISTEMA DE PERFILES ---
-    function selectProfile(name) {
-        currentUser = name;
-        document.getElementById('profileOverlay').style.display = 'none';
-        document.getElementById('userDisplay').innerText = "PERFIL: " + name.replace('_', ' ');
-        loadUserData();
-    }
-
-    function createNewProfile() {
-        const name = prompt("Nombre del nuevo Tester:");
-        if (name) selectProfile(name.replace(/\s+/g, '_'));
-    }
-
-    function logout() {
-        location.reload();
-    }
-
-    // --- PERSISTENCIA DE DATOS ---
-    function saveUserData() {
-        localStorage.setItem('TaskEng_' + currentUser, JSON.stringify(data));
-    }
-
-    function loadUserData() {
-        const saved = localStorage.getItem('TaskEng_' + currentUser);
-        if (saved) {
-            data = JSON.parse(saved);
-            document.getElementById('noteArea').value = data.notes || "";
-            renderTasks();
-            renderReminders();
-        } else {
-            data = { reminders: [], tasks: [], notes: "" };
-            renderTasks();
-            renderReminders();
+        function initApp(name) {
+            currentProfile = name;
+            document.getElementById('profileOverlay').style.display = 'none';
+            document.getElementById('userName').innerText = "📍 " + name;
+            
+            // Cargar datos específicos del perfil
+            const saved = localStorage.getItem('TaskData_' + name);
+            if(saved) {
+                userData = JSON.parse(saved);
+                document.getElementById('mainNotes').value = userData.notes || "";
+                renderTasks();
+            }
         }
-    }
 
-    // --- NAVEGACIÓN ---
-    function showModule(modId, btn) {
-        document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('mod-' + modId).classList.add('active');
-        btn.classList.add('active');
-    }
+        function nav(id, btn) {
+            document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('mod-' + id).classList.add('active');
+            btn.classList.add('active');
+        }
 
-    // --- LÓGICA DE NOTAS ---
-    function saveNotes() {
-        data.notes = document.getElementById('noteArea').value;
-        saveUserData();
-    }
+        // --- SISTEMA DE NOTAS ---
+        function autoSaveNotes() {
+            userData.notes = document.getElementById('mainNotes').value;
+            sync();
+        }
 
-    // --- LÓGICA DE TAREAS ---
-    function addTask() {
-        const name = document.getElementById('taskName').value;
-        const cat = document.getElementById('taskCat').value;
-        if (!name) return;
-        data.tasks.push({ id: Date.now(), name, cat });
-        saveUserData();
-        renderTasks();
-        document.getElementById('taskName').value = "";
-    }
+        // --- SISTEMA DE TAREAS ---
+        function saveTask() {
+            const name = document.getElementById('taskName').value;
+            const level = document.getElementById('taskLevel').value;
+            if(!name) return;
+            userData.tasks.push({id: Date.now(), name, level});
+            document.getElementById('taskName').value = "";
+            renderTasks();
+            sync();
+        }
 
-    function deleteTask(id) {
-        data.tasks = data.tasks.filter(t => t.id !== id);
-        saveUserData();
-        renderTasks();
-    }
-
-    function renderTasks() {
-        const list = document.getElementById('taskList');
-        list.innerHTML = "";
-        data.tasks.forEach(t => {
-            list.innerHTML += `
-                <div class="card" style="display:flex; justify-content:space-between; border-left: 5px solid ${t.cat=='A'?'red':t.cat=='B'?'orange':'green'}">
-                    <span><b>[${t.cat}]</b> ${t.name}</span>
-                    <button onclick="deleteTask(${t.id})" style="color:red; background:none; border:none;">✖</button>
-                </div>`;
-        });
-    }
-
-    // --- LÓGICA DE RECORDATORIOS (Prioridad Android) ---
-    function scheduleReminder() {
-        const text = document.getElementById('remText').value;
-        const time = document.getElementById('remTime').value;
-        if (!text || !time) return;
-
-        const now = new Date();
-        const [h, m] = time.split(':');
-        let target = new Date();
-        target.setHours(h, m, 0, 0);
-        if (target <= now) target.setDate(target.getDate() + 1);
-        const delay = target - now;
-
-        data.reminders.push({ text, time });
-        saveUserData();
-        renderReminders();
-
-        if ('serviceWorker' in navigator && Notification.permission === 'granted') {
-            navigator.serviceWorker.ready.then(reg => {
-                reg.active.postMessage({ type: 'SCHEDULE_REMINDER', text, time, delay });
+        function renderTasks() {
+            const list = document.getElementById('taskList');
+            list.innerHTML = "";
+            userData.tasks.forEach(t => {
+                const color = t.level == 'A' ? '#ff5252' : (t.level == 'B' ? '#ffd740' : '#69f0ae');
+                list.innerHTML += `
+                    <div style="background:var(--card); padding:15px; border-radius:15px; margin-bottom:10px; border-left: 5px solid ${color}; display:flex; justify-content:space-between;">
+                        <span>${t.name}</span>
+                        <button onclick="delTask(${t.id})" style="background:none; border:none; color:gray;">x</button>
+                    </div>`;
             });
-            alert("Recordatorio enviado al sistema de fondo.");
         }
-        document.getElementById('remText').value = "";
-    }
 
-    function renderReminders() {
-        const list = document.getElementById('reminderList');
-        list.innerHTML = "";
-        data.reminders.slice(-3).forEach(r => {
-            list.innerHTML += `<div style="font-size:0.8em; opacity:0.7;">⏰ ${r.time} - ${r.text}</div>`;
-        });
-    }
-</script>
+        function delTask(id) {
+            userData.tasks = userData.tasks.filter(t => t.id !== id);
+            renderTasks();
+            sync();
+        }
+
+        // --- ALERTAS (Ajustado para Service Worker) ---
+        function setAlarm() {
+            const txt = document.getElementById('remText').value;
+            const time = document.getElementById('remTime').value;
+            if(!txt || !time) return;
+
+            const now = new Date();
+            const [h, m] = time.split(':');
+            let target = new Date();
+            target.setHours(h, m, 0, 0);
+            if (target <= now) target.setDate(target.getDate() + 1);
+            
+            const delay = target - now;
+
+            if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.active.postMessage({ type: 'SCHEDULE_REMINDER', text: txt, time: time, delay: delay });
+                });
+                alert("Alarma guardada en segundo plano para " + time);
+            }
+        }
+
+        function sync() {
+            localStorage.setItem('TaskData_' + currentProfile, JSON.stringify(userData));
+        }
+    </script>
 </body>
 </html>
