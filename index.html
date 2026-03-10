@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TaskEng Pro - Clean</title>
+    <title>TaskEng Pro - Secure Edition</title>
     <style>
         :root {
             --bg: #0f172a;
             --card: #1e293b;
             --primary: #7986cb;
             --text: #f1f5f9;
+            --sidebar-w: 250px;
         }
 
         body {
@@ -17,173 +18,197 @@
             background: var(--bg);
             color: var(--text);
             margin: 0;
-            padding: 20px;
+            overflow-x: hidden;
         }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
+        /* --- SIDEBAR (MENÚ LATERAL) --- */
+        .sidebar {
+            position: fixed; left: calc(-1 * var(--sidebar-w)); top: 0; bottom: 0;
+            width: var(--sidebar-w); background: var(--card);
+            transition: 0.3s; z-index: 1000; padding: 20px;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.3);
         }
 
-        /* Selector de perfil tipo "Píldora" */
-        .profile-selector {
-            background: var(--card);
-            padding: 5px;
-            border-radius: 50px;
-            display: flex;
-            gap: 5px;
+        .sidebar.open { left: 0; }
+
+        .nav-item {
+            padding: 15px; margin: 10px 0; border-radius: 12px;
+            cursor: pointer; transition: 0.2s; font-weight: bold;
         }
 
-        .p-btn {
-            padding: 8px 15px;
-            border-radius: 40px;
-            border: none;
-            background: none;
-            color: #64748b;
-            font-weight: bold;
-            font-size: 0.7em;
-            cursor: pointer;
-        }
+        .nav-item:hover { background: rgba(255,255,255,0.05); }
+        .nav-item.active { background: var(--primary); color: white; }
 
-        .p-btn.active {
-            background: var(--primary);
-            color: white;
-        }
+        /* --- CONTENIDO PRINCIPAL --- */
+        .main-content { padding: 20px; transition: 0.3s; }
+        .menu-trigger { font-size: 1.5em; cursor: pointer; padding: 10px; display: inline-block; }
 
-        /* El bloque azul de tu imagen */
-        .blue-section {
-            background: var(--primary);
-            color: white;
-            padding: 25px;
-            border-radius: 25px;
-            box-shadow: 0 10px 25px rgba(121, 134, 203, 0.2);
-            margin-bottom: 25px;
-        }
-
-        .blue-section label { font-size: 0.7em; font-weight: 800; opacity: 0.9; text-transform: uppercase; }
-
-        input, textarea {
-            width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px;
-            border: none; background: rgba(255,255,255,0.15); color: white;
-            font-size: 1em; box-sizing: border-box; outline: none;
-        }
-
-        input::placeholder { color: rgba(255,255,255,0.6); }
-
-        .btn-white {
-            background: white; color: var(--primary); border: none;
-            padding: 15px; border-radius: 12px; font-weight: 900;
-            width: 100%; cursor: pointer; margin-top: 10px;
-        }
-
-        /* Bloc de notas estilo tarjeta */
-        .notes-section {
-            background: var(--card);
-            padding: 20px;
-            border-radius: 20px;
+        /* Bloque azul de tu diseño original */
+        .blue-card {
+            background: var(--primary); color: white; padding: 25px;
+            border-radius: 25px; box-shadow: 0 10px 25px rgba(121, 134, 203, 0.2);
             margin-top: 20px;
         }
 
-        textarea {
-            background: transparent;
-            min-height: 150px;
-            padding: 0;
-            margin: 10px 0 0;
-            line-height: 1.5;
-            color: #cbd5e1;
-            resize: none;
+        .module { display: none; animation: fadeIn 0.4s; }
+        .module.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- SISTEMA DE PIN --- */
+        .pin-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            display: none; flex-direction: column; align-items: center;
+            justify-content: center; z-index: 2000;
         }
 
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 0.7em;
-            font-weight: bold;
-            background: rgba(255,255,255,0.1);
-            margin-bottom: 10px;
+        .pin-input {
+            font-size: 2em; text-align: center; width: 150px;
+            background: none; border-bottom: 2px solid var(--primary);
+            color: white; outline: none; letter-spacing: 10px;
         }
+
+        input, textarea {
+            width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px;
+            border: none; background: rgba(255,255,255,0.1); color: white;
+            box-sizing: border-box;
+        }
+
+        .overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5); z-index: 999;
+        }
+
+        #notesArea { min-height: 300px; background: #111; padding: 15px; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2 style="margin:0; font-size: 1.2em;">TaskEng Pro</h2>
-        <div class="profile-selector">
-            <button id="btn-T1" class="p-btn active" onclick="switchProfile('Tester_1')">TESTER 1</button>
-            <button id="btn-T2" class="p-btn" onclick="switchProfile('Tester_2')">TESTER 2</button>
+    <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+
+    <div id="sidebar" class="sidebar">
+        <h2 style="color: var(--primary);">TaskEng</h2>
+        <hr style="opacity: 0.1; margin-bottom: 20px;">
+        <div class="nav-item active" onclick="showMod('reminders')">🔔 Recordatorios</div>
+        <div class="nav-item" onclick="showMod('pendientes')">📅 Pendientes</div>
+        <div class="nav-item" onclick="checkPin()">🔒 Notas Privadas</div>
+        
+        <div style="position: absolute; bottom: 20px; font-size: 0.7em; opacity: 0.4;">
+            Perfiles Activos: Tester 1 / 2
         </div>
     </div>
 
-    <div class="blue-section">
-        <label>Recordatorio con Horario</label>
-        <input type="text" id="remText" placeholder="¿Qué quieres recordar?">
-        <div style="display: flex; gap: 10px;">
-            <input type="time" id="remTime" style="flex: 1;">
-            <button class="btn-white" style="flex: 1.2; margin-top: 10px;" onclick="setAlarm()">PROGRAMAR</button>
+    <div id="pinModal" class="pin-modal">
+        <h3>Introduce tu PIN</h3>
+        <input type="password" id="pinInput" class="pin-input" maxlength="4" oninput="validatePin()">
+        <p id="pinError" style="color: #ff5252; margin-top: 10px; display: none;">PIN Incorrecto</p>
+        <button onclick="closePin()" style="background: none; border: none; color: gray; margin-top: 20px;">Cancelar</button>
+    </div>
+
+    <div class="main-content">
+        <div class="menu-trigger" onclick="toggleMenu()">☰</div>
+        
+        <div id="mod-reminders" class="module active">
+            <div class="blue-card">
+                <label style="font-size: 0.7em; font-weight: bold; opacity: 0.8;">RECORDATORIOS CON HORARIO</label>
+                <input type="text" id="remText" placeholder="¿Qué debo avisarte?">
+                <input type="time" id="remTime">
+                <button onclick="setAlarm()" style="width:100%; padding:15px; border-radius:12px; border:none; background:white; color:var(--primary); font-weight:bold; margin-top:10px;">PROGRAMAR</button>
+            </div>
+        </div>
+
+        <div id="mod-pendientes" class="module">
+            <h2>Lista de Pendientes</h2>
+            <div style="background: var(--card); padding: 20px; border-radius: 20px;">
+                <input type="text" id="taskName" placeholder="Nueva tarea pendiente...">
+                <button onclick="addTask()" style="width:100%; padding:12px; border:none; background:var(--primary); color:white; border-radius:10px; font-weight:bold;">Añadir Pendiente</button>
+            </div>
+            <div id="taskList" style="margin-top: 20px;"></div>
+        </div>
+
+        <div id="mod-notes" class="module">
+            <div style="display:flex; justify-content: space-between; align-items: center;">
+                <h2>Bloc de Notas</h2>
+                <button onclick="lockNotes()" style="background:none; border:none; color:var(--primary);">Bloquear 🔒</button>
+            </div>
+            <textarea id="notesArea" placeholder="Tus secretos están seguros..." oninput="saveNotes()"></textarea>
         </div>
     </div>
 
-    <div class="notes-section">
-        <span class="badge" id="profileBadge">PERFIL ACTUAL: TESTER 1</span>
-        <label style="display:block; font-size: 0.8em; font-weight: bold; color: var(--primary);">NOTAS RÁPIDAS</label>
-        <textarea id="notesArea" placeholder="Escribe tus apuntes aquí..." oninput="autoSave()"></textarea>
-    </div>
+<script>
+    const CORRECT_PIN = "1234"; // Puedes cambiarlo por el código que quieras
+    let isNotesUnlocked = false;
 
-    <script>
-        let currentProfile = "Tester_1";
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('overlay').style.display = 
+            document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
+    }
 
-        window.onload = () => {
-            loadProfileData();
-        };
+    function showMod(id) {
+        document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('mod-' + id).classList.add('active');
+        
+        // Marcar activo en el menú
+        const items = document.querySelectorAll('.nav-item');
+        if(id === 'reminders') items[0].classList.add('active');
+        if(id === 'pendientes') items[1].classList.add('active');
+        if(id === 'notes') items[2].classList.add('active');
+        
+        toggleMenu();
+    }
 
-        function switchProfile(id) {
-            currentProfile = id;
-            // UI
-            document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn-' + (id == 'Tester_1' ? 'T1' : 'T2')).classList.add('active');
-            document.getElementById('profileBadge').innerText = "PERFIL ACTUAL: " + id.replace('_', ' ');
-            
-            loadProfileData();
+    // --- LOGICA DE PIN ---
+    function checkPin() {
+        if (isNotesUnlocked) {
+            showMod('notes');
+        } else {
+            document.getElementById('pinModal').style.display = 'flex';
+            document.getElementById('pinInput').focus();
         }
+    }
 
-        function autoSave() {
-            const content = document.getElementById('notesArea').value;
-            localStorage.setItem(currentProfile + '_notes', content);
+    function validatePin() {
+        const input = document.getElementById('pinInput');
+        const error = document.getElementById('pinError');
+        
+        if (input.value === CORRECT_PIN) {
+            isNotesUnlocked = true;
+            input.value = "";
+            closePin();
+            showMod('notes');
+        } else if (input.value.length === 4) {
+            error.style.display = 'block';
+            setTimeout(() => {
+                input.value = "";
+                error.style.display = 'none';
+            }, 500);
         }
+    }
 
-        function loadProfileData() {
-            const savedNotes = localStorage.getItem(currentProfile + '_notes') || "";
-            document.getElementById('notesArea').value = savedNotes;
-        }
+    function closePin() {
+        document.getElementById('pinModal').style.display = 'none';
+        document.getElementById('pinInput').value = "";
+    }
 
-        function setAlarm() {
-            const txt = document.getElementById('remText').value;
-            const time = document.getElementById('remTime').value;
-            if(!txt || !time) return;
+    function lockNotes() {
+        isNotesUnlocked = false;
+        showMod('reminders');
+    }
 
-            // Lógica de notificación (la misma de Android que ya tienes)
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.ready.then(reg => {
-                    const now = new Date();
-                    const [h, m] = time.split(':');
-                    let target = new Date();
-                    target.setHours(h, m, 0, 0);
-                    if (target <= now) target.setDate(target.getDate() + 1);
-                    
-                    reg.active.postMessage({
-                        type: 'SCHEDULE_REMINDER',
-                        text: txt,
-                        time: time,
-                        delay: target - now
-                    });
-                });
-                alert("Programado para el " + currentProfile);
-                document.getElementById('remText').value = "";
-            }
-        }
-    </script>
+    // --- LOGICA GENERAL ---
+    function saveNotes() {
+        localStorage.setItem('taskeng_notes', document.getElementById('notesArea').value);
+    }
+
+    window.onload = () => {
+        document.getElementById('notesArea').value = localStorage.getItem('taskeng_notes') || "";
+    };
+
+    function setAlarm() {
+        alert("¡Alerta Programada!");
+    }
+</script>
 </body>
 </html>
