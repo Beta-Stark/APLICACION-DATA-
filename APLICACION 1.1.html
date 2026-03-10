@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskEng - Gestor de Ingeniería</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a237e">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <style>
+        :root { 
+            --primary: #1a237e; 
+            --cat-a: #e53935; 
+            --cat-b: #fbc02d; 
+            --cat-c: #43a047; 
+            --bg: #f4f7f9;
+        }
+
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        
+        h2 { text-align: center; color: var(--primary); margin-top: 0; font-size: 1.5rem; }
+
+        /* Panel de Estadísticas */
+        .stats-bar { display: flex; justify-content: space-around; margin-bottom: 20px; background: #f8f9fa; padding: 10px; border-radius: 12px; }
+        .stat-item { text-align: center; font-size: 0.8em; font-weight: bold; }
+        .stat-count { display: block; font-size: 1.2em; color: var(--primary); }
+
+        /* Formulario */
+        .input-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+        label { font-size: 0.85em; font-weight: 600; color: #666; margin-bottom: -8px; }
+        input { padding: 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 1em; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); }
+        
+        .btn-add { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1em; box-shadow: 0 4px 10px rgba(26, 35, 126, 0.2); }
+        .btn-add:active { transform: scale(0.98); }
+
+        /* Lista de Tareas */
+        .task-item { 
+            padding: 16px; margin-bottom: 12px; border-radius: 12px; 
+            display: flex; justify-content: space-between; align-items: center; color: white;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        .cat-a { background: var(--cat-a); } 
+        .cat-b { background: var(--cat-b); color: #222; } 
+        .cat-c { background: var(--cat-c); }
+        .vencida { background: #455a64; opacity: 0.8; }
+
+        .task-info strong { display: block; font-size: 1.1em; margin-bottom: 4px; }
+        .task-info small { opacity: 0.9; font-size: 0.85em; }
+
+        .btn-del { background: rgba(255,255,255,0.25); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .cat-b .btn-del { color: #222; background: rgba(0,0,0,0.1); }
+
+        .clear-all { display: block; margin: 25px auto 0; background: none; border: none; color: #b0bec5; cursor: pointer; text-decoration: underline; font-size: 0.85em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>DATA V 1.1</h2>
+
+    <div class="stats-bar">
+        <div class="stat-item"><span id="countA" class="stat-count">0</span> Urgentes (A)</div>
+        <div class="stat-item"><span id="countB" class="stat-count">0</span> Próximas (B)</div>
+        <div class="stat-item"><span id="countC" class="stat-count">0</span> Con tiempo (C)</div>
+    </div>
+    
+    <div class="input-group">
+        <label>¿Qué hay que hacer?</label>
+        <input type="text" id="taskName" placeholder="Nombre de la tarea o examen">
+        
+        <label>Fecha Límite</label>
+        <input type="date" id="taskDate">
+        
+        <button class="btn-add" onclick="addTask()">Guardar Tarea</button>
+    </div>
+
+    <div id="taskList"></div>
+    <button class="clear-all" onclick="clearHistory()">Borrar historial completo</button>
+</div>
+
+<script>
+    // Al cargar la página, mostramos los datos guardados
+    window.onload = () => renderTasks();
+
+    function addTask() {
+        const name = document.getElementById('taskName').value;
+        const dateVal = document.getElementById('taskDate').value;
+
+        if (!name || !dateVal) return alert("Ingeniero, faltan datos por completar.");
+
+        // Cálculo de días restantes
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const deadline = new Date(dateVal);
+        deadline.setHours(0,0,0,0);
+
+        const diffInMs = deadline - today;
+        const diffInDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+
+        // Asignación de categoría lógica
+        let cat = diffInDays <= 2 ? "A" : (diffInDays <= 5 ? "B" : "C");
+
+        const newTask = {
+            id: Date.now(),
+            name: name,
+            days: diffInDays,
+            cat: cat
+        };
+
+        // Guardar en LocalStorage
+        const history = JSON.parse(localStorage.getItem('devTasks')) || [];
+        history.push(newTask);
+        localStorage.setItem('devTasks', JSON.stringify(history));
+
+        // Limpiar inputs y actualizar vista
+        document.getElementById('taskName').value = "";
+        document.getElementById('taskDate').value = "";
+        renderTasks();
+    }
+
+    function deleteTask(id) {
+        let history = JSON.parse(localStorage.getItem('devTasks'));
+        history = history.filter(t => t.id !== id);
+        localStorage.setItem('devTasks', JSON.stringify(history));
+        renderTasks();
+    }
+
+    function renderTasks() {
+        const list = document.getElementById('taskList');
+        list.innerHTML = "";
+        const history = JSON.parse(localStorage.getItem('devTasks')) || [];
+
+        // Contadores para estadísticas
+        let a = 0, b = 0, c = 0;
+
+        // Ordenar: Las más urgentes primero
+        history.sort((x, y) => x.days - y.days);
+
+        history.forEach(t => {
+            // Actualizar contadores
+            if(t.days <= 2) a++;
+            else if(t.days <= 5) b++;
+            else c++;
+
+            const isVencida = t.days < 0;
+            const div = document.createElement('div');
+            div.className = `task-item ${isVencida ? 'vencida' : 'cat-' + t.cat.toLowerCase()}`;
+            
+            div.innerHTML = `
+                <div class="task-info">
+                    <strong>${t.name}</strong>
+                    <small>${isVencida ? '❌ Vencida' : '⏳ Faltan ' + t.days + ' días'}</small>
+                </div>
+                <button class="btn-del" onclick="deleteTask(${t.id})">Borrar</button>
+            `;
+            list.appendChild(div);
+        });
+
+        // Actualizar UI de estadísticas
+        document.getElementById('countA').innerText = a;
+        document.getElementById('countB').innerText = b;
+        document.getElementById('countC').innerText = c;
+    }
+
+    function clearHistory() {
+        if(confirm("¿Estás seguro de borrar todo el registro de ingeniería?")) {
+            localStorage.removeItem('devTasks');
+            renderTasks();
+        }
+    }
+</script>
+
+</body>
+</html>
