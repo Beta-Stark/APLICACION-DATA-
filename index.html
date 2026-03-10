@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TaskEng Pro - Programador</title>
+    <title>TaskEng Pro - Final</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a237e">
@@ -71,7 +71,7 @@
     <button id="notifBtn" class="btn-notify" onclick="requestNotificationPermission()">🔔 Activar Notificaciones</button>
 
     <div class="reminder-box">
-        <label>Nuevo Recordatorio con Horario</label>
+        <label>Programar Aviso de Hoy</label>
         <div class="reminder-inputs">
             <input type="text" id="remText" placeholder="¿Qué debo recordarte?">
             <div style="display: flex; gap: 10px;">
@@ -95,8 +95,8 @@
     </div>
     
     <div class="input-group">
-        <label style="font-size: 0.7em; font-weight: bold; color: var(--primary);">AGREGAR TAREA A CALENDARIO</label>
-        <input type="text" id="taskName" placeholder="Materia / Proyecto">
+        <label style="font-size: 0.7em; font-weight: bold; color: var(--primary);">NUEVA TAREA A CALENDARIO</label>
+        <input type="text" id="taskName" placeholder="Materia o Proyecto">
         <input type="date" id="taskDate">
         <button class="btn-add" onclick="addTask()">Guardar Tarea</button>
     </div>
@@ -107,20 +107,25 @@
 <script>
     let currentFilter = 'all';
 
+    // Registro del Service Worker
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
+        navigator.serviceWorker.register('sw.js').then(reg => {
+            console.log("SW registrado correctamente");
+        });
     }
 
     window.onload = () => {
         renderTasks();
-        if (Notification.permission === "granted") document.getElementById('notifBtn').style.display = 'none';
+        if (Notification.permission === "granted") {
+            document.getElementById('notifBtn').style.display = 'none';
+        }
     };
 
     function requestNotificationPermission() {
         Notification.requestPermission().then(p => {
             if (p === "granted") {
                 document.getElementById('notifBtn').style.display = 'none';
-                sendInstantNotif("¡Sistema Listo!", "Te avisaré a las horas programadas.");
+                sendInstantNotif("¡Sistema Listo!", "Las notificaciones están activadas.");
             }
         });
     }
@@ -128,12 +133,15 @@
     function sendInstantNotif(title, msg) {
         if (Notification.permission === "granted") {
             navigator.serviceWorker.ready.then(reg => {
-                reg.showNotification(title, { body: msg, icon: 'https://cdn-icons-png.flaticon.com/512/1087/1087815.png' });
+                reg.showNotification(title, { 
+                    body: msg, 
+                    icon: 'https://cdn-icons-png.flaticon.com/512/1087/1087815.png' 
+                });
             });
         }
     }
 
-    // FUNCIÓN PARA PROGRAMAR HORARIOS
+    // FUNCIÓN DE PROGRAMACIÓN MEJORADA
     function addScheduledReminder() {
         const text = document.getElementById('remText').value;
         const time = document.getElementById('remTime').value;
@@ -145,32 +153,29 @@
         let target = new Date();
         target.setHours(h, m, 0, 0);
 
+        // Si la hora ya pasó, programar para mañana
         if (target <= now) target.setDate(target.getDate() + 1);
 
         const delay = target - now;
 
-        // Mostrar en lista
+        // Mostrar en lista visual
         const list = document.getElementById('quickList');
         const item = document.createElement('div');
         item.innerHTML = `⏰ ${time} - ${text}`;
         list.appendChild(item);
 
-        // Enviar al Service Worker para que espere el tiempo
+        // ENVIAR ORDEN AL SERVICE WORKER (postMessage)
         if (Notification.permission === "granted") {
             navigator.serviceWorker.ready.then(reg => {
-                // Usamos un temporizador
-                setTimeout(() => {
-                    reg.showNotification("🔔 Recordatorio", {
-                        body: text,
-                        vibrate: [200, 100, 200],
-                        requireInteraction: true
-                    });
-                    item.style.opacity = "0.3";
-                }, delay);
+                reg.active.postMessage({
+                    type: 'SCHEDULE_REMINDER',
+                    text: text,
+                    delay: delay
+                });
             });
-            alert("Recordatorio programado con éxito");
+            alert(`Programado para las ${time}. No cierres la app.`);
         } else {
-            alert("Primero activa las notificaciones con el botón naranja");
+            alert("Activa las notificaciones primero.");
         }
 
         document.getElementById('remText').value = "";
@@ -190,8 +195,9 @@
         history.push({ id: Date.now(), name, days: diffInDays, cat });
         localStorage.setItem('devTasks', JSON.stringify(history));
 
-        if (cat === "A") sendInstantNotif("⚠️ Tarea Crítica", `"${name}" vence pronto.`);
+        if (cat === "A") sendInstantNotif("⚠️ Tarea Crítica", `"${name}" vence en ${diffInDays} días.`);
         renderTasks();
+        document.getElementById('taskName').value = "";
     }
 
     function deleteTask(id) {
@@ -221,7 +227,10 @@
         history.sort((a, b) => a.days - b.days).forEach(t => {
             const div = document.createElement('div');
             div.className = `task-item cat-${t.cat.toLowerCase()}`;
-            div.innerHTML = `<div><strong>${t.name}</strong><small>${t.days < 0 ? 'Vencida' : 'Faltan ' + t.days + ' días'}</small></div><button class="btn-del" onclick="deleteTask(${t.id})">x</button>`;
+            div.innerHTML = `
+                <div><strong>${t.name}</strong><small>${t.days < 0 ? 'Vencida' : 'Faltan ' + t.days + ' días'}</small></div>
+                <button class="btn-del" onclick="deleteTask(${t.id})">x</button>
+            `;
             list.appendChild(div);
         });
     }
