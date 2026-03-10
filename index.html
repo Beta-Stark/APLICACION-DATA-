@@ -3,272 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TaskEng Pro - Android Priority</title>
+    <title>TaskEng Multi-Profile</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a237e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1087/1087815.png">
 
     <style>
         :root { 
-            --primary: #3949ab; 
-            --cat-a: #ff5252; --cat-b: #ffd740; --cat-c: #69f0ae; 
-            --bg: #ffffff; --card: #f8f9fa; --text: #1a1a1a;
+            --primary: #3949ab; --accent: #ff4081;
+            --bg: #f0f2f5; --card: #ffffff; --text: #1a1a1a;
         }
 
         @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #121212; --card: #1e1e1e; --text: #e0e0e0;
-                --primary: #7986cb;
-            }
+            :root { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --primary: #818cf8; }
         }
 
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            background: var(--bg); 
-            margin: 0; 
-            padding: env(safe-area-inset-top) 15px 20px; 
-            color: var(--text); 
-            transition: 0.3s; 
-        }
-
-        .container { max-width: 500px; margin: auto; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; transition: 0.3s; }
         
-        h2 { text-align: center; color: var(--primary); margin: 20px 0; letter-spacing: 1px; }
+        /* GESTIÓN DE PERFILES */
+        .profile-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .profile-card { background: var(--card); padding: 20px; border-radius: 20px; width: 100%; max-width: 300px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 15px; cursor: pointer; border: 2px solid transparent; }
+        .profile-card:hover { border-color: var(--primary); }
 
-        .btn-notify { 
-            background: #ff9800; color: white; border: none; padding: 14px; 
-            border-radius: 12px; width: 100%; font-weight: bold; margin-bottom: 20px; 
-            box-shadow: 0 4px 10px rgba(255,152,0,0.3); cursor: pointer;
-        }
-
-        /* Sección de Recordatorios Programados (Prioridad Android) */
-        .reminder-box { 
-            background: var(--primary); color: white; padding: 20px; 
-            border-radius: 20px; margin-bottom: 25px; 
-            box-shadow: 0 8px 20px rgba(57,73,171,0.3); 
-        }
-        .reminder-box label { font-size: 0.8em; text-transform: uppercase; font-weight: 800; opacity: 0.8; }
-        .reminder-inputs { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
-        .reminder-inputs input { border: none; border-radius: 12px; padding: 14px; font-size: 1em; background: rgba(255,255,255,0.9); color: #333; }
-        .btn-rem { 
-            background: #ffffff; color: var(--primary); border: none; 
-            padding: 14px; border-radius: 12px; font-weight: 900; 
-            cursor: pointer; transition: 0.2s;
-        }
-        .btn-rem:active { transform: scale(0.95); opacity: 0.8; }
-
-        .stats-bar { display: flex; justify-content: space-around; margin-bottom: 20px; background: var(--card); padding: 15px; border-radius: 15px; }
-        .stat-item { text-align: center; font-size: 0.75em; font-weight: bold; }
-        .stat-count { display: block; font-size: 1.4em; color: var(--primary); }
-
-        .filters { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
-        .filter-chip { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--primary); background: transparent; color: var(--primary); font-size: 0.8em; white-space: nowrap; }
-        .filter-chip.active { background: var(--primary); color: white; }
-
-        .input-group { background: var(--card); padding: 20px; border-radius: 18px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
-        .input-group input { background: var(--bg); color: var(--text); padding: 14px; border: 1px solid #444; border-radius: 12px; font-size: 1em; }
-        
-        .btn-add { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 1em; }
-
-        .task-item { padding: 18px; margin-bottom: 12px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; color: #fff; animation: fadeIn 0.3s ease; }
+        .container { max-width: 500px; margin: auto; padding: 20px; }
+        .module { display: none; animation: fadeIn 0.3s ease; }
+        .module.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .cat-a { background: var(--cat-a); box-shadow: 0 4px 12px rgba(255,82,82,0.3); } 
-        .cat-b { background: var(--cat-b); color: #222; box-shadow: 0 4px 12px rgba(255,215,64,0.3); } 
-        .cat-c { background: var(--cat-c); color: #222; box-shadow: 0 4px 12px rgba(105,240,174,0.3); }
-        .btn-del { background: rgba(0,0,0,0.15); border: none; color: inherit; padding: 10px 14px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        /* NAVEGACIÓN INFERIOR */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); display: flex; justify-content: space-around; padding: 15px; box-shadow: 0 -2px 15px rgba(0,0,0,0.1); border-top: 1px solid rgba(255,255,255,0.1); }
+        .nav-btn { background: none; border: none; color: #888; font-weight: bold; font-size: 0.7em; text-transform: uppercase; cursor: pointer; }
+        .nav-btn.active { color: var(--primary); }
 
-        #quickList div { background: rgba(255,255,255,0.15); padding: 10px; border-radius: 10px; margin-top: 8px; font-size: 0.9em; border-left: 4px solid white; }
+        /* UI COMPONENTS */
+        .card { background: var(--card); padding: 20px; border-radius: 18px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h2 { margin-top: 0; color: var(--primary); font-size: 1.2em; }
+        input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: var(--bg); color: var(--text); box-sizing: border-box; }
+        .btn { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; }
+        
+        /* BLOC DE NOTAS */
+        #noteArea { min-height: 200px; font-family: inherit; resize: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>🚀 TaskEng Pro</h2>
+    <div id="profileOverlay" class="profile-overlay">
+        <h1 style="color: var(--primary)">¿Quién eres hoy?</h1>
+        <div class="profile-card" onclick="selectProfile('Tester_1')">
+            <div style="font-size: 3em;">👨‍💻</div>
+            <h3>Tester Alfa</h3>
+        </div>
+        <div class="profile-card" onclick="selectProfile('Tester_2')">
+            <div style="font-size: 3em;">🕵️‍♂️</div>
+            <h3>Tester Beta</h3>
+        </div>
+        <button class="btn" style="max-width: 300px; background: #666;" onclick="createNewProfile()">+ Crear Nuevo Perfil</button>
+    </div>
 
-    <button id="notifBtn" class="btn-notify" onclick="requestNotificationPermission()">🔔 ACTIVAR NOTIFICACIONES</button>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <small id="userDisplay" style="font-weight: bold; color: var(--primary);"></small>
+            <button onclick="logout()" style="background:none; border:none; color:red; font-size:0.7em;">SALIR</button>
+        </div>
 
-    <div class="reminder-box">
-        <label>Recordatorio con Horario</label>
-        <div class="reminder-inputs">
-            <input type="text" id="remText" placeholder="Ej: Estudiar para examen...">
-            <div style="display: flex; gap: 10px;">
-                <input type="time" id="remTime" style="flex: 1.2;">
-                <button class="btn-rem" onclick="addScheduledReminder()">PROGRAMAR</button>
+        <div id="mod-dash" class="module active">
+            <h2>🔔 Recordatorios</h2>
+            <div class="card">
+                <input type="text" id="remText" placeholder="¿Qué debo avisarte?">
+                <input type="time" id="remTime">
+                <button class="btn" onclick="scheduleReminder()">Programar Alerta</button>
+            </div>
+            <div id="reminderList"></div>
+        </div>
+
+        <div id="mod-tasks" class="module">
+            <h2>📅 Tareas Diarias</h2>
+            <div class="card">
+                <input type="text" id="taskName" placeholder="Nueva tarea...">
+                <select id="taskCat">
+                    <option value="A">Prioridad A (Urgente)</option>
+                    <option value="B">Prioridad B (Media)</option>
+                    <option value="C">Prioridad C (Baja)</option>
+                </select>
+                <button class="btn" onclick="addTask()">Añadir a la lista</button>
+            </div>
+            <div id="taskList"></div>
+        </div>
+
+        <div id="mod-notes" class="module">
+            <h2>📝 Bloc de Notas</h2>
+            <div class="card">
+                <textarea id="noteArea" placeholder="Escribe tus ideas aquí... se guardan solas." oninput="saveNotes()"></textarea>
             </div>
         </div>
-        <div id="quickList"></div>
     </div>
 
-    <div class="stats-bar">
-        <div class="stat-item"><span id="countA" class="stat-count">0</span> URGENTE</div>
-        <div class="stat-item"><span id="countB" class="stat-count">0</span> PRÓXIMO</div>
-        <div class="stat-item"><span id="countC" class="stat-count">0</span> NORMAL</div>
-    </div>
-
-    <div class="filters">
-        <button class="filter-chip active" onclick="filterTasks('all', this)">Todas</button>
-        <button class="filter-chip" onclick="filterTasks('A', this)">Cat A</button>
-        <button class="filter-chip" onclick="filterTasks('B', this)">Cat B</button>
-        <button class="filter-chip" onclick="filterTasks('C', this)">Cat C</button>
-    </div>
-    
-    <div class="input-group">
-        <label style="font-size: 0.75em; font-weight: 800; color: var(--primary);">AGREGAR TAREA AL CALENDARIO</label>
-        <input type="text" id="taskName" placeholder="Nombre de la materia/tarea">
-        <input type="date" id="taskDate">
-        <button class="btn-add" onclick="addTask()">GUARDAR EN LISTA</button>
-    </div>
-
-    <div id="taskList"></div>
-</div>
+    <nav class="nav-bar">
+        <button class="nav-btn active" onclick="showModule('dash', this)">Alertas</button>
+        <button class="nav-btn" onclick="showModule('tasks', this)">Tareas</button>
+        <button class="nav-btn" onclick="showModule('notes', this)">Notas</button>
+    </nav>
 
 <script>
-    let currentFilter = 'all';
+    let currentUser = "";
+    let data = { reminders: [], tasks: [], notes: "" };
 
-    // Registro del Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(reg => {
-            console.log("Motor de notificaciones activo");
-        });
+    // --- SISTEMA DE PERFILES ---
+    function selectProfile(name) {
+        currentUser = name;
+        document.getElementById('profileOverlay').style.display = 'none';
+        document.getElementById('userDisplay').innerText = "PERFIL: " + name.replace('_', ' ');
+        loadUserData();
     }
 
-    window.onload = () => {
-        renderTasks();
-        if (Notification.permission === "granted") {
-            document.getElementById('notifBtn').style.display = 'none';
-        }
-    };
-
-    function requestNotificationPermission() {
-        Notification.requestPermission().then(p => {
-            if (p === "granted") {
-                document.getElementById('notifBtn').style.display = 'none';
-                sendInstantNotif("✅ ¡Sistema Activo!", "Los recordatorios funcionarán ahora.");
-            } else {
-                alert("Sin permiso no podré avisarte de tus tareas.");
-            }
-        });
+    function createNewProfile() {
+        const name = prompt("Nombre del nuevo Tester:");
+        if (name) selectProfile(name.replace(/\s+/g, '_'));
     }
 
-    function sendInstantNotif(title, msg) {
-        if (Notification.permission === "granted") {
-            navigator.serviceWorker.ready.then(reg => {
-                reg.showNotification(title, { 
-                    body: msg, 
-                    icon: 'https://cdn-icons-png.flaticon.com/512/1087/1087815.png',
-                    vibrate: [200, 100, 200]
-                });
-            });
-        }
+    function logout() {
+        location.reload();
     }
 
-    // LÓGICA DE PROGRAMACIÓN (OPTIMIZADA ANDROID)
-    function addScheduledReminder() {
-        const text = document.getElementById('remText').value;
-        const time = document.getElementById('remTime').value;
+    // --- PERSISTENCIA DE DATOS ---
+    function saveUserData() {
+        localStorage.setItem('TaskEng_' + currentUser, JSON.stringify(data));
+    }
 
-        if (!text || !time) return alert("Ingresa la descripción y la hora.");
-
-        const now = new Date();
-        const [h, m] = time.split(':');
-        let target = new Date();
-        target.setHours(h, m, 0, 0);
-
-        if (target <= now) target.setDate(target.getDate() + 1);
-
-        const delay = target - now;
-
-        // Lista visual
-        const list = document.getElementById('quickList');
-        const item = document.createElement('div');
-        item.innerHTML = `⏰ ${time} - ${text}`;
-        list.appendChild(item);
-
-        // Envío al Service Worker (Esto es lo que Android mantiene vivo)
-        if (Notification.permission === "granted") {
-            navigator.serviceWorker.ready.then(reg => {
-                reg.active.postMessage({
-                    type: 'SCHEDULE_REMINDER',
-                    text: text,
-                    time: time,
-                    delay: delay
-                });
-            });
-            
-            const btn = document.querySelector('.btn-rem');
-            btn.innerText = "¡LISTO!";
-            btn.style.background = "#69f0ae";
-            setTimeout(() => {
-                btn.innerText = "PROGRAMAR";
-                btn.style.background = "white";
-            }, 2000);
-
+    function loadUserData() {
+        const saved = localStorage.getItem('TaskEng_' + currentUser);
+        if (saved) {
+            data = JSON.parse(saved);
+            document.getElementById('noteArea').value = data.notes || "";
+            renderTasks();
+            renderReminders();
         } else {
-            alert("Primero activa las notificaciones con el botón naranja.");
+            data = { reminders: [], tasks: [], notes: "" };
+            renderTasks();
+            renderReminders();
         }
-
-        document.getElementById('remText').value = "";
     }
 
+    // --- NAVEGACIÓN ---
+    function showModule(modId, btn) {
+        document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('mod-' + modId).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    // --- LÓGICA DE NOTAS ---
+    function saveNotes() {
+        data.notes = document.getElementById('noteArea').value;
+        saveUserData();
+    }
+
+    // --- LÓGICA DE TAREAS ---
     function addTask() {
         const name = document.getElementById('taskName').value;
-        const dateVal = document.getElementById('taskDate').value;
-        if (!name || !dateVal) return;
-
-        const today = new Date(); today.setHours(0,0,0,0);
-        const deadline = new Date(dateVal); deadline.setHours(0,0,0,0);
-        const diffInDays = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
-
-        let cat = diffInDays <= 2 ? "A" : (diffInDays <= 5 ? "B" : "C");
-        const history = JSON.parse(localStorage.getItem('devTasks')) || [];
-        history.push({ id: Date.now(), name, days: diffInDays, cat });
-        localStorage.setItem('devTasks', JSON.stringify(history));
-
-        if (cat === "A") sendInstantNotif("⚠️ Tarea Crítica", `"${name}" vence en ${diffInDays} días.`);
-        
+        const cat = document.getElementById('taskCat').value;
+        if (!name) return;
+        data.tasks.push({ id: Date.now(), name, cat });
+        saveUserData();
         renderTasks();
         document.getElementById('taskName').value = "";
     }
 
     function deleteTask(id) {
-        let history = JSON.parse(localStorage.getItem('devTasks'));
-        localStorage.setItem('devTasks', JSON.stringify(history.filter(t => t.id !== id)));
-        renderTasks();
-    }
-
-    function filterTasks(cat, btn) {
-        currentFilter = cat;
-        document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        data.tasks = data.tasks.filter(t => t.id !== id);
+        saveUserData();
         renderTasks();
     }
 
     function renderTasks() {
         const list = document.getElementById('taskList');
         list.innerHTML = "";
-        let history = JSON.parse(localStorage.getItem('devTasks')) || [];
+        data.tasks.forEach(t => {
+            list.innerHTML += `
+                <div class="card" style="display:flex; justify-content:space-between; border-left: 5px solid ${t.cat=='A'?'red':t.cat=='B'?'orange':'green'}">
+                    <span><b>[${t.cat}]</b> ${t.name}</span>
+                    <button onclick="deleteTask(${t.id})" style="color:red; background:none; border:none;">✖</button>
+                </div>`;
+        });
+    }
 
-        document.getElementById('countA').innerText = history.filter(t => t.cat === 'A').length;
-        document.getElementById('countB').innerText = history.filter(t => t.cat === 'B').length;
-        document.getElementById('countC').innerText = history.filter(t => t.cat === 'C').length;
+    // --- LÓGICA DE RECORDATORIOS (Prioridad Android) ---
+    function scheduleReminder() {
+        const text = document.getElementById('remText').value;
+        const time = document.getElementById('remTime').value;
+        if (!text || !time) return;
 
-        if (currentFilter !== 'all') history = history.filter(t => t.cat === currentFilter);
+        const now = new Date();
+        const [h, m] = time.split(':');
+        let target = new Date();
+        target.setHours(h, m, 0, 0);
+        if (target <= now) target.setDate(target.getDate() + 1);
+        const delay = target - now;
 
-        history.sort((a, b) => a.days - b.days).forEach(t => {
-            const div = document.createElement('div');
-            div.className = `task-item cat-${t.cat.toLowerCase()}`;
-            div.innerHTML = `
-                <div>
-                    <strong>${t.name}</strong><br>
-                    <small>${t.days < 0 ? 'Expiró hace ' + Math.abs(t.days) + ' d' : 'Faltan ' + t.days + ' días'}</small>
-                </div>
-                <button class="btn-del" onclick="deleteTask(${t.id})">ELIMINAR</button>
-            `;
-            list.appendChild(div);
+        data.reminders.push({ text, time });
+        saveUserData();
+        renderReminders();
+
+        if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+            navigator.serviceWorker.ready.then(reg => {
+                reg.active.postMessage({ type: 'SCHEDULE_REMINDER', text, time, delay });
+            });
+            alert("Recordatorio enviado al sistema de fondo.");
+        }
+        document.getElementById('remText').value = "";
+    }
+
+    function renderReminders() {
+        const list = document.getElementById('reminderList');
+        list.innerHTML = "";
+        data.reminders.slice(-3).forEach(r => {
+            list.innerHTML += `<div style="font-size:0.8em; opacity:0.7;">⏰ ${r.time} - ${r.text}</div>`;
         });
     }
 </script>
