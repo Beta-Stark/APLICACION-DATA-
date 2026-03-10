@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TaskEng Pro + Alertas</title>
+    <title>TaskEng Pro - Programador</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a237e">
@@ -33,16 +33,20 @@
         .btn-notify { 
             background: #ff9800; color: white; border: none; padding: 12px; 
             border-radius: 12px; width: 100%; font-weight: bold; margin-bottom: 20px; 
-            cursor: pointer; box-shadow: 0 4px 12px rgba(255,152,0,0.3);
+            cursor: pointer; display: block;
         }
+
+        /* Sección de Recordatorios Programados */
+        .reminder-box { background: var(--primary); color: white; padding: 18px; border-radius: 18px; margin-bottom: 25px; box-shadow: 0 6px 15px rgba(57,73,171,0.2); }
+        .reminder-box label { color: white; font-size: 0.75em; text-transform: uppercase; font-weight: bold; opacity: 0.9; }
+        .reminder-inputs { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .reminder-inputs input { border: none; border-radius: 10px; padding: 12px; font-size: 1em; }
+        .btn-rem { background: white; color: var(--primary); border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
 
         .stats-bar { display: flex; justify-content: space-around; margin-bottom: 20px; background: var(--card); padding: 15px; border-radius: 15px; }
         .stat-item { text-align: center; font-size: 0.75em; font-weight: bold; }
         .stat-count { display: block; font-size: 1.4em; color: var(--primary); }
 
-        .reminder-box { background: var(--primary); color: white; padding: 18px; border-radius: 18px; margin-bottom: 25px; box-shadow: 0 6px 15px rgba(57,73,171,0.2); }
-        .reminder-box label { color: white; font-size: 0.8em; text-transform: uppercase; font-weight: bold; }
-        
         .filters { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
         .filter-chip { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--primary); background: transparent; color: var(--primary); font-size: 0.8em; white-space: nowrap; }
         .filter-chip.active { background: var(--primary); color: white; }
@@ -50,13 +54,13 @@
         .input-group { background: var(--card); padding: 20px; border-radius: 18px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
         input { background: var(--bg); color: var(--text); padding: 14px; border: 1px solid #444; border-radius: 12px; font-size: 1em; outline: none; }
         
-        .btn-add { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 1em; }
+        .btn-add { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: bold; }
 
-        .task-item { padding: 18px; margin-bottom: 12px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; color: #fff; animation: fadeIn 0.3s ease; }
+        .task-item { padding: 18px; margin-bottom: 12px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; color: #fff; }
         .cat-a { background: var(--cat-a); } .cat-b { background: var(--cat-b); color: #222; } .cat-c { background: var(--cat-c); color: #222; }
         .btn-del { background: rgba(0,0,0,0.1); border: none; color: inherit; padding: 8px 12px; border-radius: 10px; font-weight: bold; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #quickList div { background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; margin-top: 5px; font-size: 0.9em; }
     </style>
 </head>
 <body>
@@ -64,15 +68,18 @@
 <div class="container">
     <h2>🚀 TaskEng Pro</h2>
 
-    <button id="notifBtn" class="btn-notify" onclick="requestNotificationPermission()">🔔 Activar Recordatorios</button>
+    <button id="notifBtn" class="btn-notify" onclick="requestNotificationPermission()">🔔 Activar Notificaciones</button>
 
     <div class="reminder-box">
-        <label>Pendiente Rápido (Hoy)</label>
-        <div style="display: flex; gap: 8px; margin-top: 8px;">
-            <input type="text" id="quickReminder" placeholder="Ej: Llamar equipo..." style="flex:1; border:none;">
-            <button onclick="addQuickReminder()" style="border-radius:10px; border:none; padding:0 15px; background: white; color: var(--primary); font-weight: bold;">+</button>
+        <label>Nuevo Recordatorio con Horario</label>
+        <div class="reminder-inputs">
+            <input type="text" id="remText" placeholder="¿Qué debo recordarte?">
+            <div style="display: flex; gap: 10px;">
+                <input type="time" id="remTime" style="flex: 1;">
+                <button class="btn-rem" onclick="addScheduledReminder()">Programar</button>
+            </div>
         </div>
-        <div id="quickList" style="font-size: 0.9em; margin-top: 12px; line-height: 1.6;"></div>
+        <div id="quickList"></div>
     </div>
 
     <div class="stats-bar">
@@ -85,13 +92,13 @@
         <button class="filter-chip active" onclick="filterTasks('all', this)">Todas</button>
         <button class="filter-chip" onclick="filterTasks('A', this)">Urgentes</button>
         <button class="filter-chip" onclick="filterTasks('B', this)">Próximas</button>
-        <button class="filter-chip" onclick="filterTasks('C', this)">Con tiempo</button>
     </div>
     
     <div class="input-group">
-        <input type="text" id="taskName" placeholder="Materia o Proyecto">
+        <label style="font-size: 0.7em; font-weight: bold; color: var(--primary);">AGREGAR TAREA A CALENDARIO</label>
+        <input type="text" id="taskName" placeholder="Materia / Proyecto">
         <input type="date" id="taskDate">
-        <button class="btn-add" onclick="addTask()">Añadir a mi Calendario</button>
+        <button class="btn-add" onclick="addTask()">Guardar Tarea</button>
     </div>
 
     <div id="taskList"></div>
@@ -100,54 +107,73 @@
 <script>
     let currentFilter = 'all';
 
-    // Registro del Service Worker para notificaciones
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(() => {
-            console.log("Service Worker registrado para notificaciones");
-        });
+        navigator.serviceWorker.register('sw.js');
     }
 
     window.onload = () => {
         renderTasks();
-        if (Notification.permission === "granted") {
-            document.getElementById('notifBtn').style.display = 'none';
-        }
+        if (Notification.permission === "granted") document.getElementById('notifBtn').style.display = 'none';
     };
 
     function requestNotificationPermission() {
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-                alert("¡Notificaciones configuradas con éxito!");
+        Notification.requestPermission().then(p => {
+            if (p === "granted") {
                 document.getElementById('notifBtn').style.display = 'none';
-                sendLocalNotification("TaskEng Pro", "Las alertas están listas para tus entregas.");
+                sendInstantNotif("¡Sistema Listo!", "Te avisaré a las horas programadas.");
             }
         });
     }
 
-    function sendLocalNotification(title, msg) {
+    function sendInstantNotif(title, msg) {
         if (Notification.permission === "granted") {
             navigator.serviceWorker.ready.then(reg => {
-                reg.showNotification(title, {
-                    body: msg,
-                    icon: 'https://cdn-icons-png.flaticon.com/512/1087/1087815.png',
-                    badge: 'https://cdn-icons-png.flaticon.com/512/1087/1087815.png'
-                });
+                reg.showNotification(title, { body: msg, icon: 'https://cdn-icons-png.flaticon.com/512/1087/1087815.png' });
             });
         }
     }
 
-    function addQuickReminder() {
-        const input = document.getElementById('quickReminder');
-        if (!input.value) return;
-        
+    // FUNCIÓN PARA PROGRAMAR HORARIOS
+    function addScheduledReminder() {
+        const text = document.getElementById('remText').value;
+        const time = document.getElementById('remTime').value;
+
+        if (!text || !time) return alert("Ingresa tarea y hora");
+
+        const now = new Date();
+        const [h, m] = time.split(':');
+        let target = new Date();
+        target.setHours(h, m, 0, 0);
+
+        if (target <= now) target.setDate(target.getDate() + 1);
+
+        const delay = target - now;
+
+        // Mostrar en lista
         const list = document.getElementById('quickList');
         const item = document.createElement('div');
-        item.innerHTML = `• ${input.value}`;
+        item.innerHTML = `⏰ ${time} - ${text}`;
         list.appendChild(item);
-        
-        // Simulación de recordatorio inteligente (te avisa en 5 segundos de lo que anotaste)
-        sendLocalNotification("Recordatorio Guardado", `No olvides: ${input.value}`);
-        input.value = "";
+
+        // Enviar al Service Worker para que espere el tiempo
+        if (Notification.permission === "granted") {
+            navigator.serviceWorker.ready.then(reg => {
+                // Usamos un temporizador
+                setTimeout(() => {
+                    reg.showNotification("🔔 Recordatorio", {
+                        body: text,
+                        vibrate: [200, 100, 200],
+                        requireInteraction: true
+                    });
+                    item.style.opacity = "0.3";
+                }, delay);
+            });
+            alert("Recordatorio programado con éxito");
+        } else {
+            alert("Primero activa las notificaciones con el botón naranja");
+        }
+
+        document.getElementById('remText').value = "";
     }
 
     function addTask() {
@@ -164,9 +190,7 @@
         history.push({ id: Date.now(), name, days: diffInDays, cat });
         localStorage.setItem('devTasks', JSON.stringify(history));
 
-        if (cat === "A") sendLocalNotification("⚠️ Tarea Urgente", `Has añadido "${name}" para dentro de ${diffInDays} días.`);
-
-        document.getElementById('taskName').value = "";
+        if (cat === "A") sendInstantNotif("⚠️ Tarea Crítica", `"${name}" vence pronto.`);
         renderTasks();
     }
 
@@ -197,10 +221,7 @@
         history.sort((a, b) => a.days - b.days).forEach(t => {
             const div = document.createElement('div');
             div.className = `task-item cat-${t.cat.toLowerCase()}`;
-            div.innerHTML = `
-                <div><strong>${t.name}</strong><small>${t.days < 0 ? 'Vencida' : 'Faltan ' + t.days + ' días'}</small></div>
-                <button class="btn-del" onclick="deleteTask(${t.id})">Borrar</button>
-            `;
+            div.innerHTML = `<div><strong>${t.name}</strong><small>${t.days < 0 ? 'Vencida' : 'Faltan ' + t.days + ' días'}</small></div><button class="btn-del" onclick="deleteTask(${t.id})">x</button>`;
             list.appendChild(div);
         });
     }
