@@ -2,179 +2,155 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskEng - Gestor de Ingeniería</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TaskEng Pro</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a237e">
-    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <style>
         :root { 
-            --primary: #1a237e; 
-            --cat-a: #e53935; 
-            --cat-b: #fbc02d; 
-            --cat-c: #43a047; 
-            --bg: #f4f7f9;
+            --primary: #3949ab; 
+            --cat-a: #ff5252; --cat-b: #ffd740; --cat-c: #69f0ae; 
+            --bg: #ffffff; --card: #f8f9fa; --text: #1a1a1a;
         }
 
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-        
-        h2 { text-align: center; color: var(--primary); margin-top: 0; font-size: 1.5rem; }
-
-        /* Panel de Estadísticas */
-        .stats-bar { display: flex; justify-content: space-around; margin-bottom: 20px; background: #f8f9fa; padding: 10px; border-radius: 12px; }
-        .stat-item { text-align: center; font-size: 0.8em; font-weight: bold; }
-        .stat-count { display: block; font-size: 1.2em; color: var(--primary); }
-
-        /* Formulario */
-        .input-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
-        label { font-size: 0.85em; font-weight: 600; color: #666; margin-bottom: -8px; }
-        input { padding: 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 1em; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--primary); }
-        
-        .btn-add { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1em; box-shadow: 0 4px 10px rgba(26, 35, 126, 0.2); }
-        .btn-add:active { transform: scale(0.98); }
-
-        /* Lista de Tareas */
-        .task-item { 
-            padding: 16px; margin-bottom: 12px; border-radius: 12px; 
-            display: flex; justify-content: space-between; align-items: center; color: white;
-            animation: slideIn 0.3s ease-out;
+        /* SOPORTE PARA MODO OSCURO AUTOMÁTICO */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #121212; --card: #1e1e1e; --text: #e0e0e0;
+                --primary: #7986cb;
+            }
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 
-        .cat-a { background: var(--cat-a); } 
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); margin: 0; padding: env(safe-area-inset-top) 15px 20px; color: var(--text); transition: 0.3s; }
+        .container { max-width: 500px; margin: auto; }
+        
+        h2 { text-align: center; color: var(--primary); margin: 20px 0; }
+
+        .stats-bar { display: flex; justify-content: space-around; margin-bottom: 20px; background: var(--card); padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .stat-item { text-align: center; font-size: 0.75em; font-weight: bold; }
+        .stat-count { display: block; font-size: 1.4em; color: var(--primary); }
+
+        /* Botones de Filtro */
+        .filters { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .filter-chip { padding: 6px 15px; border-radius: 20px; border: 1px solid var(--primary); background: transparent; color: var(--primary); font-size: 0.8em; cursor: pointer; white-space: nowrap; }
+        .filter-chip.active { background: var(--primary); color: white; }
+
+        .input-group { background: var(--card); padding: 20px; border-radius: 18px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
+        label { font-size: 0.8em; font-weight: 600; color: var(--primary); text-transform: uppercase; }
+        input { background: var(--bg); color: var(--text); padding: 14px; border: 1px solid #444; border-radius: 12px; font-size: 1em; outline: none; }
+        
+        .btn-add { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1em; }
+
+        .task-item { padding: 18px; margin-bottom: 12px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; color: #fff; }
+        .cat-a { background: var(--cat-a); color: white; } 
         .cat-b { background: var(--cat-b); color: #222; } 
-        .cat-c { background: var(--cat-c); }
-        .vencida { background: #455a64; opacity: 0.8; }
+        .cat-c { background: var(--cat-c); color: #222; }
+        
+        .task-info strong { display: block; font-size: 1.1em; margin-bottom: 3px; }
+        .btn-del { background: rgba(0,0,0,0.15); border: none; color: inherit; padding: 8px 12px; border-radius: 10px; font-weight: bold; font-size: 0.8em; }
 
-        .task-info strong { display: block; font-size: 1.1em; margin-bottom: 4px; }
-        .task-info small { opacity: 0.9; font-size: 0.85em; }
-
-        .btn-del { background: rgba(255,255,255,0.25); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .cat-b .btn-del { color: #222; background: rgba(0,0,0,0.1); }
-
-        .clear-all { display: block; margin: 25px auto 0; background: none; border: none; color: #b0bec5; cursor: pointer; text-decoration: underline; font-size: 0.85em; }
+        .empty-msg { text-align: center; color: #888; margin-top: 40px; font-style: italic; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>DATA V 1.1</h2>
+    <h2>🚀 TaskEng Pro</h2>
 
     <div class="stats-bar">
-        <div class="stat-item"><span id="countA" class="stat-count">0</span> Urgentes (A)</div>
-        <div class="stat-item"><span id="countB" class="stat-count">0</span> Próximas (B)</div>
-        <div class="stat-item"><span id="countC" class="stat-count">0</span> Con tiempo (C)</div>
+        <div class="stat-item"><span id="countA" class="stat-count">0</span> CAT A</div>
+        <div class="stat-item"><span id="countB" class="stat-count">0</span> CAT B</div>
+        <div class="stat-item"><span id="countC" class="stat-count">0</span> CAT C</div>
+    </div>
+
+    <div class="filters">
+        <button class="filter-chip active" onclick="filterTasks('all', this)">Todas</button>
+        <button class="filter-chip" onclick="filterTasks('A', this)">Urgentes</button>
+        <button class="filter-chip" onclick="filterTasks('B', this)">Próximas</button>
+        <button class="filter-chip" onclick="filterTasks('C', this)">Con tiempo</button>
     </div>
     
     <div class="input-group">
-        <label>¿Qué hay que hacer?</label>
-        <input type="text" id="taskName" placeholder="Nombre de la tarea o examen">
-        
-        <label>Fecha Límite</label>
+        <label>Materia / Actividad</label>
+        <input type="text" id="taskName" placeholder="Ej: Examen Redes">
+        <label>Fecha de entrega</label>
         <input type="date" id="taskDate">
-        
-        <button class="btn-add" onclick="addTask()">Guardar Tarea</button>
+        <button class="btn-add" onclick="addTask()">Guardar en Celular</button>
     </div>
 
     <div id="taskList"></div>
-    <button class="clear-all" onclick="clearHistory()">Borrar historial completo</button>
 </div>
 
 <script>
-    // Al cargar la página, mostramos los datos guardados
+    let currentFilter = 'all';
+
     window.onload = () => renderTasks();
 
     function addTask() {
         const name = document.getElementById('taskName').value;
         const dateVal = document.getElementById('taskDate').value;
+        if (!name || !dateVal) return alert("Completa los datos");
 
-        if (!name || !dateVal) return alert("Ingeniero, faltan datos por completar.");
+        const today = new Date(); today.setHours(0,0,0,0);
+        const deadline = new Date(dateVal); deadline.setHours(0,0,0,0);
+        const diffInDays = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
 
-        // Cálculo de días restantes
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        const deadline = new Date(dateVal);
-        deadline.setHours(0,0,0,0);
-
-        const diffInMs = deadline - today;
-        const diffInDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
-
-        // Asignación de categoría lógica
         let cat = diffInDays <= 2 ? "A" : (diffInDays <= 5 ? "B" : "C");
 
-        const newTask = {
-            id: Date.now(),
-            name: name,
-            days: diffInDays,
-            cat: cat
-        };
-
-        // Guardar en LocalStorage
         const history = JSON.parse(localStorage.getItem('devTasks')) || [];
-        history.push(newTask);
+        history.push({ id: Date.now(), name, days: diffInDays, cat });
         localStorage.setItem('devTasks', JSON.stringify(history));
 
-        // Limpiar inputs y actualizar vista
         document.getElementById('taskName').value = "";
-        document.getElementById('taskDate').value = "";
         renderTasks();
     }
 
     function deleteTask(id) {
         let history = JSON.parse(localStorage.getItem('devTasks'));
-        history = history.filter(t => t.id !== id);
-        localStorage.setItem('devTasks', JSON.stringify(history));
+        localStorage.setItem('devTasks', JSON.stringify(history.filter(t => t.id !== id)));
+        renderTasks();
+    }
+
+    function filterTasks(cat, btn) {
+        currentFilter = cat;
+        document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
         renderTasks();
     }
 
     function renderTasks() {
         const list = document.getElementById('taskList');
         list.innerHTML = "";
-        const history = JSON.parse(localStorage.getItem('devTasks')) || [];
+        let history = JSON.parse(localStorage.getItem('devTasks')) || [];
 
-        // Contadores para estadísticas
-        let a = 0, b = 0, c = 0;
+        // Actualizar estadísticas globales antes de filtrar
+        document.getElementById('countA').innerText = history.filter(t => t.cat === 'A').length;
+        document.getElementById('countB').innerText = history.filter(t => t.cat === 'B').length;
+        document.getElementById('countC').innerText = history.filter(t => t.cat === 'C').length;
 
-        // Ordenar: Las más urgentes primero
-        history.sort((x, y) => x.days - y.days);
+        // Aplicar Filtro
+        if (currentFilter !== 'all') {
+            history = history.filter(t => t.cat === currentFilter);
+        }
 
-        history.forEach(t => {
-            // Actualizar contadores
-            if(t.days <= 2) a++;
-            else if(t.days <= 5) b++;
-            else c++;
+        if (history.length === 0) {
+            list.innerHTML = '<p class="empty-msg">No hay tareas en esta categoría</p>';
+            return;
+        }
 
-            const isVencida = t.days < 0;
+        history.sort((a, b) => a.days - b.days).forEach(t => {
             const div = document.createElement('div');
-            div.className = `task-item ${isVencida ? 'vencida' : 'cat-' + t.cat.toLowerCase()}`;
-            
+            div.className = `task-item cat-${t.cat.toLowerCase()}`;
             div.innerHTML = `
-                <div class="task-info">
-                    <strong>${t.name}</strong>
-                    <small>${isVencida ? '❌ Vencida' : '⏳ Faltan ' + t.days + ' días'}</small>
-                </div>
+                <div class="task-info"><strong>${t.name}</strong><small>${t.days < 0 ? '❌ Vencida' : '⏳ ' + t.days + ' días'}</small></div>
                 <button class="btn-del" onclick="deleteTask(${t.id})">Borrar</button>
             `;
             list.appendChild(div);
         });
-
-        // Actualizar UI de estadísticas
-        document.getElementById('countA').innerText = a;
-        document.getElementById('countB').innerText = b;
-        document.getElementById('countC').innerText = c;
-    }
-
-    function clearHistory() {
-        if(confirm("¿Estás seguro de borrar todo el registro de ingeniería?")) {
-            localStorage.removeItem('devTasks');
-            renderTasks();
-        }
     }
 </script>
 
