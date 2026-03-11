@@ -7,7 +7,6 @@
     
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     
     <style>
@@ -24,9 +23,8 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-        /* --- VISTAS --- */
         .screen { display: none; padding: 25px; animation: fadeIn 0.4s ease forwards; }
-        .active { display: block; }
+        .active { display: block !important; }
 
         /* --- LOGIN --- */
         #login-screen {
@@ -58,10 +56,10 @@
         .mod-card div span { display: block; font-weight: 600; font-size: 1rem; }
         .mod-card div small { opacity: 0.5; font-size: 0.75rem; }
 
-        .admin-style { background: var(--accent); border: none; }
-        .admin-style span, .admin-style small { color: #000; }
+        .admin-style { background: var(--accent) !important; border: none; }
+        .admin-style span, .admin-style small { color: #000 !important; }
 
-        /* --- UI COMPONENTES --- */
+        /* --- UI --- */
         input, textarea, select {
             width: 100%; padding: 18px; margin: 10px 0; border-radius: 15px;
             border: 1px solid var(--glass-border); background: var(--glass);
@@ -73,7 +71,6 @@
         }
         .back-nav { color: var(--accent); margin-bottom: 25px; cursor: pointer; display: block; font-weight: bold; }
 
-        /* --- RECORDATORIOS --- */
         .rem-card {
             background: var(--glass); padding: 20px; border-radius: 20px; margin-bottom: 12px;
             border-left: 6px solid var(--accent); display: flex; justify-content: space-between; align-items: center;
@@ -91,7 +88,7 @@
         <h1 style="font-weight: 900;">DATA</h1>
         <p style="opacity: 0.4; font-size: 0.7rem; margin-bottom: 30px;">CENTRAL MANAGEMENT</p>
         <div style="width: 100%; max-width: 320px;">
-            <input type="text" id="userInput" placeholder="Usuario (admin, user1...)">
+            <input type="text" id="userInput" placeholder="Usuario">
             <input type="password" id="passInput" placeholder="Password">
             <button class="btn-main" onclick="accessApp()">Entrar</button>
         </div>
@@ -99,71 +96,60 @@
 
     <div id="dashboard" class="screen">
         <div class="header">
-            <p id="date-now">CARGANDO...</p>
-            <h1 id="user-title">HOLA</h1>
+            <p id="date-now">BIENVENIDO</p>
+            <h1 id="user-title">USER</h1>
         </div>
 
         <div class="grid">
             <div id="admin-card" class="mod-card admin-style" style="display:none;" onclick="showModule('admin')">
                 <i>🛡️</i>
-                <div><span>PANEL MAESTRO</span><small>Control de usuarios y avisos</small></div>
+                <div><span>PANEL MAESTRO</span><small>Control total</small></div>
             </div>
 
             <div class="mod-card" onclick="showModule('notes')">
                 <i>📂</i>
-                <div><span>Mis Datos</span><small>Enviar reportes al sistema</small></div>
+                <div><span>Mis Datos</span><small>Enviar reportes</small></div>
             </div>
 
             <div class="mod-card" onclick="showModule('reminders')">
                 <i>🚨</i>
-                <div><span>Recordatorios</span><small>Prioridades y avisos</small></div>
-            </div>
-
-            <div class="mod-card" onclick="alert('Próximamente...')">
-                <i>📅</i>
-                <div><span>Calendario</span><small>Próximas entregas</small></div>
+                <div><span>Recordatorios</span><small>Avisos del sistema</small></div>
             </div>
         </div>
-        <p onclick="location.reload()" style="text-align:center; margin-top:50px; opacity:0.3; font-size:0.8rem; cursor:pointer;">LOGOUT</p>
+        <p onclick="location.reload()" style="text-align:center; margin-top:50px; opacity:0.3; cursor:pointer;">CERRAR SESIÓN</p>
     </div>
 
     <div id="mod-notes" class="screen">
         <span class="back-nav" onclick="goHome()">← VOLVER</span>
-        <h2>Buzón de Reportes</h2>
-        <p style="opacity: 0.5; margin-bottom: 20px;">Tu información será revisada por el Admin.</p>
-        <input type="text" id="report-title" placeholder="Título del reporte">
-        <textarea id="report-body" placeholder="Escribe aquí tu información detallada..." style="height: 250px;"></textarea>
-        <button class="btn-main" onclick="sendReport()" style="background: var(--accent);">ENVIAR DATOS</button>
+        <h2>Nuevo Reporte</h2>
+        <input type="text" id="report-title" placeholder="Título">
+        <textarea id="report-body" placeholder="Mensaje..." style="height: 200px;"></textarea>
+        <button class="btn-main" onclick="sendReport()" style="background: var(--accent);">ENVIAR</button>
     </div>
 
     <div id="mod-reminders" class="screen">
         <span class="back-nav" onclick="goHome()">← VOLVER</span>
-        <h2>Alertas de Sistema</h2>
-        <div id="reminders-list" style="margin-top: 20px;">
-            </div>
+        <h2>Alertas</h2>
+        <div id="reminders-list"></div>
     </div>
 
     <div id="mod-admin" class="screen">
         <span class="back-nav" onclick="goHome()">← VOLVER</span>
-        <h2>Control Maestro</h2>
-        
-        <div style="background: var(--glass); padding: 20px; border-radius: 20px; margin-bottom: 30px;">
-            <p style="font-weight: bold; margin-bottom: 10px;">Lanzar Aviso Global:</p>
-            <input type="text" id="admin-rem-text" placeholder="¿Qué deben hacer?">
+        <h2>Panel Maestro</h2>
+        <div style="background: var(--glass); padding: 15px; border-radius: 20px; margin-bottom: 20px;">
+            <input type="text" id="admin-rem-text" placeholder="Nuevo aviso global">
             <select id="admin-rem-prio">
-                <option value="normal">Prioridad: Normal</option>
-                <option value="mid">Prioridad: Media</option>
-                <option value="high">Prioridad: CRÍTICA</option>
+                <option value="normal">Normal</option>
+                <option value="mid">Media</option>
+                <option value="high">Crítica</option>
             </select>
-            <button class="btn-main" onclick="createReminder()">LANZAR ALERTA</button>
+            <button class="btn-main" onclick="createReminder()">LANZAR AVISO</button>
         </div>
-
-        <p style="font-weight: bold; margin-bottom: 15px;">Reportes Recibidos:</p>
         <div id="admin-reports-list"></div>
     </div>
 
     <script>
-        // CONFIGURACIÓN FIREBASE
+        // FIREBASE (Datos de tu imagen)
         const firebaseConfig = {
             apiKey: "AIzaSyCi_lO7_SUp9X5-Vq_Fm_7yW77v7p_8",
             authDomain: "data-40f4e.firebaseapp.com",
@@ -177,18 +163,26 @@
         const db = firebase.firestore();
         let currentUser = "";
 
-        // NAVEGACIÓN Y LOGIN
+        // LOGIN CORREGIDO
         function accessApp() {
-            const u = document.getElementById('userInput').value.toLowerCase();
-            const p = document.getElementById('passInput').value;
+            const u = document.getElementById('userInput').value.trim().toLowerCase();
+            const p = document.getElementById('passInput').value.trim();
+
             if (p === "1234") {
                 currentUser = u;
+                // Ocultar login, mostrar dashboard
                 document.getElementById('login-screen').classList.remove('active');
                 document.getElementById('dashboard').classList.add('active');
                 document.getElementById('user-title').innerText = u.toUpperCase();
-                if(u === 'admin') document.getElementById('admin-card').style.display = 'flex';
+                
+                // Mostrar botón de admin si es el usuario correcto
+                if(u === 'admin') {
+                    document.getElementById('admin-card').style.display = 'flex';
+                }
                 loadData();
-            } else { alert("ERROR"); }
+            } else {
+                alert("Contraseña incorrecta");
+            }
         }
 
         function showModule(id) {
@@ -201,71 +195,43 @@
             document.getElementById('dashboard').classList.add('active');
         }
 
-        // LÓGICA DE DATOS
+        // FUNCIONES FIREBASE
         function sendReport() {
             const t = document.getElementById('report-title').value;
             const b = document.getElementById('report-body').value;
             if(!t || !b) return alert("Completa los campos");
-            
-            db.collection("reports").add({
-                user: currentUser,
-                title: t,
-                body: b,
-                date: new Date()
-            }).then(() => {
-                alert("Reporte enviado al Admin");
-                goHome();
-            });
+            db.collection("reports").add({ user: currentUser, title: t, body: b, date: new Date() })
+            .then(() => { alert("Enviado"); goHome(); });
         }
 
         function createReminder() {
             const txt = document.getElementById('admin-rem-text').value;
             const prio = document.getElementById('admin-rem-prio').value;
-            db.collection("reminders").add({
-                text: txt,
-                priority: prio,
-                date: new Date()
-            }).then(() => {
-                alert("Aviso enviado a todos");
-                document.getElementById('admin-rem-text').value = "";
-            });
+            db.collection("reminders").add({ text: txt, priority: prio, date: new Date() })
+            .then(() => { alert("Aviso lanzado"); document.getElementById('admin-rem-text').value = ""; });
         }
 
         function loadData() {
-            // Cargar Recordatorios
             db.collection("reminders").orderBy("date", "desc").onSnapshot(snap => {
                 const list = document.getElementById('reminders-list');
                 list.innerHTML = "";
                 snap.forEach(doc => {
                     const d = doc.data();
                     const pClass = d.priority === 'high' ? 'prio-high' : (d.priority === 'mid' ? 'prio-mid' : '');
-                    list.innerHTML += `<div class="rem-card ${pClass}">
-                        <div><span>${d.text}</span><small>${d.priority.toUpperCase()}</small></div>
-                        <i>🔔</i>
-                    </div>`;
+                    list.innerHTML += `<div class="rem-card ${pClass}"><span>${d.text}</span></div>`;
                 });
             });
 
-            // Cargar Reportes (Solo para Admin)
             db.collection("reports").orderBy("date", "desc").onSnapshot(snap => {
                 const list = document.getElementById('admin-reports-list');
                 if(!list) return;
                 list.innerHTML = "";
                 snap.forEach(doc => {
                     const r = doc.data();
-                    list.innerHTML += `<div class="mod-card" style="margin-bottom:10px;">
-                        <div>
-                            <span style="font-size:0.8rem;">DE: ${r.user.toUpperCase()}</span>
-                            <strong>${r.title}</strong>
-                            <p style="font-size:0.75rem; opacity:0.7;">${r.body}</p>
-                        </div>
-                    </div>`;
+                    list.innerHTML += `<div class="mod-card" style="margin-bottom:10px;"><div><small>${r.user}</small><br><strong>${r.title}</strong><p>${r.body}</p></div></div>`;
                 });
             });
         }
-
-        const d = new Date();
-        document.getElementById('date-now').innerText = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
     </script>
 </body>
 </html>
