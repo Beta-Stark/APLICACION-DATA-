@@ -3,230 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA - Management System</title>
+    <title>DATA - OS</title>
     
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg: #080a0f;
-            --card: #121620;
-            --accent: #7986cb;
+            --bg: #05070a;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent: #8c9eff;
             --text: #ffffff;
-            --danger: #ef5350;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow: hidden; }
 
-        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
-
-        /* --- PANTALLAS --- */
-        .screen { display: none; padding: 25px; animation: fadeIn 0.4s ease; }
-        .active { display: block; }
-
-        /* --- LOGIN --- */
+        /* --- LOGIN VISUAL --- */
         #login-screen {
             position: fixed; inset: 0;
-            background: radial-gradient(circle at center, #1a1f2e 0%, #080a0f 100%);
+            background: linear-gradient(135deg, #05070a 0%, #161b2c 100%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 1000;
+            z-index: 1000; padding: 40px;
         }
 
-        .logo-area { margin-bottom: 40px; text-align: center; }
-        .logo-area h1 { font-size: 3rem; letter-spacing: 10px; font-weight: 900; color: var(--text); }
-        .logo-area p { color: var(--accent); font-size: 0.8rem; letter-spacing: 4px; margin-top: -5px; }
-
-        /* --- DASHBOARD GRID --- */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px; }
-        .card { 
-            background: var(--card); padding: 35px 15px; border-radius: 30px; 
-            text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.03);
-            transition: all 0.3s ease;
+        .login-circle {
+            width: 120px; height: 120px; 
+            background: var(--accent); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 50px rgba(140, 158, 255, 0.4);
+            margin-bottom: 20px; font-size: 50px;
         }
-        .card:active { transform: scale(0.95); background: #1a1f2e; }
-        .card i { font-size: 32px; display: block; margin-bottom: 12px; font-style: normal; }
-        .card span { font-weight: 600; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0.8; }
+
+        /* --- DASHBOARD --- */
+        #dashboard { display: none; padding: 20px; height: 100vh; overflow-y: auto; }
         
-        .admin-card { border: 1px solid var(--accent); display: none; background: rgba(121, 134, 203, 0.05); }
+        .header { margin: 20px 0 40px 0; }
+        .header h1 { font-weight: 900; font-size: 3rem; letter-spacing: -2px; }
+        .header p { opacity: 0.5; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; }
 
-        /* --- COMPONENTES UI --- */
-        input, textarea { 
-            width: 100%; padding: 18px; margin: 10px 0; border-radius: 18px; 
-            border: none; background: rgba(255,255,255,0.05); color: white; font-size: 16px; 
+        /* GRID MODERNO */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
         }
-        .btn { 
-            width: 100%; padding: 18px; background: var(--accent); color: white; 
-            border: none; border-radius: 18px; font-weight: 800; cursor: pointer; margin-top: 15px;
-        }
-        .back-nav { color: var(--accent); margin-bottom: 25px; cursor: pointer; display: block; font-weight: bold; font-size: 0.9rem; }
 
-        /* --- LISTAS DE DATOS --- */
-        .data-item { 
-            background: var(--card); padding: 20px; border-radius: 20px; 
-            margin-bottom: 15px; border-left: 3px solid var(--accent); 
+        .mod-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 25px 15px;
+            border-radius: 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
         }
-        .data-item h4 { font-size: 0.8rem; opacity: 0.5; margin-bottom: 8px; text-transform: uppercase; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .mod-card:active { transform: scale(0.9); background: var(--accent); }
+        .mod-card i { font-size: 35px; display: block; margin-bottom: 10px; font-style: normal; }
+        .mod-card span { font-weight: 600; font-size: 0.8rem; opacity: 0.9; }
+
+        /* Módulos de ancho completo */
+        .full-card { grid-column: span 2; display: flex; align-items: center; gap: 20px; padding: 20px 30px; text-align: left; }
+
+        /* INPUTS */
+        input {
+            width: 100%; padding: 20px; margin: 10px 0; border-radius: 20px;
+            border: 1px solid var(--glass-border); background: var(--glass);
+            color: white; font-size: 16px; outline: none;
+        }
+
+        .btn-main {
+            width: 100%; padding: 20px; background: #ffffff; color: #000;
+            border: none; border-radius: 20px; font-weight: 900; cursor: pointer;
+            margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        /* ANIMACIÓN */
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .anim { animation: slideUp 0.6s ease forwards; }
+
     </style>
 </head>
 <body>
 
-    <div id="login-screen" class="screen active">
-        <div class="logo-area">
-            <h1>DATA</h1>
-            <p>CENTRAL UNIT</p>
-        </div>
-        <div style="width: 100%; max-width: 320px;">
-            <input type="text" id="userInput" placeholder="USUARIO">
-            <input type="password" id="passInput" placeholder="PASSWORD">
-            <button class="btn" onclick="login()">AUTENTICAR</button>
+    <div id="login-screen">
+        <div class="login-circle">D</div>
+        <h1 style="font-weight: 900; margin-bottom: 5px;">DATA ACCESS</h1>
+        <p style="opacity: 0.4; font-size: 0.8rem; margin-bottom: 30px;">AUTH REQUIRED TO PROCEED</p>
+        
+        <div style="width: 100%; max-width: 340px;">
+            <input type="text" id="userInput" placeholder="Identificador">
+            <input type="password" id="passInput" placeholder="Clave de acceso">
+            <button class="btn-main" onclick="accessApp()">Entrar al Sistema</button>
         </div>
     </div>
 
-    <div id="dashboard" class="screen">
-        <div style="display:flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
-            <div>
-                <p style="opacity:0.4; font-size: 0.7rem; letter-spacing: 1px;">SISTEMA ACTIVO</p>
-                <h2 id="user-display" style="letter-spacing: 1px;">USER_NAME</h2>
+    <div id="dashboard">
+        <div class="header anim">
+            <p id="date-now">CARGANDO SISTEMA...</p>
+            <h1 id="user-title">HELLO</h1>
+        </div>
+
+        <div class="grid anim">
+            <div id="admin-only" class="mod-card full-card" style="display:none; background: var(--accent); border:none;" onclick="alert('Abriendo Panel Maestro...')">
+                <i style="margin-bottom:0">🛡️</i>
+                <div>
+                    <span style="color:#000">PANEL MAESTRO</span>
+                    <p style="color:#000; font-size: 0.7rem; opacity: 0.7;">Recopilar y validar datos</p>
+                </div>
             </div>
-            <button onclick="location.reload()" style="background:none; border:none; color:var(--danger); font-weight:bold; font-size:0.7rem;">LOGOUT</button>
+
+            <div class="mod-card" onclick="alert('Abriendo Notas...')">
+                <i>📂</i><span>Mis Datos</span>
+            </div>
+            <div class="mod-card" onclick="alert('Abriendo Global...')">
+                <i>🌐</i><span>Global</span>
+            </div>
+            <div class="mod-card" onclick="alert('Abriendo Tareas...')">
+                <i>📋</i><span>Tareas</span>
+            </div>
+            <div class="mod-card" onclick="alert('Abriendo Estadísticas...')">
+                <i>📊</i><span>Métricas</span>
+            </div>
+            
+            <div class="mod-card full-card" onclick="alert('Abriendo Calendario...')">
+                <i>📅</i><span>Calendario Académico</span>
+            </div>
         </div>
 
-        <div class="grid">
-            <div class="card" onclick="showModule('notes')"><i>📂</i><span>Mis Datos</span></div>
-            <div class="card" onclick="showModule('public')"><i>🌐</i><span>Público</span></div>
-            <div class="card" onclick="showModule('tasks')"><i>📋</i><span>Tareas</span></div>
-            <div id="admin-card" class="card admin-card" onclick="showModule('admin')"><i>🛡️</i><span>Recopilar</span></div>
-        </div>
-    </div>
-
-    <div id="mod-notes" class="screen">
-        <span class="back-nav" onclick="goHome()">← VOLVER AL PANEL</span>
-        <h3 style="margin-bottom: 15px;">Entrada de Datos Privados</h3>
-        <textarea id="note-input" placeholder="Escribe aquí tu información. El Admin la revisará después..." style="height: 350px;" oninput="saveToCloud()"></textarea>
-    </div>
-
-    <div id="mod-public" class="screen">
-        <span class="back-nav" onclick="goHome()">← VOLVER AL PANEL</span>
-        <h3 style="margin-bottom: 20px;">Información Validada</h3>
-        <div id="public-list"></div>
-    </div>
-
-    <div id="mod-admin" class="screen">
-        <span class="back-nav" onclick="goHome()">← VOLVER AL PANEL</span>
-        <h3 style="margin-bottom: 20px;">Supervisión de Usuarios</h3>
-        <div id="admin-list"></div>
+        <button onclick="location.reload()" style="background:none; border:none; color:var(--accent); margin-top: 40px; font-weight: bold; width: 100%; text-align: center;">CERRAR SESIÓN</button>
     </div>
 
     <script>
-        // --- CONFIGURACIÓN FIREBASE (REEMPLAZAR CON TUS DATOS) ---
-        const firebaseConfig = {
-            apiKey: "TU_API_KEY",
-            authDomain: "tu-proyecto.firebaseapp.com",
-            projectId: "tu-proyecto",
-            storageBucket: "tu-proyecto.appspot.com",
-            messagingSenderId: "0000000000",
-            appId: "1:0000000000:web:000000"
-        };
+        // Fecha actual
+        const d = new Date();
+        document.getElementById('date-now').innerText = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        let currentUser = "";
+        function accessApp() {
+            const user = document.getElementById('userInput').value;
+            const pass = document.getElementById('passInput').value;
 
-        // --- LÓGICA DE ACCESO ---
-        function login() {
-            const u = document.getElementById('userInput').value.toLowerCase();
-            const p = document.getElementById('passInput').value;
+            if (pass === "1234") {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('user-title').innerText = user.toUpperCase();
 
-            if (p === "1234") { // Contraseña genérica para tus usuarios
-                currentUser = u;
-                document.getElementById('login-screen').classList.remove('active');
-                document.getElementById('dashboard').classList.add('active');
-                document.getElementById('user-display').innerText = u.toUpperCase();
-
-                if(u === "admin") document.getElementById('admin-card').style.display = "block";
-                
-                loadUserContent();
-                loadPublicContent();
+                if(user.toLowerCase() === 'admin') {
+                    document.getElementById('admin-card').style.display = 'flex'; // Fix para el ID
+                    document.getElementById('admin-only').style.display = 'flex';
+                }
             } else {
-                alert("ERROR DE AUTENTICACIÓN");
+                alert("ACCESO DENEGADO");
             }
-        }
-
-        // --- GUARDADO AUTOMÁTICO EN LA NUBE ---
-        function saveToCloud() {
-            const content = document.getElementById('note-input').value;
-            db.collection("data_vault").doc(currentUser).set({
-                text: content,
-                user: currentUser,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        }
-
-        function loadUserContent() {
-            db.collection("data_vault").doc(currentUser).get().then(doc => {
-                if(doc.exists) document.getElementById('note-input').value = doc.data().text;
-            });
-        }
-
-        // --- CARGAR DATOS PARA EL ADMIN (LO QUE ÉL RECOPILA) ---
-        function loadAdminView() {
-            db.collection("data_vault").onSnapshot(snap => {
-                const list = document.getElementById('admin-list');
-                list.innerHTML = "";
-                snap.forEach(doc => {
-                    if(doc.id !== 'admin') {
-                        list.innerHTML += `
-                            <div class="data-item">
-                                <h4>Origen: ${doc.id}</h4>
-                                <p style="font-size: 14px; opacity: 0.8;">${doc.data().text.substring(0, 100)}...</p>
-                                <button class="btn" style="padding: 10px; font-size: 12px;" 
-                                onclick="reviewAndPublish('${doc.id}', \`${doc.data().text}\`)">REVISAR Y VALIDAR</button>
-                            </div>`;
-                    }
-                });
-            });
-        }
-
-        // --- FUNCIÓN PARA VALIDAR Y PASAR A PÚBLICO ---
-        function reviewAndPublish(sourceUser, originalText) {
-            const correctedText = prompt("REVISIÓN DE DATOS (Puedes corregir antes de publicar):", originalText);
-            if(correctedText) {
-                db.collection("public_verified").add({
-                    from: sourceUser,
-                    content: correctedText,
-                    verifiedAt: new Date()
-                });
-                alert("DATOS PUBLICADOS EN EL ESPACIO GLOBAL");
-            }
-        }
-
-        function loadPublicContent() {
-            db.collection("public_verified").orderBy("verifiedAt", "desc").onSnapshot(snap => {
-                const list = document.getElementById('public-list');
-                list.innerHTML = "";
-                snap.forEach(doc => {
-                    list.innerHTML += `
-                        <div class="data-item">
-                            <h4>VERIFICADO: APORTE DE ${doc.data().from.toUpperCase()}</h4>
-                            <p>${doc.data().content}</p>
-                        </div>`;
-                });
-            });
-        }
-
-        // --- NAVEGACIÓN ---
-        function showModule(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('mod-' + id).classList.add('active');
-            if(id === 'admin') loadAdminView();
-        }
-
-        function goHome() {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('dashboard').classList.add('active');
         }
     </script>
 </body>
