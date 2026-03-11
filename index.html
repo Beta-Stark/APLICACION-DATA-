@@ -23,16 +23,19 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-        .screen { display: none; padding: 25px; animation: fadeIn 0.4s ease forwards; }
-        .active { display: block !important; }
+        /* Solo se ve UNA pantalla a la vez */
+        .screen { display: none; padding: 25px; min-height: 100vh; }
+        .screen.active { display: block !important; }
 
         /* --- LOGIN --- */
         #login-screen {
-            position: fixed; inset: 0;
             background: linear-gradient(135deg, #05070a 0%, #161b2c 100%);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 1000; padding: 40px;
+            flex-direction: column; align-items: center; justify-content: center;
+            padding: 40px; text-align: center;
         }
+        /* Ajuste para que el login sea flex cuando esté activo */
+        #login-screen.active { display: flex !important; }
+
         .login-circle {
             width: 100px; height: 100px; background: var(--accent); border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
@@ -77,15 +80,13 @@
         }
         .prio-high { border-left-color: var(--high); background: rgba(255, 82, 82, 0.05); }
         .prio-mid { border-left-color: var(--mid); background: rgba(255, 215, 64, 0.05); }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="screen active">
         <div class="login-circle">D</div>
-        <h1 style="font-weight: 900;">DATA</h1>
+        <h1 style="font-weight: 900; color: white;">DATA</h1>
         <p style="opacity: 0.4; font-size: 0.7rem; margin-bottom: 30px;">CENTRAL MANAGEMENT</p>
         <div style="width: 100%; max-width: 320px;">
             <input type="text" id="userInput" placeholder="Usuario">
@@ -101,17 +102,17 @@
         </div>
 
         <div class="grid">
-            <div id="admin-card" class="mod-card admin-style" style="display:none;" onclick="showModule('admin')">
+            <div id="admin-card" class="mod-card admin-style" style="display:none;" onclick="showModule('mod-admin')">
                 <i>🛡️</i>
                 <div><span>PANEL MAESTRO</span><small>Control total</small></div>
             </div>
 
-            <div class="mod-card" onclick="showModule('notes')">
+            <div class="mod-card" onclick="showModule('mod-notes')">
                 <i>📂</i>
                 <div><span>Mis Datos</span><small>Enviar reportes</small></div>
             </div>
 
-            <div class="mod-card" onclick="showModule('reminders')">
+            <div class="mod-card" onclick="showModule('mod-reminders')">
                 <i>🚨</i>
                 <div><span>Recordatorios</span><small>Avisos del sistema</small></div>
             </div>
@@ -120,7 +121,7 @@
     </div>
 
     <div id="mod-notes" class="screen">
-        <span class="back-nav" onclick="goHome()">← VOLVER</span>
+        <span class="back-nav" onclick="showModule('dashboard')">← VOLVER</span>
         <h2>Nuevo Reporte</h2>
         <input type="text" id="report-title" placeholder="Título">
         <textarea id="report-body" placeholder="Mensaje..." style="height: 200px;"></textarea>
@@ -128,13 +129,13 @@
     </div>
 
     <div id="mod-reminders" class="screen">
-        <span class="back-nav" onclick="goHome()">← VOLVER</span>
+        <span class="back-nav" onclick="showModule('dashboard')">← VOLVER</span>
         <h2>Alertas</h2>
         <div id="reminders-list"></div>
     </div>
 
     <div id="mod-admin" class="screen">
-        <span class="back-nav" onclick="goHome()">← VOLVER</span>
+        <span class="back-nav" onclick="showModule('dashboard')">← VOLVER</span>
         <h2>Panel Maestro</h2>
         <div style="background: var(--glass); padding: 15px; border-radius: 20px; margin-bottom: 20px;">
             <input type="text" id="admin-rem-text" placeholder="Nuevo aviso global">
@@ -163,19 +164,26 @@
         const db = firebase.firestore();
         let currentUser = "";
 
-        // LOGIN CORREGIDO
+        // FUNCIÓN PARA CAMBIAR DE PANTALLA SIN REPETICIONES
+        function showModule(targetId) {
+            // Ocultar todas las pantallas
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+            });
+            // Mostrar solo la elegida
+            document.getElementById(targetId).classList.add('active');
+        }
+
         function accessApp() {
             const u = document.getElementById('userInput').value.trim().toLowerCase();
             const p = document.getElementById('passInput').value.trim();
 
             if (p === "1234") {
                 currentUser = u;
-                // Ocultar login, mostrar dashboard
-                document.getElementById('login-screen').classList.remove('active');
-                document.getElementById('dashboard').classList.add('active');
+                // Mostrar Dashboard directamente
+                showModule('dashboard');
                 document.getElementById('user-title').innerText = u.toUpperCase();
                 
-                // Mostrar botón de admin si es el usuario correcto
                 if(u === 'admin') {
                     document.getElementById('admin-card').style.display = 'flex';
                 }
@@ -185,23 +193,13 @@
             }
         }
 
-        function showModule(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('mod-' + id).classList.add('active');
-        }
-
-        function goHome() {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('dashboard').classList.add('active');
-        }
-
-        // FUNCIONES FIREBASE
+        // FIREBASE OPS
         function sendReport() {
             const t = document.getElementById('report-title').value;
             const b = document.getElementById('report-body').value;
             if(!t || !b) return alert("Completa los campos");
             db.collection("reports").add({ user: currentUser, title: t, body: b, date: new Date() })
-            .then(() => { alert("Enviado"); goHome(); });
+            .then(() => { alert("Enviado"); showModule('dashboard'); });
         }
 
         function createReminder() {
@@ -228,7 +226,7 @@
                 list.innerHTML = "";
                 snap.forEach(doc => {
                     const r = doc.data();
-                    list.innerHTML += `<div class="mod-card" style="margin-bottom:10px;"><div><small>${r.user}</small><br><strong>${r.title}</strong><p>${r.body}</p></div></div>`;
+                    list.innerHTML += `<div class="mod-card" style="margin-bottom:10px;"><div><small>De: ${r.user}</small><br><strong>${r.title}</strong><p>${r.body}</p></div></div>`;
                 });
             });
         }
