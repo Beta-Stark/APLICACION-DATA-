@@ -2,194 +2,231 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TaskEng - Enterprise Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>DATA - Management System</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+
     <style>
         :root {
-            --bg: #0f121d;
-            --card: #1e2538;
+            --bg: #080a0f;
+            --card: #121620;
             --accent: #7986cb;
             --text: #ffffff;
+            --danger: #ef5350;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
 
-        body { background: var(--bg); color: var(--text); overflow-x: hidden; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-        /* --- PANTALLA DE LOGIN --- */
+        /* --- PANTALLAS --- */
+        .screen { display: none; padding: 25px; animation: fadeIn 0.4s ease; }
+        .active { display: block; }
+
+        /* --- LOGIN --- */
         #login-screen {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: linear-gradient(180deg, #0f121d 0%, #161b2c 100%);
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at center, #1a1f2e 0%, #080a0f 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1000;
         }
 
-        .login-box {
-            width: 100%;
-            max-width: 350px;
-            text-align: center;
+        .logo-area { margin-bottom: 40px; text-align: center; }
+        .logo-area h1 { font-size: 3rem; letter-spacing: 10px; font-weight: 900; color: var(--text); }
+        .logo-area p { color: var(--accent); font-size: 0.8rem; letter-spacing: 4px; margin-top: -5px; }
+
+        /* --- DASHBOARD GRID --- */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px; }
+        .card { 
+            background: var(--card); padding: 35px 15px; border-radius: 30px; 
+            text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.03);
+            transition: all 0.3s ease;
         }
+        .card:active { transform: scale(0.95); background: #1a1f2e; }
+        .card i { font-size: 32px; display: block; margin-bottom: 12px; font-style: normal; }
+        .card span { font-weight: 600; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0.8; }
+        
+        .admin-card { border: 1px solid var(--accent); display: none; background: rgba(121, 134, 203, 0.05); }
 
-        .login-box h1 { margin-bottom: 30px; letter-spacing: 2px; color: var(--accent); }
-
-        /* --- DASHBOARD (PANTALLA PRINCIPAL) --- */
-        #dashboard { display: none; padding: 20px; min-height: 100vh; }
-
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-
-        /* Grid de Módulos estilo la imagen enviada */
-        .module-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
+        /* --- COMPONENTES UI --- */
+        input, textarea { 
+            width: 100%; padding: 18px; margin: 10px 0; border-radius: 18px; 
+            border: none; background: rgba(255,255,255,0.05); color: white; font-size: 16px; 
         }
-
-        .module-card {
-            background: var(--card);
-            padding: 25px 15px;
-            border-radius: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
-            border: 1px solid rgba(255,255,255,0.05);
+        .btn { 
+            width: 100%; padding: 18px; background: var(--accent); color: white; 
+            border: none; border-radius: 18px; font-weight: 800; cursor: pointer; margin-top: 15px;
         }
+        .back-nav { color: var(--accent); margin-bottom: 25px; cursor: pointer; display: block; font-weight: bold; font-size: 0.9rem; }
 
-        .module-card:active { transform: scale(0.95); background: var(--accent); }
-        .module-card i { font-size: 2.5em; display: block; margin-bottom: 10px; }
-        .module-card span { font-weight: bold; font-size: 0.9em; }
-
-        /* --- ESTILOS DE INTERFAZ --- */
-        input {
-            width: 100%; padding: 15px; margin: 10px 0;
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px; color: white; outline: none;
+        /* --- LISTAS DE DATOS --- */
+        .data-item { 
+            background: var(--card); padding: 20px; border-radius: 20px; 
+            margin-bottom: 15px; border-left: 3px solid var(--accent); 
         }
+        .data-item h4 { font-size: 0.8rem; opacity: 0.5; margin-bottom: 8px; text-transform: uppercase; }
 
-        .btn-primary {
-            width: 100%; padding: 15px; background: var(--accent);
-            border: none; border-radius: 12px; color: white;
-            font-weight: bold; cursor: pointer; margin-top: 10px;
-        }
-
-        /* --- VISTA DE MÓDULO ABIERTO --- */
-        #module-view { display: none; padding: 20px; }
-        .back-btn { background: none; border: none; color: var(--accent); font-weight: bold; cursor: pointer; margin-bottom: 20px; }
-
-        .content-card { background: var(--card); padding: 20px; border-radius: 20px; }
-
-        /* Recordatorio estilo imagen anterior */
-        .blue-alert { background: var(--accent); padding: 20px; border-radius: 20px; margin-bottom: 20px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <section id="login-screen">
-        <div class="login-box">
-            <h1>TASKENG</h1>
-            <input type="text" id="user" placeholder="Usuario">
-            <input type="password" id="pass" placeholder="Contraseña">
-            <button class="btn-primary" onclick="handleLogin()">ENTRAR</button>
-            <p style="margin-top: 20px; font-size: 0.7em; opacity: 0.4;">SISTEMA DE GESTIÓN ACADÉMICA</p>
+    <div id="login-screen" class="screen active">
+        <div class="logo-area">
+            <h1>DATA</h1>
+            <p>CENTRAL UNIT</p>
         </div>
-    </section>
+        <div style="width: 100%; max-width: 320px;">
+            <input type="text" id="userInput" placeholder="USUARIO">
+            <input type="password" id="passInput" placeholder="PASSWORD">
+            <button class="btn" onclick="login()">AUTENTICAR</button>
+        </div>
+    </div>
 
-    <section id="dashboard">
-        <div class="header">
+    <div id="dashboard" class="screen">
+        <div style="display:flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
             <div>
-                <p style="opacity: 0.5; font-size: 0.8em;">Bienvenido,</p>
-                <h2 id="display-name">Tester</h2>
+                <p style="opacity:0.4; font-size: 0.7rem; letter-spacing: 1px;">SISTEMA ACTIVO</p>
+                <h2 id="user-display" style="letter-spacing: 1px;">USER_NAME</h2>
             </div>
-            <button onclick="location.reload()" style="background:none; border:none; color:gray;">Salir</button>
+            <button onclick="location.reload()" style="background:none; border:none; color:var(--danger); font-weight:bold; font-size:0.7rem;">LOGOUT</button>
         </div>
 
-        <div class="module-grid">
-            <div class="module-card" onclick="openModule('reminders')">
-                <div style="font-size: 30px;">🔔</div>
-                <span>Alertas</span>
-            </div>
-            <div class="module-card" onclick="openModule('tasks')">
-                <div style="font-size: 30px;">📝</div>
-                <span>Pendientes</span>
-            </div>
-            <div class="module-card" onclick="openModule('notes')">
-                <div style="font-size: 30px;">📒</div>
-                <span>Notas</span>
-            </div>
-            <div class="module-card" style="opacity: 0.3;">
-                <div style="font-size: 30px;">⚙️</div>
-                <span>Ajustes</span>
-            </div>
+        <div class="grid">
+            <div class="card" onclick="showModule('notes')"><i>📂</i><span>Mis Datos</span></div>
+            <div class="card" onclick="showModule('public')"><i>🌐</i><span>Público</span></div>
+            <div class="card" onclick="showModule('tasks')"><i>📋</i><span>Tareas</span></div>
+            <div id="admin-card" class="card admin-card" onclick="showModule('admin')"><i>🛡️</i><span>Recopilar</span></div>
         </div>
-    </section>
+    </div>
 
-    <section id="module-view">
-        <button class="back-btn" onclick="closeModule()">← VOLVER AL PANEL</button>
-        
-        <div id="module-content"></div>
-    </section>
+    <div id="mod-notes" class="screen">
+        <span class="back-nav" onclick="goHome()">← VOLVER AL PANEL</span>
+        <h3 style="margin-bottom: 15px;">Entrada de Datos Privados</h3>
+        <textarea id="note-input" placeholder="Escribe aquí tu información. El Admin la revisará después..." style="height: 350px;" oninput="saveToCloud()"></textarea>
+    </div>
+
+    <div id="mod-public" class="screen">
+        <span class="back-nav" onclick="goHome()">← VOLVER AL PANEL</span>
+        <h3 style="margin-bottom: 20px;">Información Validada</h3>
+        <div id="public-list"></div>
+    </div>
+
+    <div id="mod-admin" class="screen">
+        <span class="back-nav" onclick="goHome()">← VOLVER AL PANEL</span>
+        <h3 style="margin-bottom: 20px;">Supervisión de Usuarios</h3>
+        <div id="admin-list"></div>
+    </div>
 
     <script>
-        // Configuración simple
-        const VALID_USER = "admin";
-        const VALID_PASS = "1234";
+        // --- CONFIGURACIÓN FIREBASE (REEMPLAZAR CON TUS DATOS) ---
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "tu-proyecto.firebaseapp.com",
+            projectId: "tu-proyecto",
+            storageBucket: "tu-proyecto.appspot.com",
+            messagingSenderId: "0000000000",
+            appId: "1:0000000000:web:000000"
+        };
 
-        function handleLogin() {
-            const u = document.getElementById('user').value;
-            const p = document.getElementById('pass').value;
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        let currentUser = "";
 
-            if (u === VALID_USER && p === VALID_PASS) {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('display-name').innerText = u.toUpperCase();
+        // --- LÓGICA DE ACCESO ---
+        function login() {
+            const u = document.getElementById('userInput').value.toLowerCase();
+            const p = document.getElementById('passInput').value;
+
+            if (p === "1234") { // Contraseña genérica para tus usuarios
+                currentUser = u;
+                document.getElementById('login-screen').classList.remove('active');
+                document.getElementById('dashboard').classList.add('active');
+                document.getElementById('user-display').innerText = u.toUpperCase();
+
+                if(u === "admin") document.getElementById('admin-card').style.display = "block";
+                
+                loadUserContent();
+                loadPublicContent();
             } else {
-                alert("Credenciales incorrectas");
+                alert("ERROR DE AUTENTICACIÓN");
             }
         }
 
-        function openModule(type) {
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('module-view').style.display = 'block';
-            const container = document.getElementById('module-content');
+        // --- GUARDADO AUTOMÁTICO EN LA NUBE ---
+        function saveToCloud() {
+            const content = document.getElementById('note-input').value;
+            db.collection("data_vault").doc(currentUser).set({
+                text: content,
+                user: currentUser,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
 
-            if (type === 'reminders') {
-                container.innerHTML = `
-                    <div class="blue-alert">
-                        <h3>Programar Alerta</h3>
-                        <input type="text" placeholder="¿Qué recordar?" style="background:white; color:black;">
-                        <input type="time" style="background:white; color:black;">
-                        <button class="btn-primary" style="background:var(--bg);">GUARDAR</button>
-                    </div>
-                `;
-            } else if (type === 'tasks') {
-                container.innerHTML = `
-                    <div class="content-card">
-                        <h3>Mis Pendientes</h3>
-                        <input type="text" placeholder="Nueva tarea...">
-                        <button class="btn-primary">AÑADIR</button>
-                    </div>
-                `;
-            } else if (type === 'notes') {
-                container.innerHTML = `
-                    <div class="content-card">
-                        <h3>Bloc de Notas</h3>
-                        <textarea id="main-notes" style="width:100%; height:300px; background:transparent; color:white; border:none; outline:none; font-size:1.1em;" oninput="saveNotes()"></textarea>
-                    </div>
-                `;
-                document.getElementById('main-notes').value = localStorage.getItem('notes') || "";
+        function loadUserContent() {
+            db.collection("data_vault").doc(currentUser).get().then(doc => {
+                if(doc.exists) document.getElementById('note-input').value = doc.data().text;
+            });
+        }
+
+        // --- CARGAR DATOS PARA EL ADMIN (LO QUE ÉL RECOPILA) ---
+        function loadAdminView() {
+            db.collection("data_vault").onSnapshot(snap => {
+                const list = document.getElementById('admin-list');
+                list.innerHTML = "";
+                snap.forEach(doc => {
+                    if(doc.id !== 'admin') {
+                        list.innerHTML += `
+                            <div class="data-item">
+                                <h4>Origen: ${doc.id}</h4>
+                                <p style="font-size: 14px; opacity: 0.8;">${doc.data().text.substring(0, 100)}...</p>
+                                <button class="btn" style="padding: 10px; font-size: 12px;" 
+                                onclick="reviewAndPublish('${doc.id}', \`${doc.data().text}\`)">REVISAR Y VALIDAR</button>
+                            </div>`;
+                    }
+                });
+            });
+        }
+
+        // --- FUNCIÓN PARA VALIDAR Y PASAR A PÚBLICO ---
+        function reviewAndPublish(sourceUser, originalText) {
+            const correctedText = prompt("REVISIÓN DE DATOS (Puedes corregir antes de publicar):", originalText);
+            if(correctedText) {
+                db.collection("public_verified").add({
+                    from: sourceUser,
+                    content: correctedText,
+                    verifiedAt: new Date()
+                });
+                alert("DATOS PUBLICADOS EN EL ESPACIO GLOBAL");
             }
         }
 
-        function closeModule() {
-            document.getElementById('module-view').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
+        function loadPublicContent() {
+            db.collection("public_verified").orderBy("verifiedAt", "desc").onSnapshot(snap => {
+                const list = document.getElementById('public-list');
+                list.innerHTML = "";
+                snap.forEach(doc => {
+                    list.innerHTML += `
+                        <div class="data-item">
+                            <h4>VERIFICADO: APORTE DE ${doc.data().from.toUpperCase()}</h4>
+                            <p>${doc.data().content}</p>
+                        </div>`;
+                });
+            });
         }
 
-        function saveNotes() {
-            localStorage.setItem('notes', document.getElementById('main-notes').value);
+        // --- NAVEGACIÓN ---
+        function showModule(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('mod-' + id).classList.add('active');
+            if(id === 'admin') loadAdminView();
+        }
+
+        function goHome() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('dashboard').classList.add('active');
         }
     </script>
 </body>
