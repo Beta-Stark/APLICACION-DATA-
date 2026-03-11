@@ -1,44 +1,271 @@
-<style>
-    .rem-card {
-        background: var(--glass);
-        padding: 15px;
-        border-radius: 18px;
-        margin-bottom: 10px;
-        border-left: 5px solid var(--accent);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .prio-high { border-left-color: #ff5252; background: rgba(255, 82, 82, 0.1); }
-    .prio-mid { border-left-color: #ffd740; background: rgba(255, 215, 64, 0.1); }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>DATA - OS</title>
     
-    .status-badge {
-        font-size: 0.6rem;
-        padding: 4px 8px;
-        border-radius: 10px;
-        background: var(--accent);
-        color: #000;
-        font-weight: bold;
-    }
-</style>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #05070a;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent: #8c9eff;
+            --text: #ffffff;
+            --high: #ff5252;
+            --mid: #ffd740;
+        }
 
-<div id="mod-reminders" class="screen">
-    <span class="back-nav" onclick="goHome()">← VOLVER</span>
-    <h2 style="margin-bottom: 20px;">Recordatorios</h2>
-    
-    <div class="rem-card prio-high">
-        <div>
-            <span style="display:block; font-weight:bold;">🚨 REVISAR TEMA 5</span>
-            <small style="opacity:0.6;">Vence en: 2 horas</small>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+        /* --- VISTAS --- */
+        .screen { display: none; padding: 25px; animation: fadeIn 0.4s ease forwards; }
+        .active { display: block; }
+
+        /* --- LOGIN --- */
+        #login-screen {
+            position: fixed; inset: 0;
+            background: linear-gradient(135deg, #05070a 0%, #161b2c 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1000; padding: 40px;
+        }
+        .login-circle {
+            width: 100px; height: 100px; background: var(--accent); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 40px rgba(140, 158, 255, 0.3); margin-bottom: 20px; font-size: 40px;
+        }
+
+        /* --- DASHBOARD --- */
+        .header { margin: 20px 0 30px 0; }
+        .header h1 { font-weight: 900; font-size: 2.8rem; letter-spacing: -1px; }
+        .header p { opacity: 0.5; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; }
+
+        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+
+        .mod-card {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            padding: 25px; border-radius: 25px; display: flex; align-items: center; gap: 20px;
+            backdrop-filter: blur(10px); transition: 0.2s; cursor: pointer;
+        }
+        .mod-card:active { transform: scale(0.97); }
+        .mod-card i { font-size: 30px; font-style: normal; }
+        .mod-card div span { display: block; font-weight: 600; font-size: 1rem; }
+        .mod-card div small { opacity: 0.5; font-size: 0.75rem; }
+
+        .admin-style { background: var(--accent); border: none; }
+        .admin-style span, .admin-style small { color: #000; }
+
+        /* --- UI COMPONENTES --- */
+        input, textarea, select {
+            width: 100%; padding: 18px; margin: 10px 0; border-radius: 15px;
+            border: 1px solid var(--glass-border); background: var(--glass);
+            color: white; font-size: 16px; outline: none;
+        }
+        .btn-main {
+            width: 100%; padding: 18px; background: #ffffff; color: #000;
+            border: none; border-radius: 15px; font-weight: 900; cursor: pointer; margin-top: 15px;
+        }
+        .back-nav { color: var(--accent); margin-bottom: 25px; cursor: pointer; display: block; font-weight: bold; }
+
+        /* --- RECORDATORIOS --- */
+        .rem-card {
+            background: var(--glass); padding: 20px; border-radius: 20px; margin-bottom: 12px;
+            border-left: 6px solid var(--accent); display: flex; justify-content: space-between; align-items: center;
+        }
+        .prio-high { border-left-color: var(--high); background: rgba(255, 82, 82, 0.05); }
+        .prio-mid { border-left-color: var(--mid); background: rgba(255, 215, 64, 0.05); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen" class="screen active">
+        <div class="login-circle">D</div>
+        <h1 style="font-weight: 900;">DATA</h1>
+        <p style="opacity: 0.4; font-size: 0.7rem; margin-bottom: 30px;">CENTRAL MANAGEMENT</p>
+        <div style="width: 100%; max-width: 320px;">
+            <input type="text" id="userInput" placeholder="Usuario (admin, user1...)">
+            <input type="password" id="passInput" placeholder="Password">
+            <button class="btn-main" onclick="accessApp()">Entrar</button>
         </div>
-        <div class="status-badge">PENDIENTE</div>
     </div>
 
-    <div class="rem-card prio-mid">
-        <div>
-            <span style="display:block; font-weight:bold;">📝 Subir resumen semanal</span>
-            <small style="opacity:0.6;">Asignado por: Admin</small>
+    <div id="dashboard" class="screen">
+        <div class="header">
+            <p id="date-now">CARGANDO...</p>
+            <h1 id="user-title">HOLA</h1>
         </div>
-        <button onclick="this.innerText='✅ LEÍDO'" style="background:var(--accent); border:none; padding:5px 10px; border-radius:10px; font-size:0.6rem; font-weight:bold;">CONFIRMAR</button>
+
+        <div class="grid">
+            <div id="admin-card" class="mod-card admin-style" style="display:none;" onclick="showModule('admin')">
+                <i>🛡️</i>
+                <div><span>PANEL MAESTRO</span><small>Control de usuarios y avisos</small></div>
+            </div>
+
+            <div class="mod-card" onclick="showModule('notes')">
+                <i>📂</i>
+                <div><span>Mis Datos</span><small>Enviar reportes al sistema</small></div>
+            </div>
+
+            <div class="mod-card" onclick="showModule('reminders')">
+                <i>🚨</i>
+                <div><span>Recordatorios</span><small>Prioridades y avisos</small></div>
+            </div>
+
+            <div class="mod-card" onclick="alert('Próximamente...')">
+                <i>📅</i>
+                <div><span>Calendario</span><small>Próximas entregas</small></div>
+            </div>
+        </div>
+        <p onclick="location.reload()" style="text-align:center; margin-top:50px; opacity:0.3; font-size:0.8rem; cursor:pointer;">LOGOUT</p>
     </div>
-</div>
+
+    <div id="mod-notes" class="screen">
+        <span class="back-nav" onclick="goHome()">← VOLVER</span>
+        <h2>Buzón de Reportes</h2>
+        <p style="opacity: 0.5; margin-bottom: 20px;">Tu información será revisada por el Admin.</p>
+        <input type="text" id="report-title" placeholder="Título del reporte">
+        <textarea id="report-body" placeholder="Escribe aquí tu información detallada..." style="height: 250px;"></textarea>
+        <button class="btn-main" onclick="sendReport()" style="background: var(--accent);">ENVIAR DATOS</button>
+    </div>
+
+    <div id="mod-reminders" class="screen">
+        <span class="back-nav" onclick="goHome()">← VOLVER</span>
+        <h2>Alertas de Sistema</h2>
+        <div id="reminders-list" style="margin-top: 20px;">
+            </div>
+    </div>
+
+    <div id="mod-admin" class="screen">
+        <span class="back-nav" onclick="goHome()">← VOLVER</span>
+        <h2>Control Maestro</h2>
+        
+        <div style="background: var(--glass); padding: 20px; border-radius: 20px; margin-bottom: 30px;">
+            <p style="font-weight: bold; margin-bottom: 10px;">Lanzar Aviso Global:</p>
+            <input type="text" id="admin-rem-text" placeholder="¿Qué deben hacer?">
+            <select id="admin-rem-prio">
+                <option value="normal">Prioridad: Normal</option>
+                <option value="mid">Prioridad: Media</option>
+                <option value="high">Prioridad: CRÍTICA</option>
+            </select>
+            <button class="btn-main" onclick="createReminder()">LANZAR ALERTA</button>
+        </div>
+
+        <p style="font-weight: bold; margin-bottom: 15px;">Reportes Recibidos:</p>
+        <div id="admin-reports-list"></div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyCi_lO7_SUp9X5-Vq_Fm_7yW77v7p_8",
+            authDomain: "data-40f4e.firebaseapp.com",
+            projectId: "data-40f4e",
+            storageBucket: "data-40f4e.appspot.com",
+            messagingSenderId: "135086884323",
+            appId: "1:135086884323:web:0d5883652671569426f8d1"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        let currentUser = "";
+
+        // NAVEGACIÓN Y LOGIN
+        function accessApp() {
+            const u = document.getElementById('userInput').value.toLowerCase();
+            const p = document.getElementById('passInput').value;
+            if (p === "1234") {
+                currentUser = u;
+                document.getElementById('login-screen').classList.remove('active');
+                document.getElementById('dashboard').classList.add('active');
+                document.getElementById('user-title').innerText = u.toUpperCase();
+                if(u === 'admin') document.getElementById('admin-card').style.display = 'flex';
+                loadData();
+            } else { alert("ERROR"); }
+        }
+
+        function showModule(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('mod-' + id).classList.add('active');
+        }
+
+        function goHome() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('dashboard').classList.add('active');
+        }
+
+        // LÓGICA DE DATOS
+        function sendReport() {
+            const t = document.getElementById('report-title').value;
+            const b = document.getElementById('report-body').value;
+            if(!t || !b) return alert("Completa los campos");
+            
+            db.collection("reports").add({
+                user: currentUser,
+                title: t,
+                body: b,
+                date: new Date()
+            }).then(() => {
+                alert("Reporte enviado al Admin");
+                goHome();
+            });
+        }
+
+        function createReminder() {
+            const txt = document.getElementById('admin-rem-text').value;
+            const prio = document.getElementById('admin-rem-prio').value;
+            db.collection("reminders").add({
+                text: txt,
+                priority: prio,
+                date: new Date()
+            }).then(() => {
+                alert("Aviso enviado a todos");
+                document.getElementById('admin-rem-text').value = "";
+            });
+        }
+
+        function loadData() {
+            // Cargar Recordatorios
+            db.collection("reminders").orderBy("date", "desc").onSnapshot(snap => {
+                const list = document.getElementById('reminders-list');
+                list.innerHTML = "";
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const pClass = d.priority === 'high' ? 'prio-high' : (d.priority === 'mid' ? 'prio-mid' : '');
+                    list.innerHTML += `<div class="rem-card ${pClass}">
+                        <div><span>${d.text}</span><small>${d.priority.toUpperCase()}</small></div>
+                        <i>🔔</i>
+                    </div>`;
+                });
+            });
+
+            // Cargar Reportes (Solo para Admin)
+            db.collection("reports").orderBy("date", "desc").onSnapshot(snap => {
+                const list = document.getElementById('admin-reports-list');
+                if(!list) return;
+                list.innerHTML = "";
+                snap.forEach(doc => {
+                    const r = doc.data();
+                    list.innerHTML += `<div class="mod-card" style="margin-bottom:10px;">
+                        <div>
+                            <span style="font-size:0.8rem;">DE: ${r.user.toUpperCase()}</span>
+                            <strong>${r.title}</strong>
+                            <p style="font-size:0.75rem; opacity:0.7;">${r.body}</p>
+                        </div>
+                    </div>`;
+                });
+            });
+        }
+
+        const d = new Date();
+        document.getElementById('date-now').innerText = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+    </script>
+</body>
+</html>
