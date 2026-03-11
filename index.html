@@ -1,163 +1,44 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA - OS</title>
+<style>
+    .rem-card {
+        background: var(--glass);
+        padding: 15px;
+        border-radius: 18px;
+        margin-bottom: 10px;
+        border-left: 5px solid var(--accent);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .prio-high { border-left-color: #ff5252; background: rgba(255, 82, 82, 0.1); }
+    .prio-mid { border-left-color: #ffd740; background: rgba(255, 215, 64, 0.1); }
     
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
+    .status-badge {
+        font-size: 0.6rem;
+        padding: 4px 8px;
+        border-radius: 10px;
+        background: var(--accent);
+        color: #000;
+        font-weight: bold;
+    }
+</style>
+
+<div id="mod-reminders" class="screen">
+    <span class="back-nav" onclick="goHome()">← VOLVER</span>
+    <h2 style="margin-bottom: 20px;">Recordatorios</h2>
     
-    <style>
-        :root {
-            --bg: #05070a;
-            --glass: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --accent: #8c9eff;
-            --text: #ffffff;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow: hidden; }
-
-        /* --- LOGIN VISUAL --- */
-        #login-screen {
-            position: fixed; inset: 0;
-            background: linear-gradient(135deg, #05070a 0%, #161b2c 100%);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 1000; padding: 40px;
-        }
-
-        .login-circle {
-            width: 120px; height: 120px; 
-            background: var(--accent); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 50px rgba(140, 158, 255, 0.4);
-            margin-bottom: 20px; font-size: 50px;
-        }
-
-        /* --- DASHBOARD --- */
-        #dashboard { display: none; padding: 20px; height: 100vh; overflow-y: auto; }
-        
-        .header { margin: 20px 0 40px 0; }
-        .header h1 { font-weight: 900; font-size: 3rem; letter-spacing: -2px; }
-        .header p { opacity: 0.5; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; }
-
-        /* GRID MODERNO */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-
-        .mod-card {
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            padding: 25px 15px;
-            border-radius: 30px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
-        }
-
-        .mod-card:active { transform: scale(0.9); background: var(--accent); }
-        .mod-card i { font-size: 35px; display: block; margin-bottom: 10px; font-style: normal; }
-        .mod-card span { font-weight: 600; font-size: 0.8rem; opacity: 0.9; }
-
-        /* Módulos de ancho completo */
-        .full-card { grid-column: span 2; display: flex; align-items: center; gap: 20px; padding: 20px 30px; text-align: left; }
-
-        /* INPUTS */
-        input {
-            width: 100%; padding: 20px; margin: 10px 0; border-radius: 20px;
-            border: 1px solid var(--glass-border); background: var(--glass);
-            color: white; font-size: 16px; outline: none;
-        }
-
-        .btn-main {
-            width: 100%; padding: 20px; background: #ffffff; color: #000;
-            border: none; border-radius: 20px; font-weight: 900; cursor: pointer;
-            margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;
-        }
-
-        /* ANIMACIÓN */
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .anim { animation: slideUp 0.6s ease forwards; }
-
-    </style>
-</head>
-<body>
-
-    <div id="login-screen">
-        <div class="login-circle">D</div>
-        <h1 style="font-weight: 900; margin-bottom: 5px;">DATA ACCESS</h1>
-        <p style="opacity: 0.4; font-size: 0.8rem; margin-bottom: 30px;">AUTH REQUIRED TO PROCEED</p>
-        
-        <div style="width: 100%; max-width: 340px;">
-            <input type="text" id="userInput" placeholder="Identificador">
-            <input type="password" id="passInput" placeholder="Clave de acceso">
-            <button class="btn-main" onclick="accessApp()">Entrar al Sistema</button>
+    <div class="rem-card prio-high">
+        <div>
+            <span style="display:block; font-weight:bold;">🚨 REVISAR TEMA 5</span>
+            <small style="opacity:0.6;">Vence en: 2 horas</small>
         </div>
+        <div class="status-badge">PENDIENTE</div>
     </div>
 
-    <div id="dashboard">
-        <div class="header anim">
-            <p id="date-now">CARGANDO SISTEMA...</p>
-            <h1 id="user-title">HELLO</h1>
+    <div class="rem-card prio-mid">
+        <div>
+            <span style="display:block; font-weight:bold;">📝 Subir resumen semanal</span>
+            <small style="opacity:0.6;">Asignado por: Admin</small>
         </div>
-
-        <div class="grid anim">
-            <div id="admin-only" class="mod-card full-card" style="display:none; background: var(--accent); border:none;" onclick="alert('Abriendo Panel Maestro...')">
-                <i style="margin-bottom:0">🛡️</i>
-                <div>
-                    <span style="color:#000">PANEL MAESTRO</span>
-                    <p style="color:#000; font-size: 0.7rem; opacity: 0.7;">Recopilar y validar datos</p>
-                </div>
-            </div>
-
-            <div class="mod-card" onclick="alert('Abriendo Notas...')">
-                <i>📂</i><span>Mis Datos</span>
-            </div>
-            <div class="mod-card" onclick="alert('Abriendo Global...')">
-                <i>🌐</i><span>Global</span>
-            </div>
-            <div class="mod-card" onclick="alert('Abriendo Tareas...')">
-                <i>📋</i><span>Tareas</span>
-            </div>
-            <div class="mod-card" onclick="alert('Abriendo Estadísticas...')">
-                <i>📊</i><span>Métricas</span>
-            </div>
-            
-            <div class="mod-card full-card" onclick="alert('Abriendo Calendario...')">
-                <i>📅</i><span>Calendario Académico</span>
-            </div>
-        </div>
-
-        <button onclick="location.reload()" style="background:none; border:none; color:var(--accent); margin-top: 40px; font-weight: bold; width: 100%; text-align: center;">CERRAR SESIÓN</button>
+        <button onclick="this.innerText='✅ LEÍDO'" style="background:var(--accent); border:none; padding:5px 10px; border-radius:10px; font-size:0.6rem; font-weight:bold;">CONFIRMAR</button>
     </div>
-
-    <script>
-        // Fecha actual
-        const d = new Date();
-        document.getElementById('date-now').innerText = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-
-        function accessApp() {
-            const user = document.getElementById('userInput').value;
-            const pass = document.getElementById('passInput').value;
-
-            if (pass === "1234") {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('user-title').innerText = user.toUpperCase();
-
-                if(user.toLowerCase() === 'admin') {
-                    document.getElementById('admin-card').style.display = 'flex'; // Fix para el ID
-                    document.getElementById('admin-only').style.display = 'flex';
-                }
-            } else {
-                alert("ACCESO DENEGADO");
-            }
-        }
-    </script>
-</body>
-</html>
+</div>
