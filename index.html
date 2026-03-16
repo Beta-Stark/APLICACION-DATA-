@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA - OS SECURE</title>
+    <title>DATA - OS PRO</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
@@ -11,59 +11,80 @@
     
     <style>
         :root {
-            --bg: #000000;
-            --surface: #0a0f1a;
-            --accent: #00f2ff;
-            --accent-glow: rgba(0, 242, 255, 0.2);
-            --text: #ffffff;
-            --danger: #ff3d00;
+            --bg: #F8FAFC; /* Blanco azulado muy suave */
+            --surface: #FFFFFF;
+            --accent: #2563EB; /* Azul profesional */
+            --accent-light: #DBEAFE;
+            --text-main: #1E293B;
+            --text-sub: #64748B;
+            --border: #E2E8F0;
+            --danger: #EF4444;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow: hidden; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text-main); 
+            min-height: 100vh; 
+            overflow: hidden;
+        }
 
-        /* NAVEGACIÓN */
-        .screen { display: none; padding: 25px; height: 100vh; overflow-y: auto; }
+        .screen { display: none; padding: 25px; height: 100vh; overflow-y: auto; transition: 0.3s; }
         .screen.active { display: block !important; animation: fadeIn 0.4s ease; }
 
-        /* ESTILO DE TARJETAS (DASHBOARD) */
-        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
+        /* --- HEADER --- */
+        .header { margin-bottom: 30px; }
+        .header h1 { font-weight: 900; font-size: 2.5rem; letter-spacing: -1px; color: var(--accent); }
+        .header p { color: var(--text-sub); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
+
+        /* --- TARJETAS (ESTILO CLARO) --- */
+        .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
         
         .mod-card {
             background: var(--surface);
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 24px;
-            border-radius: 28px;
+            border: 1px solid var(--border);
+            padding: 22px;
+            border-radius: 24px;
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 18px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             transition: 0.2s;
             cursor: pointer;
         }
-        .mod-card:active { transform: scale(0.96); background: rgba(255,255,255,0.05); }
+        .mod-card:active { transform: scale(0.97); background: #F1F5F9; }
+        
         .icon-box { 
-            width: 50px; height: 50px; border-radius: 15px; background: rgba(255,255,255,0.03);
-            display: flex; align-items: center; justify-content: center; font-size: 20px;
+            width: 54px; height: 54px; border-radius: 16px; 
+            background: var(--accent-light);
+            display: flex; align-items: center; justify-content: center; font-size: 22px;
         }
 
-        /* BÓVEDA PIN */
-        .pin-dots { display: flex; justify-content: center; gap: 15px; margin: 40px 0; }
-        .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--accent); }
-        .dot.active { background: var(--accent); box-shadow: 0 0 15px var(--accent); }
+        /* --- BÓVEDA PIN (LUMINOUS STYLE) --- */
+        .pin-dots { display: flex; justify-content: center; gap: 12px; margin: 30px 0; }
+        .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border); transition: 0.3s; }
+        .dot.active { background: var(--accent); border-color: var(--accent); transform: scale(1.2); }
 
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 280px; margin: 0 auto; }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 260px; margin: 0 auto; }
         .num-btn { 
-            height: 70px; border-radius: 50%; background: var(--surface); border: 1px solid rgba(255,255,255,0.1);
-            color: white; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;
+            height: 65px; border-radius: 50%; background: var(--surface); 
+            border: 1px solid var(--border); color: var(--text-main); 
+            font-size: 1.4rem; font-weight: 600; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .num-btn:active { background: var(--accent); color: black; }
+        .num-btn:active { background: var(--accent); color: white; }
 
-        /* ENLACES DE LA BÓVEDA */
+        /* --- SWIPE GESTURE --- */
+        .swipe-container { position: relative; overflow: hidden; border-radius: 24px; background: var(--danger); margin-bottom: 12px; }
+        .swipe-action { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: white; font-weight: 800; font-size: 0.7rem; }
+
+        /* --- VAULT LINKS --- */
         .vault-link {
-            background: linear-gradient(90deg, #0a0f1a 0%, #16213e 100%);
-            padding: 20px; border-radius: 22px; margin-bottom: 12px; display: flex;
-            justify-content: space-between; align-items: center; text-decoration: none; color: white;
-            border-left: 4px solid var(--accent);
+            background: var(--surface); border: 1px solid var(--border);
+            padding: 20px; border-radius: 20px; margin-bottom: 12px; display: flex;
+            justify-content: space-between; align-items: center; text-decoration: none; color: var(--text-main);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -72,96 +93,95 @@
 <body>
 
     <div id="dashboard" class="screen active">
-        <h1 style="font-weight: 900; font-size: 2.8rem;">DATA</h1>
-        <p style="color: var(--accent); letter-spacing: 4px; font-weight: 900; font-size: 0.7rem; margin-bottom: 40px;">SECURE INTERFACE</p>
+        <div class="header">
+            <p>Panel de Control</p>
+            <h1>DATA OS</h1>
+        </div>
         
         <div class="grid">
-            <div class="mod-card" onclick="showModule('mod-vault')" style="border: 1px solid var(--accent-glow);">
+            <div class="mod-card" onclick="showModule('mod-vault')">
                 <div class="icon-box">🔐</div>
-                <div><strong>Bóveda de Enlaces</strong><small style="display:block; opacity:0.5;">Requiere PIN de seguridad</small></div>
+                <div><strong style="display:block; font-size:1.1rem;">Bóveda Segura</strong><small style="color:var(--text-sub);">Enlaces con acceso PIN</small></div>
             </div>
 
             <div class="mod-card" onclick="showModule('mod-notes')">
                 <div class="icon-box">📂</div>
-                <div><strong>Mis Datos</strong><small style="display:block; opacity:0.5;">Historial de reportes</small></div>
+                <div><strong style="display:block; font-size:1.1rem;">Mis Datos</strong><small style="color:var(--text-sub);">Gestión de reportes</small></div>
             </div>
 
             <div class="mod-card" onclick="showModule('mod-reminders')">
                 <div class="icon-box">⏰</div>
-                <div><strong>Recordatorios</strong><small style="display:block; opacity:0.5;">Tareas pendientes</small></div>
+                <div><strong style="display:block; font-size:1.1rem;">Recordatorios</strong><small style="color:var(--text-sub);">Desliza para borrar</small></div>
             </div>
         </div>
     </div>
 
     <div id="mod-vault" class="screen">
-        <span onclick="showModule('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer;">← SALIR</span>
+        <div onclick="showModule('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer; margin-bottom:20px;">← VOLVER AL INICIO</div>
         
-        <div id="pin-screen" style="text-align: center; margin-top: 40px;">
-            <h2 style="font-weight: 900; margin-bottom: 10px;">SEGURIDAD</h2>
-            <p style="opacity:0.5; font-size:0.8rem;">Ingrese el código de acceso</p>
+        <div id="pin-screen" style="text-align: center; background: var(--surface); padding: 30px; border-radius: 30px; border: 1px solid var(--border);">
+            <h2 style="font-weight: 900;">Seguridad</h2>
+            <p style="color: var(--text-sub); font-size: 0.9rem;">Ingrese su código PIN</p>
             
             <div class="pin-dots" id="dots-container">
                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
             </div>
 
             <div class="numpad">
-                <div class="num-btn" onclick="addPin('1')">1</div>
-                <div class="num-btn" onclick="addPin('2')">2</div>
-                <div class="num-btn" onclick="addPin('3')">3</div>
-                <div class="num-btn" onclick="addPin('4')">4</div>
-                <div class="num-btn" onclick="addPin('5')">5</div>
-                <div class="num-btn" onclick="addPin('6')">6</div>
-                <div class="num-btn" onclick="addPin('7')">7</div>
-                <div class="num-btn" onclick="addPin('8')">8</div>
-                <div class="num-btn" onclick="addPin('9')">9</div>
-                <div></div><div class="num-btn" onclick="addPin('0')">0</div><div class="num-btn" onclick="clearPin()">C</div>
+                <div class="num-btn" onclick="addPin('1')">1</div><div class="num-btn" onclick="addPin('2')">2</div><div class="num-btn" onclick="addPin('3')">3</div>
+                <div class="num-btn" onclick="addPin('4')">4</div><div class="num-btn" onclick="addPin('5')">5</div><div class="num-btn" onclick="addPin('6')">6</div>
+                <div class="num-btn" onclick="addPin('7')">7</div><div class="num-btn" onclick="addPin('8')">8</div><div class="num-btn" onclick="addPin('9')">9</div>
+                <div class="num-btn" style="border:none; background:none; font-size:0.8rem; color:var(--danger)" onclick="clearPin()">BORRAR</div>
+                <div class="num-btn" onclick="addPin('0')">0</div>
             </div>
         </div>
 
         <div id="vault-content" style="display:none;">
-            <h2 style="color: var(--accent); margin-bottom: 25px;">Archivos Seguros</h2>
-            <a href="https://drive.google.com" target="_blank" class="vault-link">
-                <div><strong>Drive del Proyecto</strong><small style="display:block; opacity:0.5;">Documentación confidencial</small></div>
-                <span>🚀</span>
+            <h2 style="margin-bottom: 20px;">Enlaces del Cliente</h2>
+            <a href="#" class="vault-link">
+                <div><strong>Acceso a Drive</strong><small style="display:block; color:var(--text-sub);">Documentos compartidos</small></div>
+                <span style="color:var(--accent)">↗</span>
             </a>
             <a href="#" class="vault-link">
-                <div><strong>Repositorio APK</strong><small style="display:block; opacity:0.5;">Versión 2.0 estable</small></div>
-                <span>📲</span>
+                <div><strong>Panel Administrativo</strong><small style="display:block; color:var(--text-sub);">Web externa</small></div>
+                <span style="color:var(--accent)">↗</span>
             </a>
         </div>
     </div>
 
-    <div id="mod-notes" class="screen">
-        <span onclick="showModule('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer;">← VOLVER</span>
-        <h2 style="margin-top:20px;">Mis Datos</h2>
-    </div>
-
     <div id="mod-reminders" class="screen">
-        <span onclick="showModule('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer;">← VOLVER</span>
-        <h2 style="margin-top:20px;">Recordatorios</h2>
+        <div onclick="showModule('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer; margin-bottom:20px;">← VOLVER</div>
+        <h2>Recordatorios</h2>
+        <p style="color:var(--text-sub); margin-bottom:20px;">Desliza a la izquierda para eliminar</p>
+        
+        <div id="reminders-list">
+            <div class="swipe-container">
+                <div class="swipe-action">ELIMINAR</div>
+                <div class="mod-card" style="margin-bottom:0; border:none; border-radius:0;" 
+                     ontouchstart="hStart(event)" ontouchmove="hMove(event)" ontouchend="hEnd(event)">
+                    <div class="icon-box" style="background:#FEF3C7; color:#D97706;">📝</div>
+                    <div><strong>Revisar feedback cliente</strong><small style="display:block; color:var(--text-sub);">Pendiente hoy</small></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // NAVEGACIÓN
+        // --- NAVEGACIÓN ---
         function showModule(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            
-            // Si sale de la bóveda, resetear PIN
-            if(id !== 'mod-vault') {
-                resetVault();
-            }
+            if(id !== 'mod-vault') resetVault();
         }
 
-        // LÓGICA DE PIN
+        // --- LÓGICA PIN ---
         let pin = "";
-        const MASTER_PIN = "1234"; // TU PIN DE SEGURIDAD
+        const MASTER_PIN = "1234";
 
         function addPin(n) {
             if(pin.length < 4) {
                 pin += n;
-                drawDots();
-                
+                updateDots();
                 if(pin.length === 4) {
                     if(pin === MASTER_PIN) {
                         document.getElementById('pin-screen').style.display = 'none';
@@ -174,23 +194,33 @@
             }
         }
 
-        function clearPin() {
-            pin = "";
-            drawDots();
-        }
-
-        function drawDots() {
+        function clearPin() { pin = ""; updateDots(); }
+        function updateDots() {
             const dots = document.querySelectorAll('.dot');
-            dots.forEach((dot, i) => {
-                dot.classList.toggle('active', i < pin.length);
-            });
+            dots.forEach((dot, i) => dot.classList.toggle('active', i < pin.length));
         }
-
         function resetVault() {
-            pin = "";
-            drawDots();
+            pin = ""; updateDots();
             document.getElementById('pin-screen').style.display = 'block';
             document.getElementById('vault-content').style.display = 'none';
+        }
+
+        // --- LÓGICA SWIPE (LIGHT) ---
+        let sX = 0;
+        let cEl = null;
+
+        function hStart(e) { sX = e.touches[0].clientX; cEl = e.currentTarget; cEl.style.transition = 'none'; }
+        function hMove(e) { 
+            let d = e.touches[0].clientX - sX; 
+            if (d < 0) cEl.style.transform = `translateX(${d}px)`; 
+        }
+        function hEnd(e) {
+            let d = e.changedTouches[0].clientX - sX;
+            cEl.style.transition = 'transform 0.3s ease';
+            if (d < -120) {
+                cEl.style.transform = 'translateX(-100%)';
+                setTimeout(() => cEl.parentElement.style.display = 'none', 300);
+            } else { cEl.style.transform = 'translateX(0)'; }
         }
     </script>
 </body>
