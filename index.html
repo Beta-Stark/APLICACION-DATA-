@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA OS - Professional Edition</title>
-    
+    <title>DATA OS - Enterprise Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
-    
     <style>
         :root {
             --bg: #F8FAFC;
@@ -19,6 +17,7 @@
             --danger: #EF4444;
             --note-bg: #FFFBEB;
             --note-text: #92400E;
+            --wa-green: #25D366;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -30,7 +29,6 @@
             align-items: center; border-bottom: 1px solid var(--border); font-size: 0.75rem; font-weight: 800;
         }
 
-        /* PANTALLAS */
         .screen { display: none; padding: 20px; min-height: 100vh; animation: fadeIn 0.3s ease; }
         .screen.active { display: block !important; }
 
@@ -44,9 +42,8 @@
         .mod-card { 
             background: var(--surface); padding: 20px; border-radius: 24px; border: 1px solid var(--border);
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer;
-            position: relative; overflow: hidden;
+            position: relative;
         }
-        .mod-card:active { transform: scale(0.97); }
         .full-card { grid-column: span 2; display: flex; align-items: center; gap: 15px; }
 
         /* CONTADOR */
@@ -54,8 +51,10 @@
         .counter-controls { display: flex; justify-content: center; gap: 25px; align-items: center; margin-top: 10px; }
         .btn-c { width: 45px; height: 45px; border-radius: 50%; border: none; font-size: 1.5rem; font-weight: 900; cursor: pointer; background: var(--surface); color: var(--text-main); }
 
-        /* NOTAS */
-        .note-item { background: var(--note-bg); padding: 15px; border-radius: 18px; margin-bottom: 12px; border: 1px solid #FEF3C7; }
+        /* NOTAS Y BÚSQUEDA */
+        .search-box { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; font-size: 0.9rem; background: var(--surface); }
+        .note-item { background: var(--note-bg); padding: 18px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #FEF3C7; position: relative; }
+        .btn-wa { background: var(--wa-green); color: white; border: none; padding: 8px 12px; border-radius: 10px; font-size: 0.7rem; font-weight: 800; display: flex; align-items: center; gap: 5px; cursor: pointer; margin-top: 10px; }
         .notes-area { width: 100%; height: 100px; padding: 15px; border-radius: 15px; border: 1px solid var(--border); background: #F8FAFC; outline: none; resize: none; font-size: 1rem; }
 
         /* FORMULARIOS */
@@ -69,23 +68,20 @@
 
     <div class="system-bar" id="sys-bar" style="display:none;">
         <div style="color:var(--success)">● <span id="role-indicator">SISTEMA</span></div>
-        <div id="sync-status" style="color:var(--accent); font-size:0.6rem; opacity:0;">Sincronizado</div>
         <div id="clock">00:00</div>
     </div>
 
     <div id="login-screen" class="screen active">
         <div class="login-card">
             <h1 style="font-size: 2.2rem; font-weight: 900; color: var(--accent);">DATA OS</h1>
-            <p style="color: var(--text-sub); margin-bottom: 25px;">Acceso por Jerarquía</p>
-            
-            <input type="text" id="userInput" placeholder="Nombre de Usuario">
+            <p style="color: var(--text-sub); margin-bottom: 25px;">Acceso Enterprise</p>
+            <input type="text" id="userInput" placeholder="Usuario">
             <select id="roleInput">
                 <option value="superadmin">Super Administrador</option>
                 <option value="tempadmin">Administrador Temporal</option>
                 <option value="cliente">Usuario Cliente</option>
             </select>
             <input type="password" id="passInput" placeholder="PIN (1234)">
-            
             <button class="btn-main" onclick="handleLogin()">INICIAR SESIÓN</button>
         </div>
     </div>
@@ -108,43 +104,42 @@
         <div class="grid-tools">
             <div class="mod-card full-card" onclick="navTo('mod-notes')">
                 <span style="font-size: 1.5rem;">📝</span>
-                <div><strong>Bloc de Notas</strong><small style="display:block; color:var(--text-sub);">Gestionar historial de notas</small></div>
+                <div><strong>Notas y Reportes</strong><small style="display:block; color:var(--text-sub);">Historial con envío a WhatsApp</small></div>
             </div>
-
             <div class="mod-card" onclick="navTo('mod-vault')">
                 <span>🔐</span><br><strong>Bóveda</strong>
             </div>
-            
-            <div class="mod-card" onclick="alert('Tareas en desarrollo...')">
+            <div class="mod-card" onclick="alert('Módulo de Tareas...')">
                 <span>⏰</span><br><strong>Tareas</strong>
             </div>
         </div>
-
         <button onclick="location.reload()" style="margin-top:40px; background:none; border:none; color:var(--danger); font-weight:800; width:100%;">CERRAR SESIÓN</button>
     </div>
 
     <div id="mod-notes" class="screen">
-        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← VOLVER AL MENÚ</button>
+        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← VOLVER</button>
+        <h2>Reportes</h2>
         
-        <h2>Mis Notas</h2>
         <div style="background: white; padding: 15px; border-radius: 20px; border: 1px solid var(--border); margin: 20px 0;">
-            <textarea id="note-text" class="notes-area" placeholder="Escribe algo importante..."></textarea>
-            <button class="btn-main" onclick="addNote()">GUARDAR NOTA</button>
+            <textarea id="note-text" class="notes-area" placeholder="Escribe un nuevo reporte..."></textarea>
+            <button class="btn-main" onclick="addNote()">GUARDAR Y REGISTRAR</button>
         </div>
 
+        <input type="text" id="search-input" class="search-box" placeholder="🔍 Buscar en mis notas..." oninput="renderNotes()">
+
         <div id="notes-container"></div>
-        <button id="clear-notes-btn" class="btn-main" style="background:var(--danger); display:none;" onclick="clearAllNotes()">BORRAR TODO EL HISTORIAL</button>
+        <button id="clear-notes-btn" class="btn-main" style="background:var(--danger); display:none;" onclick="clearAllNotes()">BORRAR TODO</button>
     </div>
 
     <div id="mod-vault" class="screen">
         <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← VOLVER</button>
-        <h2 id="vault-title">Bóveda de Recursos</h2>
+        <h2 id="vault-title">Bóveda</h2>
         <div id="vault-items" style="margin-top: 20px;"></div>
     </div>
 
     <script>
         let userData = { name: "", role: "" };
-        let notes = JSON.parse(localStorage.getItem('data_notes')) || [];
+        let notes = JSON.parse(localStorage.getItem('data_notes_pro')) || [];
         let errors = 0;
 
         // RELOJ
@@ -153,7 +148,6 @@
             document.getElementById('clock').innerText = d.getHours() + ":" + String(d.getMinutes()).padStart(2, '0');
         }, 1000);
 
-        // LOGIN
         function handleLogin() {
             const user = document.getElementById('userInput').value.trim();
             const pass = document.getElementById('passInput').value;
@@ -162,24 +156,19 @@
             if (pass === "1234" && user !== "") {
                 userData.name = user;
                 userData.role = role;
-                
                 document.getElementById('welcome-msg').innerText = "Hola, " + user;
                 document.getElementById('user-role-label').innerText = role.toUpperCase();
                 document.getElementById('sys-bar').style.display = 'flex';
                 document.getElementById('role-indicator').innerText = role;
-
                 applyPermissions();
                 navTo('dashboard');
             } else { alert("Datos incorrectos"); }
         }
 
-        // PERMISOS
         function applyPermissions() {
-            // Mostrar contador solo a admins
             document.getElementById('error-module').style.display = (userData.role !== 'cliente') ? 'block' : 'none';
         }
 
-        // NAVEGACIÓN
         function navTo(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
@@ -187,64 +176,72 @@
             if(id === 'mod-vault') renderVault();
         }
 
-        // CONTADOR
         function changeCount(v) {
-            errors += v;
-            if(errors < 0) errors = 0;
+            errors += v; if(errors < 0) errors = 0;
             document.getElementById('err-display').innerText = errors;
         }
 
-        // NOTAS (CRUD)
+        // NOTAS CON WHATSAPP Y FILTRO
         function addNote() {
             const txt = document.getElementById('note-text').value.trim();
             if(!txt) return;
-
             const n = { id: Date.now(), text: txt, date: new Date().toLocaleString() };
             notes.unshift(n);
-            localStorage.setItem('data_notes', JSON.stringify(notes));
+            localStorage.setItem('data_notes_pro', JSON.stringify(notes));
             document.getElementById('note-text').value = "";
             renderNotes();
         }
 
         function renderNotes() {
             const container = document.getElementById('notes-container');
+            const search = document.getElementById('search-input').value.toLowerCase();
             container.innerHTML = "";
+            
+            const filteredNotes = notes.filter(n => n.text.toLowerCase().includes(search));
             document.getElementById('clear-notes-btn').style.display = notes.length ? 'block' : 'none';
 
-            notes.forEach(n => {
+            filteredNotes.forEach(n => {
                 const div = document.createElement('div');
                 div.className = 'note-item';
                 div.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                         <small style="color:var(--note-text); font-weight:900;">${n.date}</small>
                         <span onclick="deleteNote(${n.id})" style="color:var(--danger); cursor:pointer; font-weight:900;">✕</span>
                     </div>
-                    <p style="color:var(--note-text); white-space:pre-wrap;">${n.text}</p>
+                    <p style="color:var(--note-text); white-space:pre-wrap; font-size:0.95rem;">${n.text}</p>
+                    <button class="btn-wa" onclick="sendToWA('${encodeURIComponent(n.text)}')">
+                        🟢 Enviar por WhatsApp
+                    </button>
                 `;
                 container.appendChild(div);
             });
         }
 
+        function sendToWA(msg) {
+            const decodedMsg = decodeURIComponent(msg);
+            const finalMsg = encodeURIComponent(`*REPORTE DATA OS*\n*Usuario:* ${userData.name}\n*Rol:* ${userData.role}\n\n${decodedMsg}`);
+            window.open(`https://wa.me/?text=${finalMsg}`, '_blank');
+        }
+
         function deleteNote(id) {
             notes = notes.filter(n => n.id !== id);
-            localStorage.setItem('data_notes', JSON.stringify(notes));
+            localStorage.setItem('data_notes_pro', JSON.stringify(notes));
             renderNotes();
         }
 
         function clearAllNotes() {
             if(confirm("¿Borrar todo?")) {
                 notes = [];
-                localStorage.removeItem('data_notes');
+                localStorage.removeItem('data_notes_pro');
                 renderNotes();
             }
         }
 
-        // BÓVEDA
         function renderVault() {
             const container = document.getElementById('vault-items');
             container.innerHTML = `<div class="mod-card full-card">📄 Manual_Operativo.pdf</div>`;
             if(userData.role === 'superadmin') {
-                container.innerHTML += `<div class="mod-card full-card" style="border: 2px dashed var(--accent);">🛠️ CONFIGURACIÓN MAESTRA (Root)</div>`;
+                container.innerHTML += `<div class="mod-card full-card" style="border: 2px dashed var(--accent);">🛠️ CONFIG MAESTRA</div>`;
             }
         }
     </script>
