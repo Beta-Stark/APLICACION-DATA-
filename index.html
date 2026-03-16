@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -17,52 +16,79 @@
             --success: #10B981;
             --danger: #EF4444;
             --note-bg: #FFFBEB;
-            --wa-green: #25D366;
         }
 
+        /* RESET PARA EVITAR ENCIMAMIENTOS */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
-
-        .system-bar {
-            background: var(--surface); padding: 12px 20px; display: flex; justify-content: space-between;
-            align-items: center; border-bottom: 1px solid var(--border); font-size: 0.75rem; font-weight: 800;
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text-main); 
+            min-height: 100vh; 
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        .screen { display: none; padding: 20px; min-height: 100vh; animation: fadeIn 0.3s ease; }
-        .screen.active { display: block !important; }
+        /* BARRA DE ESTADO SIEMPRE ARRIBA */
+        .system-bar {
+            background: var(--surface); padding: 12px 20px; display: none; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid var(--border); font-size: 0.75rem; font-weight: 800;
+            position: sticky; top: 0; z-index: 1000;
+        }
 
-        /* LOGIN & CARDS */
-        .login-card { background: var(--surface); padding: 40px; border-radius: 35px; width: 90%; max-width: 360px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; margin: auto; }
-        .mod-card { background: var(--surface); padding: 20px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer; position: relative; margin-bottom: 12px; }
-        .full-card { display: flex; align-items: center; gap: 15px; }
+        /* SISTEMA DE PANTALLAS (CLAVE DEL ARREGLO) */
+        .screen { 
+            display: none; /* Todas ocultas por defecto */
+            padding: 20px; 
+            width: 100%;
+            min-height: calc(100vh - 50px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Solo la que tiene .active se muestra */
+        .screen.active { 
+            display: block !important; 
+        }
+
+        /* Centrar específicamente el Login */
+        #login-screen.active {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ESTILOS DE COMPONENTES */
+        .login-card { background: var(--surface); padding: 40px; border-radius: 35px; width: 90%; max-width: 360px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
+        .mod-card { background: var(--surface); padding: 20px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; }
+        .mod-card:active { transform: scale(0.98); }
 
         /* PIN PAD */
         .pin-dots { display: flex; justify-content: center; gap: 15px; margin: 25px 0; }
-        .dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--border); transition: 0.3s; }
-        .dot.active { background: var(--accent); border-color: var(--accent); transform: scale(1.2); }
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 280px; margin: 0 auto; }
-        .num-btn { height: 65px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); font-size: 1.5rem; font-weight: 600; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .num-btn:active { background: var(--accent); color: white; }
-
+        .dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--border); }
+        .dot.active { background: var(--accent); border-color: var(--accent); }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; margin: 0 auto; }
+        .num-btn { height: 60px; border-radius: 15px; border: 1px solid var(--border); background: var(--surface); font-size: 1.2rem; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+        
         /* NOTAS */
-        .notes-area { width: 100%; height: 100px; padding: 15px; border-radius: 15px; border: 1px solid var(--border); background: #F8FAFC; outline: none; resize: none; font-size: 1rem; }
+        .search-box { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 10px; }
         .note-item { background: var(--note-bg); padding: 15px; border-radius: 20px; border: 1px solid #FEF3C7; margin-bottom: 10px; }
 
-        /* FORMULARIOS */
         input, select { width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); background: #F1F5F9; font-size: 1rem; }
         .btn-main { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; margin-top: 10px; cursor: pointer; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="system-bar" id="sys-bar" style="display:none;">
+    <div class="system-bar" id="sys-bar">
         <div style="color:var(--success)">● <span id="role-indicator">SISTEMA</span></div>
         <div id="clock">00:00</div>
     </div>
 
-    <div id="login-screen" class="screen active" style="display: flex; align-items: center;">
+    <div id="login-screen" class="screen active">
         <div class="login-card">
             <h1 style="font-size: 2.2rem; font-weight: 900; color: var(--accent);">DATA OS</h1>
             <p style="color: var(--text-sub); margin-bottom: 25px;">Acceso Enterprise</p>
@@ -86,19 +112,19 @@
         <div id="error-module" style="background:var(--text-main); color:white; padding:20px; border-radius:24px; text-align:center; margin-bottom:20px; display:none;">
             <p style="font-size: 0.7rem; font-weight: 800;">ERRORES DE SESIÓN</p>
             <div style="display:flex; justify-content:center; gap:25px; align-items:center; margin-top:10px;">
-                <button onclick="changeCount(-1)" style="width:40px; height:40px; border-radius:50%; border:none; font-weight:900;">-</button>
+                <button onclick="changeCount(-1)" style="width:40px; height:40px; border-radius:50%; border:none;">-</button>
                 <span id="err-display" style="font-size: 2rem; font-weight: 900;">0</span>
-                <button onclick="changeCount(1)" style="width:40px; height:40px; border-radius:50%; border:none; font-weight:900;">+</button>
+                <button onclick="changeCount(1)" style="width:40px; height:40px; border-radius:50%; border:none;">+</button>
             </div>
         </div>
 
-        <div class="mod-card full-card" onclick="navTo('mod-notes')">
+        <div class="mod-card" onclick="navTo('mod-notes')">
             <span style="font-size: 1.5rem;">📝</span>
             <div><strong>Reportes</strong><small style="display:block; color:var(--text-sub);">Historial y WhatsApp</small></div>
         </div>
-        <div class="mod-card full-card" onclick="navTo('mod-vault')">
+        <div class="mod-card" onclick="navTo('mod-vault')">
             <span style="font-size: 1.5rem;">🔐</span>
-            <div><strong>Bóveda Segura</strong><small style="display:block; color:var(--text-sub);">Requiere PIN de acceso</small></div>
+            <div><strong>Bóveda Segura</strong><small style="display:block; color:var(--text-sub);">Acceso restringido</small></div>
         </div>
         
         <button onclick="location.reload()" style="margin-top:40px; background:none; border:none; color:var(--danger); font-weight:800; width:100%;">CERRAR SESIÓN</button>
@@ -106,9 +132,8 @@
 
     <div id="mod-vault" class="screen">
         <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← VOLVER</button>
-        
         <div id="vault-auth">
-            <h2 style="text-align:center;">Acceso a Bóveda</h2>
+            <h2 style="text-align:center;">PIN de Bóveda</h2>
             <div class="pin-dots" id="pin-dots">
                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
             </div>
@@ -116,11 +141,9 @@
                 <div class="num-btn" onclick="pressPin('1')">1</div><div class="num-btn" onclick="pressPin('2')">2</div><div class="num-btn" onclick="pressPin('3')">3</div>
                 <div class="num-btn" onclick="pressPin('4')">4</div><div class="num-btn" onclick="pressPin('5')">5</div><div class="num-btn" onclick="pressPin('6')">6</div>
                 <div class="num-btn" onclick="pressPin('7')">7</div><div class="num-btn" onclick="pressPin('8')">8</div><div class="num-btn" onclick="pressPin('9')">9</div>
-                <div class="num-btn" style="color:var(--danger); font-size:0.8rem;" onclick="clearPin()">BORRAR</div>
-                <div class="num-btn" onclick="pressPin('0')">0</div>
+                <div class="num-btn" style="color:var(--danger)" onclick="clearPin()">C</div><div class="num-btn" onclick="pressPin('0')">0</div>
             </div>
         </div>
-
         <div id="vault-content" style="display:none;">
             <h2>Recursos Protegidos</h2>
             <div id="vault-items" style="margin-top:20px;"></div>
@@ -129,10 +152,12 @@
 
     <div id="mod-notes" class="screen">
         <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← VOLVER</button>
-        <h2>Reportes Rápidos</h2>
-        <textarea id="note-text" class="notes-area" style="margin:15px 0;" placeholder="Escribe aquí..."></textarea>
-        <button class="btn-main" onclick="addNote()">GUARDAR</button>
-        <div id="notes-container" style="margin-top:20px;"></div>
+        <h2>Historial de Notas</h2>
+        <textarea id="note-text" style="width:100%; height:100px; padding:15px; border-radius:15px; border:1px solid var(--border); margin:15px 0;" placeholder="Escribe aquí..."></textarea>
+        <button class="btn-main" onclick="addNote()">GUARDAR NOTA</button>
+        
+        <input type="text" id="search-input" class="search-box" style="margin-top:20px;" placeholder="🔍 Buscar nota..." oninput="renderNotes()">
+        <div id="notes-container" style="margin-top:10px;"></div>
     </div>
 
     <script>
@@ -144,13 +169,31 @@
 
         setInterval(() => {
             const d = new Date();
-            document.getElementById('clock').innerText = d.getHours() + ":" + String(d.getMinutes()).padStart(2, '0');
+            document.getElementById('clock').innerText = d.getHours() + ":" + String(d.padStart ? d.getMinutes().toString().padStart(2, '0') : d.getMinutes());
         }, 1000);
+
+        // FUNCIÓN DE NAVEGACIÓN CORREGIDA
+        function navTo(id) {
+            // Ocultar todas las pantallas antes de mostrar la nueva
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+            });
+            
+            // Mostrar solo la seleccionada
+            const target = document.getElementById(id);
+            target.classList.add('active');
+            
+            // Scroll al inicio automáticamente
+            window.scrollTo(0,0);
+
+            if(id === 'mod-vault') resetVault();
+            if(id === 'mod-notes') renderNotes();
+        }
 
         function handleLogin() {
             const user = document.getElementById('userInput').value;
             const pass = document.getElementById('passInput').value;
-            if (pass === "1234") {
+            if (pass === "1234" && user !== "") {
                 userData.name = user;
                 userData.role = document.getElementById('roleInput').value;
                 document.getElementById('welcome-msg').innerText = "Hola, " + user;
@@ -159,17 +202,10 @@
                 document.getElementById('role-indicator').innerText = userData.role;
                 document.getElementById('error-module').style.display = (userData.role !== 'cliente') ? 'block' : 'none';
                 navTo('dashboard');
-            } else { alert("Error"); }
+            } else { alert("Datos incorrectos"); }
         }
 
-        function navTo(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(id === 'mod-vault') resetVault();
-            if(id === 'mod-notes') renderNotes();
-        }
-
-        /* LÓGICA DE BÓVEDA */
+        /* PIN PAD LOGIC */
         function pressPin(num) {
             if(pinInput.length < 4) {
                 pinInput += num;
@@ -203,26 +239,47 @@
             }
         }
 
-        /* LÓGICA NOTAS */
+        /* NOTES LOGIC */
         function addNote() {
-            const txt = document.getElementById('note-text').value;
+            const txt = document.getElementById('note-text').value.trim();
             if(!txt) return;
             notes.unshift({ id: Date.now(), text: txt, date: new Date().toLocaleString() });
             localStorage.setItem('data_notes_pro', JSON.stringify(notes));
             document.getElementById('note-text').value = "";
             renderNotes();
         }
+
         function renderNotes() {
             const container = document.getElementById('notes-container');
+            const search = document.getElementById('search-input').value.toLowerCase();
             container.innerHTML = "";
-            notes.forEach(n => {
+            const filtered = notes.filter(n => n.text.toLowerCase().includes(search));
+            filtered.forEach(n => {
                 const div = document.createElement('div');
                 div.className = 'note-item';
-                div.innerHTML = `<small>${n.date}</small><p>${n.text}</p>`;
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between;">
+                        <small style="font-weight:800; color:var(--accent)">${n.date}</small>
+                        <span onclick="deleteNote(${n.id})" style="color:var(--danger); cursor:pointer;">✕</span>
+                    </div>
+                    <p style="margin-top:5px;">${n.text}</p>
+                    <button onclick="sendWA('${encodeURIComponent(n.text)}')" style="background:var(--success); color:white; border:none; padding:5px 10px; border-radius:8px; font-size:0.7rem; margin-top:10px; cursor:pointer;">WhatsApp</button>
+                `;
                 container.appendChild(div);
             });
         }
-        function changeCount(v) { errors += v; document.getElementById('err-display').innerText = errors; }
+
+        function deleteNote(id) {
+            notes = notes.filter(n => n.id !== id);
+            localStorage.setItem('data_notes_pro', JSON.stringify(notes));
+            renderNotes();
+        }
+
+        function sendWA(msg) {
+            window.open(`https://wa.me/?text=${msg}`, '_blank');
+        }
+
+        function changeCount(v) { errors += v; if(errors < 0) errors = 0; document.getElementById('err-display').innerText = errors; }
     </script>
 </body>
 </html>
