@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA - OS</title>
+    <title>DATA - OS SECURE</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
@@ -11,10 +11,10 @@
     
     <style>
         :root {
-            --bg: #020408;
+            --bg: #000000;
             --surface: #0a0f1a;
-            --accent: #00f2ff; /* Cian Eléctrico */
-            --accent-dim: rgba(0, 242, 255, 0.1);
+            --accent: #00f2ff;
+            --accent-glow: rgba(0, 242, 255, 0.2);
             --text: #ffffff;
             --danger: #ff3d00;
         }
@@ -22,212 +22,175 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; overflow: hidden; }
 
-        .screen { display: none; padding: 25px; height: 100vh; overflow-y: auto; transition: 0.3s; }
+        /* NAVEGACIÓN */
+        .screen { display: none; padding: 25px; height: 100vh; overflow-y: auto; }
         .screen.active { display: block !important; animation: fadeIn 0.4s ease; }
 
-        /* --- TARJETAS CON GESTO --- */
-        .swipe-container {
-            position: relative;
-            overflow: hidden;
-            border-radius: 24px;
-            margin-bottom: 12px;
-            background: var(--danger); /* Fondo que se ve al deslizar */
-        }
-
-        .item-card {
+        /* ESTILO DE TARJETAS (DASHBOARD) */
+        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
+        
+        .mod-card {
             background: var(--surface);
             border: 1px solid rgba(255,255,255,0.05);
-            padding: 20px;
-            border-radius: 24px;
-            position: relative;
-            z-index: 2;
-            transition: transform 0.2s ease-out;
-            cursor: grab;
+            padding: 24px;
+            border-radius: 28px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .mod-card:active { transform: scale(0.96); background: rgba(255,255,255,0.05); }
+        .icon-box { 
+            width: 50px; height: 50px; border-radius: 15px; background: rgba(255,255,255,0.03);
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
         }
 
-        .swipe-label {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: white;
-            font-weight: 900;
-            font-size: 0.7rem;
-            z-index: 1;
-        }
+        /* BÓVEDA PIN */
+        .pin-dots { display: flex; justify-content: center; gap: 15px; margin: 40px 0; }
+        .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--accent); }
+        .dot.active { background: var(--accent); box-shadow: 0 0 15px var(--accent); }
 
-        /* --- BÓVEDA CON PIN --- */
-        .pin-display {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 30px 0;
-        }
-        .pin-dot {
-            width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--accent);
-        }
-        .pin-dot.filled { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
-
-        .numpad {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 250px; margin: 0 auto;
-        }
-        .num-btn {
-            width: 60px; height: 60px; border-radius: 50%; background: var(--glass);
-            border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 1.5rem;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 280px; margin: 0 auto; }
+        .num-btn { 
+            height: 70px; border-radius: 50%; background: var(--surface); border: 1px solid rgba(255,255,255,0.1);
+            color: white; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;
         }
         .num-btn:active { background: var(--accent); color: black; }
 
-        /* --- DISEÑO ATRACTIVO --- */
+        /* ENLACES DE LA BÓVEDA */
         .vault-link {
-            background: linear-gradient(90deg, var(--surface) 0%, #16213e 100%);
-            border: 1px solid var(--accent-dim);
-            padding: 20px; border-radius: 20px; margin-top: 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            text-decoration: none; color: white;
+            background: linear-gradient(90deg, #0a0f1a 0%, #16213e 100%);
+            padding: 20px; border-radius: 22px; margin-bottom: 12px; display: flex;
+            justify-content: space-between; align-items: center; text-decoration: none; color: white;
+            border-left: 4px solid var(--accent);
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div id="dashboard" class="screen active">
-        <h1 style="font-weight: 900; font-size: 2.5rem; margin-bottom: 5px;">DATA</h1>
-        <p style="color: var(--accent); letter-spacing: 3px; font-size: 0.7rem; font-weight: 900; margin-bottom: 30px;">SECURE OS</p>
+        <h1 style="font-weight: 900; font-size: 2.8rem;">DATA</h1>
+        <p style="color: var(--accent); letter-spacing: 4px; font-weight: 900; font-size: 0.7rem; margin-bottom: 40px;">SECURE INTERFACE</p>
         
         <div class="grid">
-            <div class="item-card" onclick="showModule('mod-vault')" style="border: 1px solid var(--accent-dim);">
-                <span style="font-size: 1.5rem;">🔐</span>
-                <div><strong>Bóveda de Enlaces</strong><small style="opacity:0.5; display:block;">Acceso restringido</small></div>
+            <div class="mod-card" onclick="showModule('mod-vault')" style="border: 1px solid var(--accent-glow);">
+                <div class="icon-box">🔐</div>
+                <div><strong>Bóveda de Enlaces</strong><small style="display:block; opacity:0.5;">Requiere PIN de seguridad</small></div>
             </div>
 
-            <div class="item-card" onclick="showModule('mod-reminders')">
-                <span style="font-size: 1.5rem;">🚨</span>
-                <div><strong>Recordatorios</strong><small style="opacity:0.5; display:block;">Desliza para eliminar</small></div>
+            <div class="mod-card" onclick="showModule('mod-notes')">
+                <div class="icon-box">📂</div>
+                <div><strong>Mis Datos</strong><small style="display:block; opacity:0.5;">Historial de reportes</small></div>
+            </div>
+
+            <div class="mod-card" onclick="showModule('mod-reminders')">
+                <div class="icon-box">⏰</div>
+                <div><strong>Recordatorios</strong><small style="display:block; opacity:0.5;">Tareas pendientes</small></div>
             </div>
         </div>
     </div>
 
     <div id="mod-vault" class="screen">
-        <span onclick="showModule('dashboard')" style="color:var(--accent); cursor:pointer;">← CANCELAR</span>
-        <div id="pin-screen" style="text-align: center; margin-top: 50px;">
-            <h2 style="font-weight: 900;">INGRESE PIN</h2>
-            <div class="pin-display" id="pin-dots">
-                <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+        <span onclick="showModule('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer;">← SALIR</span>
+        
+        <div id="pin-screen" style="text-align: center; margin-top: 40px;">
+            <h2 style="font-weight: 900; margin-bottom: 10px;">SEGURIDAD</h2>
+            <p style="opacity:0.5; font-size:0.8rem;">Ingrese el código de acceso</p>
+            
+            <div class="pin-dots" id="dots-container">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
             </div>
+
             <div class="numpad">
-                <div class="num-btn" onclick="pressPin(1)">1</div><div class="num-btn" onclick="pressPin(2)">2</div><div class="num-btn" onclick="pressPin(3)">3</div>
-                <div class="num-btn" onclick="pressPin(4)">4</div><div class="num-btn" onclick="pressPin(5)">5</div><div class="num-btn" onclick="pressPin(6)">6</div>
-                <div class="num-btn" onclick="pressPin(7)">7</div><div class="num-btn" onclick="pressPin(8)">8</div><div class="num-btn" onclick="pressPin(9)">9</div>
-                <div></div><div class="num-btn" onclick="pressPin(0)">0</div>
+                <div class="num-btn" onclick="addPin('1')">1</div>
+                <div class="num-btn" onclick="addPin('2')">2</div>
+                <div class="num-btn" onclick="addPin('3')">3</div>
+                <div class="num-btn" onclick="addPin('4')">4</div>
+                <div class="num-btn" onclick="addPin('5')">5</div>
+                <div class="num-btn" onclick="addPin('6')">6</div>
+                <div class="num-btn" onclick="addPin('7')">7</div>
+                <div class="num-btn" onclick="addPin('8')">8</div>
+                <div class="num-btn" onclick="addPin('9')">9</div>
+                <div></div><div class="num-btn" onclick="addPin('0')">0</div><div class="num-btn" onclick="clearPin()">C</div>
             </div>
         </div>
 
-        <div id="vault-content" style="display: none;">
-            <h2 style="color: var(--accent); margin-bottom: 20px;">Enlaces Seguros</h2>
-            <a href="#" class="vault-link">
-                <div><strong>Google Drive Proyecto</strong><small style="display:block; opacity:0.5;">Carpeta de evidencias</small></div>
+        <div id="vault-content" style="display:none;">
+            <h2 style="color: var(--accent); margin-bottom: 25px;">Archivos Seguros</h2>
+            <a href="https://drive.google.com" target="_blank" class="vault-link">
+                <div><strong>Drive del Proyecto</strong><small style="display:block; opacity:0.5;">Documentación confidencial</small></div>
                 <span>🚀</span>
             </a>
             <a href="#" class="vault-link">
-                <div><strong>Descargar APK Beta</strong><small style="display:block; opacity:0.5;">Versión 1.0.4</small></div>
+                <div><strong>Repositorio APK</strong><small style="display:block; opacity:0.5;">Versión 2.0 estable</small></div>
                 <span>📲</span>
             </a>
         </div>
     </div>
 
+    <div id="mod-notes" class="screen">
+        <span onclick="showModule('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer;">← VOLVER</span>
+        <h2 style="margin-top:20px;">Mis Datos</h2>
+    </div>
+
     <div id="mod-reminders" class="screen">
-        <span onclick="showModule('dashboard')" style="color:var(--accent); cursor:pointer;">← VOLVER</span>
-        <h2 style="margin: 20px 0;">Recordatorios</h2>
-        
-        <div id="reminders-list">
-            <div class="swipe-container" id="rem-1">
-                <div class="swipe-label">ELIMINAR</div>
-                <div class="item-card" 
-                     ontouchstart="handleTouchStart(event)" 
-                     ontouchmove="handleTouchMove(event)" 
-                     ontouchend="handleTouchEnd(event)">
-                    <span style="font-size: 1.2rem;">📌</span>
-                    <div><strong>Revisar diseño UI</strong><small style="display:block; opacity:0.5;">Hoy 15:00</small></div>
-                </div>
-            </div>
-        </div>
+        <span onclick="showModule('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer;">← VOLVER</span>
+        <h2 style="margin-top:20px;">Recordatorios</h2>
     </div>
 
     <script>
-        // --- LÓGICA DE PIN ---
-        let enteredPin = "";
-        const correctPin = "1234"; // Aquí puedes cambiar el PIN
+        // NAVEGACIÓN
+        function showModule(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            // Si sale de la bóveda, resetear PIN
+            if(id !== 'mod-vault') {
+                resetVault();
+            }
+        }
 
-        function pressPin(num) {
-            if(enteredPin.length < 4) {
-                enteredPin += num;
-                updatePinDots();
-                if(enteredPin.length === 4) {
-                    if(enteredPin === correctPin) {
+        // LÓGICA DE PIN
+        let pin = "";
+        const MASTER_PIN = "1234"; // TU PIN DE SEGURIDAD
+
+        function addPin(n) {
+            if(pin.length < 4) {
+                pin += n;
+                drawDots();
+                
+                if(pin.length === 4) {
+                    if(pin === MASTER_PIN) {
                         document.getElementById('pin-screen').style.display = 'none';
                         document.getElementById('vault-content').style.display = 'block';
                     } else {
                         alert("PIN INCORRECTO");
-                        enteredPin = "";
-                        updatePinDots();
+                        clearPin();
                     }
                 }
             }
         }
 
-        function updatePinDots() {
-            const dots = document.querySelectorAll('.pin-dot');
+        function clearPin() {
+            pin = "";
+            drawDots();
+        }
+
+        function drawDots() {
+            const dots = document.querySelectorAll('.dot');
             dots.forEach((dot, i) => {
-                dot.classList.toggle('filled', i < enteredPin.length);
+                dot.classList.toggle('active', i < pin.length);
             });
         }
 
-        // --- LÓGICA DE SWIPE (GESTOS) ---
-        let startX = 0;
-        let currentElement = null;
-
-        function handleTouchStart(e) {
-            startX = e.touches[0].clientX;
-            currentElement = e.currentTarget;
-            currentElement.style.transition = 'none';
-        }
-
-        function handleTouchMove(e) {
-            let diff = e.touches[0].clientX - startX;
-            if (diff < 0) { // Solo deslizar a la izquierda
-                currentElement.style.transform = `translateX(${diff}px)`;
-            }
-        }
-
-        function handleTouchEnd(e) {
-            let diff = e.changedTouches[0].clientX - startX;
-            currentElement.style.transition = 'transform 0.3s ease';
-            
-            if (diff < -150) { // Si deslizó más de 150px
-                currentElement.style.transform = 'translateX(-100%)';
-                setTimeout(() => {
-                    currentElement.parentElement.style.display = 'none';
-                }, 300);
-            } else {
-                currentElement.style.transform = 'translateX(0)';
-            }
-        }
-
-        function showModule(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            // Reset de bóveda si sale
-            if(id !== 'mod-vault') {
-                enteredPin = "";
-                updatePinDots();
-                document.getElementById('pin-screen').style.display = 'block';
-                document.getElementById('vault-content').style.display = 'none';
-            }
+        function resetVault() {
+            pin = "";
+            drawDots();
+            document.getElementById('pin-screen').style.display = 'block';
+            document.getElementById('vault-content').style.display = 'none';
         }
     </script>
 </body>
