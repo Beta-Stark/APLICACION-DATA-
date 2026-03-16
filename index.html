@@ -3,157 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA OS - Personal Private</title>
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
+    <title>DATA OS - Alarm Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #F0F4F8;
-            --surface: #FFFFFF;
-            --accent: #6366F1; /* Azul índigo más personal */
-            --text-main: #1E293B;
-            --text-sub: #64748B;
-            --border: #E2E8F0;
-            --danger: #FF4757;
-            --success: #2ED573;
-            --alarm: #FFA502;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
-
-        /* HEADER */
-        .system-bar {
-            background: var(--surface); padding: 15px 20px; display: none; justify-content: space-between;
-            align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000;
-        }
-
-        .screen { display: none; padding: 20px; width: 100%; min-height: 90vh; animation: fadeIn 0.3s ease; }
+        :root { --bg: #F0F4F8; --surface: #FFFFFF; --accent: #6366F1; --text-main: #1E293B; --alarm: #FFA502; --danger: #FF4757; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; }
+        .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
         .screen.active { display: block !important; }
-        #login-screen.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; }
-
-        /* CARDS */
-        .mod-card { background: var(--surface); padding: 18px; border-radius: 22px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        
-        /* ALARM UI */
-        .alarm-tag { font-size: 0.7rem; background: var(--alarm); color: white; padding: 4px 8px; border-radius: 8px; font-weight: 800; display: inline-block; margin-top: 5px; }
-
-        /* PIN PAD */
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; margin: 20px auto; }
-        .num-btn { height: 60px; border-radius: 18px; border: 1px solid var(--border); background: var(--surface); font-size: 1.3rem; font-weight: 600; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .num-btn:active { background: var(--accent); color: white; }
-
-        /* INPUTS */
-        input, select, textarea { width: 100%; padding: 14px; margin: 8px 0; border-radius: 14px; border: 1px solid var(--border); background: #F8FAFC; font-size: 1rem; outline: none; }
-        .btn-main { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.3s; }
-        .btn-main:active { transform: scale(0.98); opacity: 0.9; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .system-bar { background: var(--surface); padding: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid #ddd; }
+        .mod-card { background: var(--surface); padding: 15px; border-radius: 20px; margin-bottom: 10px; border: 1px solid #eee; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .alarm-tag { font-size: 0.75rem; background: var(--alarm); color: white; padding: 5px 10px; border-radius: 10px; font-weight: 800; display: inline-block; margin-top: 5px; }
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #ccc; font-size: 1rem; }
+        .btn-main { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="system-bar" id="sys-bar">
-        <div id="role-indicator" style="font-weight: 900; color: var(--accent);">USER</div>
-        <button id="install-btn" style="display:none; background:var(--accent); color:white; border:none; padding:5px 10px; border-radius:8px; font-size:0.6rem;">INSTALAR APP</button>
+    <div class="system-bar" id="sys-bar" style="display:none;">
+        <div style="font-weight: 900; color: var(--accent);">DATA OS</div>
         <div id="clock" style="font-weight: 900;">00:00</div>
     </div>
 
-    <div id="login-screen" class="screen active">
-        <div style="text-align: center; width: 90%; max-width: 350px;">
-            <h1 style="font-size: 2.5rem; font-weight: 900; color: var(--accent); letter-spacing: -1px;">DATA OS</h1>
-            <p style="color: var(--text-sub); margin-bottom: 30px;">Private Assistant</p>
-            <input type="text" id="userInput" placeholder="Tu Nombre">
-            <input type="password" id="passInput" placeholder="PIN (1234)">
+    <div id="login-screen" class="screen active" style="text-align:center; padding-top:100px;">
+        <h1 style="font-size: 2.5rem; color: var(--accent);">DATA OS</h1>
+        <p>Private Assistant</p>
+        <div style="padding: 20px;">
+            <input type="password" id="passInput" placeholder="PIN de acceso (1234)">
             <button class="btn-main" onclick="handleLogin()">ACCEDER</button>
         </div>
     </div>
 
     <div id="dashboard" class="screen">
-        <h2 id="welcome-msg" style="font-size: 1.8rem; margin-bottom: 5px;">Hola</h2>
-        <p style="color:var(--text-sub); margin-bottom: 25px;">¿Qué registramos hoy?</p>
-
+        <h2>Panel de Control</h2>
+        <div class="mod-card" onclick="enableNotifications()" style="background: #E0E7FF; border: 2px solid var(--accent);">
+            <strong>🔔 ACTIVAR ALERTAS SONORAS</strong>
+            <small style="display:block;">Toca aquí para que las alarmas funcionen</small>
+        </div>
         <div class="mod-card" onclick="navTo('mod-notes')">
-            <div style="background:#E0E7FF; padding:12px; border-radius:15px;">📝</div>
-            <div><strong>Notas & Recordatorios</strong><small style="display:block; color:var(--text-sub);">Con alarmas activas</small></div>
+            <strong>📝 Notas y Alarmas</strong>
         </div>
-
-        <div class="mod-card" onclick="navTo('mod-vault')">
-            <div style="background:#FEE2E2; padding:12px; border-radius:15px;">🔐</div>
-            <div><strong>Datos Privados</strong><small style="display:block; color:var(--text-sub);">Cifrado de seguridad</small></div>
-        </div>
-
-        <button onclick="location.reload()" style="margin-top:40px; background:none; border:none; color:var(--danger); font-weight:800; width:100%;">CERRAR SESIÓN SEGURA</button>
+        <button onclick="location.reload()" style="width:100%; color:red; margin-top:20px; background:none; border:none; font-weight:800;">CERRAR SESIÓN</button>
     </div>
 
     <div id="mod-notes" class="screen">
-        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:15px;">← INICIO</button>
-        <h2>Nueva Nota</h2>
-        <textarea id="note-text" placeholder="Escribe algo aquí..."></textarea>
-        
-        <div style="margin: 10px 0;">
-            <label style="font-size: 0.8rem; font-weight: 800; color: var(--text-sub);">PROGRAMAR ALARMA (OPCIONAL):</label>
-            <input type="datetime-local" id="note-alarm">
-        </div>
-        
-        <button class="btn-main" onclick="addNote()">GUARDAR NOTA</button>
-        
-        <div id="notes-container" style="margin-top:25px;"></div>
-    </div>
-
-    <div id="mod-vault" class="screen">
-        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:15px;">← INICIO</button>
-        
-        <div id="vault-auth">
-            <h2 style="text-align:center;">PIN de Bóveda</h2>
-            <div id="pin-dots" style="display:flex; justify-content:center; gap:10px; margin:20px;">
-                <div class="dot" style="width:12px; height:12px; border-radius:50%; border:2px solid var(--border);"></div>
-                <div class="dot" style="width:12px; height:12px; border-radius:50%; border:2px solid var(--border);"></div>
-                <div class="dot" style="width:12px; height:12px; border-radius:50%; border:2px solid var(--border);"></div>
-                <div class="dot" style="width:12px; height:12px; border-radius:50%; border:2px solid var(--border);"></div>
-            </div>
-            <div class="numpad">
-                <script>
-                    for(let i=1; i<=9; i++) document.write(`<div class="num-btn" onclick="pressPin('${i}')">${i}</div>`);
-                </script>
-                <div class="num-btn" onclick="clearPin()">C</div>
-                <div class="num-btn" onclick="pressPin('0')">0</div>
-            </div>
-        </div>
-
-        <div id="vault-content" style="display:none;">
-            <h2>Datos Cifrados</h2>
-            <input type="text" id="vault-key" placeholder="Título (ej. Clave Banco)">
-            <input type="text" id="vault-value" placeholder="Dato privado">
-            <button class="btn-main" onclick="saveVaultData()" style="background:var(--text-main);">CIFRAR Y GUARDAR</button>
-            <div id="vault-list" style="margin-top:20px;"></div>
-        </div>
+        <button onclick="navTo('dashboard')" style="margin-bottom:10px;">← VOLVER</button>
+        <h2>Nueva Alarma</h2>
+        <input type="text" id="note-title" placeholder="Título de la alarma">
+        <input type="datetime-local" id="note-alarm">
+        <button class="btn-main" onclick="addNote()">CONFIGURAR ALARMA</button>
+        <div id="notes-container" style="margin-top:20px;"></div>
     </div>
 
     <script>
-        let currentUser = "";
-        let notes = JSON.parse(localStorage.getItem('notes_personal')) || [];
-        let vaultData = JSON.parse(localStorage.getItem('vault_private')) || [];
-        let pinInput = "";
+        let notes = JSON.parse(localStorage.getItem('notes_fix')) || [];
+        let audioCtx = null;
 
-        // Reloj
+        // 1. RELOJ Y CHEQUEO DE ALARMAS
         setInterval(() => {
-            const d = new Date();
-            document.getElementById('clock').innerText = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
-            checkAlarms();
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+            document.getElementById('clock').innerText = timeStr;
+            
+            // Formato para comparar con datetime-local (yyyy-mm-ddThh:mm)
+            const nowISO = now.getFullYear() + "-" + 
+                          (now.getMonth()+1).toString().padStart(2,'0') + "-" + 
+                          now.getDate().toString().padStart(2,'0') + "T" + 
+                          timeStr;
+
+            notes.forEach(n => {
+                if(n.alarm === nowISO && !n.fired) {
+                    triggerAlarm(n);
+                }
+            });
         }, 1000);
 
         function handleLogin() {
-            const u = document.getElementById('userInput').value;
-            const p = document.getElementById('passInput').value;
-            if(p === "1234" && u !== "") {
-                currentUser = u;
-                document.getElementById('welcome-msg').innerText = "Hola, " + u;
+            if(document.getElementById('passInput').value === "1234") {
                 document.getElementById('sys-bar').style.display = 'flex';
                 navTo('dashboard');
-                requestNotifications();
             } else { alert("PIN Incorrecto"); }
         }
 
@@ -161,20 +90,33 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             if(id === 'mod-notes') renderNotes();
-            if(id === 'mod-vault') { pinInput = ""; updateDots(); document.getElementById('vault-auth').style.display='block'; document.getElementById('vault-content').style.display='none'; }
         }
 
-        // NOTAS Y ALARMAS
-        function addNote() {
-            const text = document.getElementById('note-text').value;
-            const alarm = document.getElementById('note-alarm').value;
-            if(!text) return;
+        // 2. ACTIVAR PERMISOS (CRÍTICO)
+        function enableNotifications() {
+            // Inicializar audio (muchos navegadores bloquean sonido si no hay click)
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        alert("✅ Alertas activadas correctamente.");
+                    }
+                });
+            } else {
+                alert("Las alertas ya están activas.");
+            }
+        }
 
-            notes.unshift({ id: Date.now(), text, alarm, done: false });
-            localStorage.setItem('notes_personal', JSON.stringify(notes));
-            document.getElementById('note-text').value = "";
-            document.getElementById('note-alarm').value = "";
+        function addNote() {
+            const title = document.getElementById('note-title').value;
+            const alarm = document.getElementById('note-alarm').value;
+            if(!title || !alarm) return alert("Pon un título y hora");
+
+            notes.unshift({ id: Date.now(), title, alarm, fired: false });
+            localStorage.setItem('notes_fix', JSON.stringify(notes));
             renderNotes();
+            alert("Alarma guardada para: " + alarm.replace('T', ' '));
         }
 
         function renderNotes() {
@@ -183,89 +125,49 @@
             notes.forEach(n => {
                 const div = document.createElement('div');
                 div.className = 'mod-card';
-                div.style.flexDirection = 'column';
-                div.style.alignItems = 'flex-start';
                 div.innerHTML = `
-                    <div style="width:100%; display:flex; justify-content:space-between;">
-                        <p>${n.text}</p>
-                        <span onclick="deleteNote(${n.id})" style="color:var(--danger)">✕</span>
-                    </div>
-                    ${n.alarm ? `<span class="alarm-tag">🔔 ${n.alarm.replace('T', ' ')}</span>` : ''}
+                    <strong>${n.title}</strong>
+                    <div class="alarm-tag">⏰ ${n.alarm.replace('T', ' ')}</div>
+                    <button onclick="deleteNote(${n.id})" style="float:right; color:red; background:none; border:none;">Borrar</button>
                 `;
                 container.appendChild(div);
             });
         }
 
-        function checkAlarms() {
-            const now = new Date().toISOString().slice(0, 16);
-            notes.forEach(n => {
-                if(n.alarm === now && !n.done) {
-                    n.done = true;
-                    alert("⏰ ALARMA: " + n.text);
-                    if(Notification.permission === "granted") new Notification("DATA OS", { body: n.text });
-                }
-            });
-        }
+        // 3. DISPARAR ALARMA (SONIDO + NOTIFICACIÓN)
+        function triggerAlarm(note) {
+            note.fired = true;
+            localStorage.setItem('notes_fix', JSON.stringify(notes));
 
-        // BÓVEDA CIFRADA (Base64 como cifrado simple para demo)
-        function pressPin(n) {
-            if(pinInput.length < 4) {
-                pinInput += n;
-                updateDots();
-                if(pinInput === "1234") {
-                    document.getElementById('vault-auth').style.display='none';
-                    document.getElementById('vault-content').style.display='block';
-                    renderVault();
-                }
+            // Sonido electrónico
+            if(audioCtx) {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = "sine";
+                osc.frequency.value = 880; // Nota La
+                osc.start();
+                setTimeout(() => osc.stop(), 2000); // 2 segundos de pitido
             }
-        }
-        function updateDots() {
-            const dots = document.querySelectorAll('.dot');
-            dots.forEach((d, i) => d.style.background = i < pinInput.length ? 'var(--accent)' : 'none');
-        }
-        function clearPin() { pinInput = ""; updateDots(); }
 
-        function saveVaultData() {
-            const k = document.getElementById('vault-key').value;
-            const v = document.getElementById('vault-value').value;
-            if(!k || !v) return;
-            // Cifrado simple para que no se vea en texto plano
-            vaultData.unshift({ k, v: btoa(v) }); 
-            localStorage.setItem('vault_private', JSON.stringify(vaultData));
-            renderVault();
+            // Notificación Visual
+            if (Notification.permission === "granted") {
+                new Notification("🚨 ALARMA DATA OS", {
+                    body: note.title,
+                    icon: "https://cdn-icons-png.flaticon.com/512/1827/1827347.png"
+                });
+            }
+            
+            alert("⏰ ALARMA AHORA: " + note.title);
+            renderNotes();
         }
 
-        function renderVault() {
-            const container = document.getElementById('vault-list');
-            container.innerHTML = "";
-            vaultData.forEach((d, i) => {
-                container.innerHTML += `
-                    <div class="mod-card" style="justify-content:space-between; background:#F1F5F9;">
-                        <div><strong>${d.k}:</strong> <span>${atob(d.v)}</span></div>
-                        <span onclick="deleteVault(${i})" style="color:var(--danger)">✕</span>
-                    </div>`;
-            });
+        function deleteNote(id) {
+            notes = notes.filter(n => n.id !== id);
+            localStorage.setItem('notes_fix', JSON.stringify(notes));
+            renderNotes();
         }
-
-        function deleteNote(id) { notes = notes.filter(n => n.id !== id); localStorage.setItem('notes_personal', JSON.stringify(notes)); renderNotes(); }
-        function deleteVault(i) { vaultData.splice(i,1); localStorage.setItem('vault_private', JSON.stringify(vaultData)); renderVault(); }
-
-        function requestNotifications() { Notification.requestPermission(); }
-
-        // Lógica PWA simple
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('install-btn').style.display = 'block';
-        });
-
-        document.getElementById('install-btn').addEventListener('click', () => {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choice) => {
-                if (choice.outcome === 'accepted') document.getElementById('install-btn').style.display = 'none';
-            });
-        });
     </script>
 </body>
 </html>
