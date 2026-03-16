@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA OS - Enterprise Edition</title>
+    <title>DATA OS - Professional Edition</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     
@@ -17,185 +17,235 @@
             --border: #E2E8F0;
             --success: #10B981;
             --danger: #EF4444;
+            --note-bg: #FFFBEB;
+            --note-text: #92400E;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
 
+        /* BARRA DE ESTADO */
         .system-bar {
             background: var(--surface); padding: 12px 20px; display: flex; justify-content: space-between;
             align-items: center; border-bottom: 1px solid var(--border); font-size: 0.75rem; font-weight: 800;
         }
 
-        .screen { display: none; padding: 20px; height: 100vh; overflow-y: auto; }
-        .screen.active { display: block !important; animation: fadeIn 0.3s ease; }
+        /* PANTALLAS */
+        .screen { display: none; padding: 20px; min-height: 100vh; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block !important; }
 
         /* LOGIN */
-        #login-screen { display: none; flex-direction: column; align-items: center; justify-content: center; }
+        #login-screen { flex-direction: column; align-items: center; justify-content: center; display: none; }
         #login-screen.active { display: flex !important; }
         .login-card { background: var(--surface); padding: 40px; border-radius: 35px; width: 90%; max-width: 360px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
 
         /* DASHBOARD */
-        .grid-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .grid-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
         .mod-card { 
             background: var(--surface); padding: 20px; border-radius: 24px; border: 1px solid var(--border);
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer;
+            position: relative; overflow: hidden;
         }
+        .mod-card:active { transform: scale(0.97); }
         .full-card { grid-column: span 2; display: flex; align-items: center; gap: 15px; }
 
-        /* BLOC DE NOTAS */
-        .notes-area {
-            width: 100%; height: 200px; padding: 15px; border-radius: 20px;
-            border: 1px solid var(--border); background: #FFFBEB; /* Tono papel post-it */
-            font-size: 1rem; color: #92400E; outline: none; resize: none;
-        }
-
         /* CONTADOR */
-        .counter-box { background: var(--text-main); color: white; padding: 15px; border-radius: 20px; text-align: center; }
-        .counter-controls { display: flex; justify-content: center; gap: 20px; align-items: center; margin-top: 10px; }
-        .btn-c { width: 40px; height: 40px; border-radius: 50%; border: none; font-size: 1.2rem; font-weight: 900; cursor: pointer; }
+        .counter-box { background: var(--text-main); color: white; padding: 20px; border-radius: 24px; text-align: center; margin-bottom: 15px; }
+        .counter-controls { display: flex; justify-content: center; gap: 25px; align-items: center; margin-top: 10px; }
+        .btn-c { width: 45px; height: 45px; border-radius: 50%; border: none; font-size: 1.5rem; font-weight: 900; cursor: pointer; background: var(--surface); color: var(--text-main); }
 
-        input, select { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid var(--border); background: #F1F5F9; }
-        .btn-main { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; margin-top: 10px; }
+        /* NOTAS */
+        .note-item { background: var(--note-bg); padding: 15px; border-radius: 18px; margin-bottom: 12px; border: 1px solid #FEF3C7; }
+        .notes-area { width: 100%; height: 100px; padding: 15px; border-radius: 15px; border: 1px solid var(--border); background: #F8FAFC; outline: none; resize: none; font-size: 1rem; }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* FORMULARIOS */
+        input, select { width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); background: #F1F5F9; font-size: 1rem; }
+        .btn-main { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; margin-top: 10px; cursor: pointer; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div class="system-bar" id="sys-bar" style="display:none;">
         <div style="color:var(--success)">● <span id="role-indicator">SISTEMA</span></div>
-        <div id="sync-status" style="color:var(--accent); font-size:0.6rem;">SINCRONIZADO</div>
+        <div id="sync-status" style="color:var(--accent); font-size:0.6rem; opacity:0;">Sincronizado</div>
+        <div id="clock">00:00</div>
     </div>
 
     <div id="login-screen" class="screen active">
         <div class="login-card">
-            <h1 style="font-size: 2.2rem; font-weight: 900; margin-bottom: 5px;">DATA OS</h1>
-            <p style="color: var(--text-sub); margin-bottom: 25px;">Acceso Jerárquico</p>
+            <h1 style="font-size: 2.2rem; font-weight: 900; color: var(--accent);">DATA OS</h1>
+            <p style="color: var(--text-sub); margin-bottom: 25px;">Acceso por Jerarquía</p>
             
             <input type="text" id="userInput" placeholder="Nombre de Usuario">
             <select id="roleInput">
-                <option value="superadmin">Super Admin</option>
-                <option value="tempadmin">Admin Temporal</option>
-                <option value="cliente">Cliente</option>
+                <option value="superadmin">Super Administrador</option>
+                <option value="tempadmin">Administrador Temporal</option>
+                <option value="cliente">Usuario Cliente</option>
             </select>
             <input type="password" id="passInput" placeholder="PIN (1234)">
             
-            <button class="btn-main" onclick="login()">INICIAR SESIÓN</button>
+            <button class="btn-main" onclick="handleLogin()">INICIAR SESIÓN</button>
         </div>
     </div>
 
     <div id="dashboard" class="screen">
-        <h1 id="welcome-text" style="font-size: 2rem; font-weight: 900; margin-bottom: 20px;">Hola</h1>
+        <div style="margin-bottom: 25px;">
+            <p id="user-role-label" style="font-size: 0.65rem; font-weight: 900; color: var(--accent); letter-spacing: 2px;"></p>
+            <h1 id="welcome-msg" style="font-size: 2.2rem; font-weight: 900;">Hola</h1>
+        </div>
+
+        <div id="error-module" class="counter-box" style="display:none;">
+            <p style="font-size: 0.7rem; font-weight: 800; letter-spacing: 1px;">ERRORES DE SESIÓN</p>
+            <div class="counter-controls">
+                <button class="btn-c" onclick="changeCount(-1)">-</button>
+                <span id="err-display" style="font-size: 2.5rem; font-weight: 900;">0</span>
+                <button class="btn-c" onclick="changeCount(1)">+</button>
+            </div>
+        </div>
 
         <div class="grid-tools">
             <div class="mod-card full-card" onclick="navTo('mod-notes')">
                 <span style="font-size: 1.5rem;">📝</span>
-                <div><strong>Bloc de Notas</strong><small style="display:block; color:var(--text-sub);">Borrador rápido personal</small></div>
-            </div>
-
-            <div id="error-counter-mod" class="mod-card full-card counter-box" style="display:none;">
-                <strong>ERRORES DETECTADOS</strong>
-                <div class="counter-controls">
-                    <button class="btn-c" onclick="updateCount(-1)">-</button>
-                    <span id="err-count" style="font-size: 2rem; font-weight: 900;">0</span>
-                    <button class="btn-c" onclick="updateCount(1)">+</button>
-                </div>
+                <div><strong>Bloc de Notas</strong><small style="display:block; color:var(--text-sub);">Gestionar historial de notas</small></div>
             </div>
 
             <div class="mod-card" onclick="navTo('mod-vault')">
                 <span>🔐</span><br><strong>Bóveda</strong>
             </div>
             
-            <div class="mod-card" onclick="alert('Módulo de Tareas en desarrollo')">
+            <div class="mod-card" onclick="alert('Tareas en desarrollo...')">
                 <span>⏰</span><br><strong>Tareas</strong>
             </div>
         </div>
 
-        <button onclick="location.reload()" style="margin-top:40px; background:none; border:none; color:var(--danger); font-weight:800; width:100%;">SALIR DEL SISTEMA</button>
+        <button onclick="location.reload()" style="margin-top:40px; background:none; border:none; color:var(--danger); font-weight:800; width:100%;">CERRAR SESIÓN</button>
     </div>
 
     <div id="mod-notes" class="screen">
-        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← GUARDAR Y VOLVER</button>
-        <h2 style="margin-bottom: 10px;">Mi Bloc de Notas</h2>
-        <p style="color:var(--text-sub); font-size:0.8rem; margin-bottom:20px;">Lo que escribas aquí se guarda automáticamente en este dispositivo.</p>
+        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← VOLVER AL MENÚ</button>
         
-        <textarea id="quick-note" class="notes-area" placeholder="Escribe algo aquí..."></textarea>
-        
-        <button class="btn-main" style="background:var(--danger); margin-top:20px;" onclick="clearNote()">BORRAR TODO</button>
+        <h2>Mis Notas</h2>
+        <div style="background: white; padding: 15px; border-radius: 20px; border: 1px solid var(--border); margin: 20px 0;">
+            <textarea id="note-text" class="notes-area" placeholder="Escribe algo importante..."></textarea>
+            <button class="btn-main" onclick="addNote()">GUARDAR NOTA</button>
+        </div>
+
+        <div id="notes-container"></div>
+        <button id="clear-notes-btn" class="btn-main" style="background:var(--danger); display:none;" onclick="clearAllNotes()">BORRAR TODO EL HISTORIAL</button>
     </div>
 
     <div id="mod-vault" class="screen">
         <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← VOLVER</button>
-        <h2 id="vault-title">Bóveda</h2>
-        <div id="vault-content" style="margin-top:20px;"></div>
+        <h2 id="vault-title">Bóveda de Recursos</h2>
+        <div id="vault-items" style="margin-top: 20px;"></div>
     </div>
 
     <script>
-        let currentRole = "";
-        let errorCount = 0;
+        let userData = { name: "", role: "" };
+        let notes = JSON.parse(localStorage.getItem('data_notes')) || [];
+        let errors = 0;
 
-        // Cargar nota guardada al iniciar
-        window.onload = () => {
-            if(localStorage.getItem('user_note')) {
-                document.getElementById('quick-note').value = localStorage.getItem('user_note');
-            }
-        };
+        // RELOJ
+        setInterval(() => {
+            const d = new Date();
+            document.getElementById('clock').innerText = d.getHours() + ":" + String(d.getMinutes()).padStart(2, '0');
+        }, 1000);
 
-        function login() {
+        // LOGIN
+        function handleLogin() {
+            const user = document.getElementById('userInput').value.trim();
             const pass = document.getElementById('passInput').value;
-            const user = document.getElementById('userInput').value;
             const role = document.getElementById('roleInput').value;
 
-            if(pass === "1234") {
-                currentRole = role;
-                document.getElementById('welcome-text').innerText = "Hola, " + user;
-                document.getElementById('sys-bar').style.display = 'flex';
-                document.getElementById('role-indicator').innerText = role.toUpperCase();
+            if (pass === "1234" && user !== "") {
+                userData.name = user;
+                userData.role = role;
                 
-                setupPermissions();
+                document.getElementById('welcome-msg').innerText = "Hola, " + user;
+                document.getElementById('user-role-label').innerText = role.toUpperCase();
+                document.getElementById('sys-bar').style.display = 'flex';
+                document.getElementById('role-indicator').innerText = role;
+
+                applyPermissions();
                 navTo('dashboard');
-            } else { alert("PIN Incorrecto"); }
+            } else { alert("Datos incorrectos"); }
         }
 
-        function setupPermissions() {
-            if(currentRole === 'superadmin' || currentRole === 'tempadmin') {
-                document.getElementById('error-counter-mod').style.display = 'block';
-            }
+        // PERMISOS
+        function applyPermissions() {
+            // Mostrar contador solo a admins
+            document.getElementById('error-module').style.display = (userData.role !== 'cliente') ? 'block' : 'none';
         }
 
-        function updateCount(val) {
-            errorCount += val;
-            if(errorCount < 0) errorCount = 0;
-            document.getElementById('err-count').innerText = errorCount;
-        }
-
+        // NAVEGACIÓN
         function navTo(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            
-            // Auto-guardado al salir de notas
-            if(id === 'dashboard') {
-                const noteVal = document.getElementById('quick-note').value;
-                localStorage.setItem('user_note', noteVal);
-            }
+            if(id === 'mod-notes') renderNotes();
             if(id === 'mod-vault') renderVault();
         }
 
-        function clearNote() {
-            if(confirm("¿Borrar toda la nota?")) {
-                document.getElementById('quick-note').value = "";
-                localStorage.removeItem('user_note');
+        // CONTADOR
+        function changeCount(v) {
+            errors += v;
+            if(errors < 0) errors = 0;
+            document.getElementById('err-display').innerText = errors;
+        }
+
+        // NOTAS (CRUD)
+        function addNote() {
+            const txt = document.getElementById('note-text').value.trim();
+            if(!txt) return;
+
+            const n = { id: Date.now(), text: txt, date: new Date().toLocaleString() };
+            notes.unshift(n);
+            localStorage.setItem('data_notes', JSON.stringify(notes));
+            document.getElementById('note-text').value = "";
+            renderNotes();
+        }
+
+        function renderNotes() {
+            const container = document.getElementById('notes-container');
+            container.innerHTML = "";
+            document.getElementById('clear-notes-btn').style.display = notes.length ? 'block' : 'none';
+
+            notes.forEach(n => {
+                const div = document.createElement('div');
+                div.className = 'note-item';
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <small style="color:var(--note-text); font-weight:900;">${n.date}</small>
+                        <span onclick="deleteNote(${n.id})" style="color:var(--danger); cursor:pointer; font-weight:900;">✕</span>
+                    </div>
+                    <p style="color:var(--note-text); white-space:pre-wrap;">${n.text}</p>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function deleteNote(id) {
+            notes = notes.filter(n => n.id !== id);
+            localStorage.setItem('data_notes', JSON.stringify(notes));
+            renderNotes();
+        }
+
+        function clearAllNotes() {
+            if(confirm("¿Borrar todo?")) {
+                notes = [];
+                localStorage.removeItem('data_notes');
+                renderNotes();
             }
         }
 
+        // BÓVEDA
         function renderVault() {
-            const v = document.getElementById('vault-content');
-            let html = `<div class="mod-card full-card">📄 Reporte_Mensual.pdf</div>`;
-            if(currentRole === 'superadmin') {
-                html += `<div class="mod-card full-card" style="border-color:var(--accent)">✏️ EDITAR DOCUMENTOS MAESTROS</div>`;
+            const container = document.getElementById('vault-items');
+            container.innerHTML = `<div class="mod-card full-card">📄 Manual_Operativo.pdf</div>`;
+            if(userData.role === 'superadmin') {
+                container.innerHTML += `<div class="mod-card full-card" style="border: 2px dashed var(--accent);">🛠️ CONFIGURACIÓN MAESTRA (Root)</div>`;
             }
-            v.innerHTML = html;
         }
     </script>
 </body>
