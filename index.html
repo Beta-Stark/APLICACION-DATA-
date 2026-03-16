@@ -5,202 +5,182 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>DATA - OS</title>
     
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg: #030508;
-            --surface: #0a0f1a;
-            --glass: rgba(255, 255, 255, 0.02);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --accent: #7c4dff; /* Violeta Eléctrico tipo Android Dark */
-            --accent-glow: rgba(124, 77, 255, 0.3);
-            --text: #e0e0e0;
+            --bg: #000000;
+            --surface: #0f1218;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.07);
+            --accent: #7c4dff;
+            --text: #ffffff;
             --high: #ff1744;
             --mid: #ffea00;
+            --low: #00e676;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            background: var(--bg); 
-            color: var(--text); 
-            min-height: 100vh; 
-            overflow-x: hidden;
-            background-image: radial-gradient(circle at 50% -20%, #1a1a2e 0%, #030508 80%);
-        }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-        /* --- CONTENEDORES --- */
-        .screen { display: none; padding: 20px; min-height: 100vh; animation: screenIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .screen { display: none; padding: 20px; animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .screen.active { display: block !important; }
 
-        /* --- LOGIN (REDiseñado) --- */
-        #login-screen {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 40px; text-align: center;
-        }
-        .login-logo {
-            font-size: 4rem; font-weight: 900; letter-spacing: -3px;
-            background: linear-gradient(to bottom, #fff, #666);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
-        }
-
         /* --- DASHBOARD --- */
-        .header { margin: 30px 0 40px 0; }
-        .header h1 { font-weight: 900; font-size: 2.5rem; color: #fff; }
-        .header p { color: var(--accent); font-size: 0.7rem; letter-spacing: 3px; font-weight: 600; }
+        .header { margin: 30px 0; }
+        .header h1 { font-weight: 900; font-size: 2.2rem; }
+        .header p { color: var(--accent); font-size: 0.7rem; letter-spacing: 2px; font-weight: 800; }
 
-        .grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
-
-        /* --- TARJETAS ESTILO ANDROID --- */
-        .mod-card {
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            padding: 24px;
-            border-radius: 28px; /* Bordes más redondeados tipo Android 14 */
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(20px);
-        }
+        /* --- LISTAS ESTILO ANDROID --- */
+        .data-list { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
         
-        .mod-card::after {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.05), transparent);
-            transform: translateX(-100%); transition: 0.5s;
-        }
-        .mod-card:active::after { transform: translateX(100%); }
-        .mod-card:active { transform: scale(0.96); background: rgba(255,255,255,0.05); }
-
-        .icon-box {
-            width: 56px; height: 56px; border-radius: 18px;
+        .item-card {
             background: var(--surface);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 24px; border: 1px solid var(--glass-border);
+            border: 1px solid var(--glass-border);
+            padding: 18px;
+            border-radius: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .admin-style { 
-            background: var(--accent) !important; 
-            box-shadow: 0 10px 30px var(--accent-glow);
-            border: none;
+        .item-card .tag {
+            font-size: 0.6rem;
+            font-weight: 900;
+            padding: 4px 10px;
+            border-radius: 8px;
+            width: fit-content;
+            text-transform: uppercase;
         }
-        .admin-style span, .admin-style small, .admin-style i { color: #fff !important; }
-        .admin-style .icon-box { background: rgba(255,255,255,0.2); border: none; }
 
-        /* --- ELEMENTOS DE UI --- */
+        /* --- INPUTS Y FORMULARIOS --- */
+        .input-group { background: var(--surface); padding: 20px; border-radius: 28px; border: 1px solid var(--glass-border); margin-bottom: 25px; }
+        label { font-size: 0.7rem; opacity: 0.6; margin-left: 10px; font-weight: 600; }
+        
         input, textarea, select {
-            width: 100%; padding: 20px; margin: 12px 0; border-radius: 22px;
-            border: 1px solid var(--glass-border); background: var(--surface);
-            color: #fff; font-size: 16px; transition: 0.3s;
+            width: 100%; padding: 16px; margin: 8px 0 18px 0; border-radius: 18px;
+            border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03);
+            color: #fff; font-size: 15px; outline: none;
         }
-        input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
 
         .btn-main {
-            width: 100%; padding: 20px; background: #fff; color: #000;
-            border: none; border-radius: 22px; font-weight: 800; cursor: pointer;
-            text-transform: uppercase; letter-spacing: 1px; margin-top: 10px;
+            width: 100%; padding: 18px; background: var(--accent); color: #fff;
+            border: none; border-radius: 18px; font-weight: 800; cursor: pointer;
         }
 
-        .back-nav { 
-            display: inline-flex; align-items: center; gap: 8px;
-            color: var(--accent); margin-bottom: 30px; font-weight: 600; font-size: 0.9rem;
+        .floating-btn {
+            position: fixed; bottom: 30px; right: 20px;
+            width: 60px; height: 60px; background: var(--accent);
+            border-radius: 20px; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; box-shadow: 0 10px 20px rgba(124, 77, 255, 0.4);
         }
 
-        /* --- RECORDATORIOS --- */
-        .rem-card {
-            background: var(--surface); padding: 20px; border-radius: 24px; margin-bottom: 12px;
-            border: 1px solid var(--glass-border);
-        }
+        /* --- ESTILOS PRIORIDAD --- */
         .prio-high { border-left: 4px solid var(--high); }
         .prio-mid { border-left: 4px solid var(--mid); }
+        .prio-low { border-left: 4px solid var(--low); }
 
-        @keyframes screenIn { 
-            from { opacity: 0; transform: translateY(20px) scale(0.98); } 
-            to { opacity: 1; transform: translateY(0) scale(1); } 
-        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="login-screen" class="screen active">
-        <div class="login-logo">DATA</div>
-        <p style="color: var(--accent); letter-spacing: 5px; font-weight: 600; font-size: 0.6rem; margin-bottom: 40px;">CORE OS</p>
-        
-        <div style="width: 100%; max-width: 320px;">
-            <input type="text" id="userInput" placeholder="Identificador">
-            <input type="password" id="passInput" placeholder="Security Key">
-            <button class="btn-main" onclick="accessApp()">Iniciar Sesión</button>
+    <div id="login-screen" class="screen active" style="text-align:center; padding-top: 150px;">
+        <h1 style="font-size: 4rem; font-weight: 900;">DATA</h1>
+        <div style="max-width: 300px; margin: 40px auto;">
+            <input type="text" id="userInput" placeholder="Usuario">
+            <input type="password" id="passInput" placeholder="Contraseña">
+            <button class="btn-main" onclick="accessApp()">ENTRAR</button>
         </div>
     </div>
 
     <div id="dashboard" class="screen">
         <div class="header">
-            <p id="date-now">SISTEMA ACTIVO</p>
-            <h1 id="user-title">USER</h1>
+            <p id="date-now">SYSTEM ONLINE</p>
+            <h1 id="user-title">HOLA</h1>
         </div>
 
-        <div class="grid">
-            <div id="admin-card" class="mod-card admin-style" style="display:none;" onclick="showModule('mod-admin')">
-                <div class="icon-box"><i>🛡️</i></div>
-                <div><span>PANEL MAESTRO</span><small>Administrar Unidad</small></div>
+        <div class="data-list" id="main-grid">
+            <div class="item-card" onclick="showModule('mod-notes')" style="flex-direction: row; align-items: center;">
+                <span style="font-size: 24px;">📂</span>
+                <div><strong style="display:block;">Mis Datos</strong><small style="opacity:0.5;">Ver mi historial de reportes</small></div>
             </div>
-
-            <div class="mod-card" onclick="showModule('mod-notes')">
-                <div class="icon-box"><i>📂</i></div>
-                <div><span>Mis Datos</span><small>Reportes de campo</small></div>
-            </div>
-
-            <div class="mod-card" onclick="showModule('mod-reminders')">
-                <div class="icon-box"><i>🚨</i></div>
-                <div><span>Recordatorios</span><small>Alertas de prioridad</small></div>
+            
+            <div class="item-card" onclick="showModule('mod-reminders')" style="flex-direction: row; align-items: center;">
+                <span style="font-size: 24px;">⏰</span>
+                <div><strong style="display:block;">Recordatorios</strong><small style="opacity:0.5;">Gestión de tareas y avisos</small></div>
             </div>
         </div>
-
-        <p onclick="location.reload()" style="text-align:center; margin-top:60px; opacity:0.3; font-size:0.7rem; font-weight: 800; letter-spacing: 2px;">DISCONNECT SYSTEM</p>
+        <p onclick="location.reload()" style="text-align:center; margin-top:50px; opacity:0.2; font-size:0.7rem;">CERRAR SESIÓN</p>
     </div>
 
     <div id="mod-notes" class="screen">
-        <div class="back-nav" onclick="showModule('dashboard')"><span>←</span> PANEL CENTRAL</div>
-        <h2 style="font-size: 2rem; margin-bottom: 20px;">Nuevo Reporte</h2>
-        <input type="text" placeholder="Asunto">
-        <textarea placeholder="Desarrolle la información..." style="height: 250px;"></textarea>
-        <button class="btn-main" style="background: var(--accent); color: #fff;">Transmitir Datos</button>
+        <span onclick="showModule('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer;">← VOLVER</span>
+        <h2 style="margin: 20px 0;">Mis Reportes</h2>
+        
+        <div class="input-group">
+            <label>Nuevo Reporte</label>
+            <input type="text" id="note-title" placeholder="Título del dato">
+            <textarea id="note-body" placeholder="Descripción detallada..." style="height:100px;"></textarea>
+            <button class="btn-main" onclick="saveNote()">GUARDAR EN MI PERFIL</button>
+        </div>
+
+        <div id="my-notes-list" class="data-list">
+            </div>
     </div>
 
     <div id="mod-reminders" class="screen">
-        <div class="back-nav" onclick="showModule('dashboard')"><span>←</span> PANEL CENTRAL</div>
-        <h2 style="font-size: 2rem; margin-bottom: 20px;">Alertas</h2>
-        <div id="reminders-list">
-            <div class="rem-card prio-high">
-                <span style="display:block; font-weight: 800; color: var(--high);">CRÍTICO</span>
-                <p>Revisión técnica de la base de datos hoy a las 18:00.</p>
-            </div>
-        </div>
-    </div>
+        <span onclick="showModule('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer;">← VOLVER</span>
+        <h2 style="margin: 20px 0;">Recordatorios</h2>
 
-    <div id="mod-admin" class="screen">
-        <div class="back-nav" onclick="showModule('dashboard')"><span>←</span> PANEL CENTRAL</div>
-        <h2 style="font-size: 2rem; margin-bottom: 20px;">Master Control</h2>
-        <div style="background: var(--surface); padding: 25px; border-radius: 28px; border: 1px solid var(--glass-border);">
-            <p style="font-size: 0.8rem; opacity: 0.5; margin-bottom: 10px;">COMANDO GLOBAL</p>
-            <input type="text" placeholder="Escribir orden...">
-            <select>
-                <option>Prioridad Baja</option>
-                <option>Prioridad Media</option>
-                <option>Prioridad Crítica</option>
+        <div class="input-group">
+            <label>Tarea / Aviso</label>
+            <input type="text" id="rem-text" placeholder="Ej: Revisar servidor">
+            
+            <div style="display: flex; gap: 10px;">
+                <div style="flex:1;">
+                    <label>Fecha</label>
+                    <input type="date" id="rem-date">
+                </div>
+                <div style="flex:1;">
+                    <label>Hora</label>
+                    <input type="time" id="rem-time">
+                </div>
+            </div>
+
+            <label>Clasificación</label>
+            <select id="rem-prio">
+                <option value="low">Baja (Verde)</option>
+                <option value="mid">Media (Amarillo)</option>
+                <option value="high">Crítica (Rojo)</option>
             </select>
-            <button class="btn-main" style="background: var(--accent); color: #fff;">Lanzar Aviso</button>
+            <button class="btn-main" onclick="saveReminder()">AGREGAR RECORDATORIO</button>
         </div>
+
+        <div id="reminders-list" class="data-list">
+            </div>
     </div>
 
     <script>
-        // Lógica de navegación (Se mantiene igual para no romper la funcionalidad)
-        function showModule(targetId) {
+        // Configuración Firebase (Usando tus llaves de la imagen)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzrQFgEp82HS_nAzH-3mC9DnfvS5wOMuk",
+            authDomain: "data-dd2e9.firebaseapp.com",
+            projectId: "data-dd2e9",
+            storageBucket: "data-dd2e9.appspot.com",
+            messagingSenderId: "305105650117",
+            appId: "1:305105650117:web:5317772666f7f329994999" 
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        let currentUser = "";
+
+        function showModule(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(targetId).classList.add('active');
+            document.getElementById(id).classList.add('active');
             window.scrollTo(0,0);
         }
 
@@ -208,15 +188,85 @@
             const u = document.getElementById('userInput').value.trim().toLowerCase();
             const p = document.getElementById('passInput').value.trim();
             if (p === "1234") {
+                currentUser = u;
                 document.getElementById('user-title').innerText = u.toUpperCase();
                 showModule('dashboard');
-                if(u === 'admin') document.getElementById('admin-card').style.display = 'flex';
-            } else { alert("ACCESO DENEGADO"); }
+                loadUserData();
+            } else { alert("Acceso denegado"); }
         }
-        
-        // Fecha para el HUD
-        const d = new Date();
-        document.getElementById('date-now').innerText = d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase();
+
+        // --- LÓGICA DE NOTAS (MIS DATOS) ---
+        function saveNote() {
+            const t = document.getElementById('note-title').value;
+            const b = document.getElementById('note-body').value;
+            if(!t) return;
+
+            db.collection("user_data").add({
+                owner: currentUser,
+                title: t,
+                body: b,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                document.getElementById('note-title').value = "";
+                document.getElementById('note-body').value = "";
+            });
+        }
+
+        // --- LÓGICA DE RECORDATORIOS ---
+        function saveReminder() {
+            const txt = document.getElementById('rem-text').value;
+            const date = document.getElementById('rem-date').value;
+            const time = document.getElementById('rem-time').value;
+            const prio = document.getElementById('rem-prio').value;
+
+            if(!txt || !date) return alert("Faltan datos");
+
+            db.collection("reminders").add({
+                owner: currentUser,
+                task: txt,
+                deadline: date + " " + time,
+                priority: prio,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                document.getElementById('rem-text').value = "";
+            });
+        }
+
+        function loadUserData() {
+            // Escuchar mis notas en tiempo real
+            db.collection("user_data").where("owner", "==", currentUser)
+              .orderBy("timestamp", "desc").onSnapshot(snap => {
+                const list = document.getElementById('my-notes-list');
+                list.innerHTML = "";
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    list.innerHTML += `
+                        <div class="item-card">
+                            <strong style="color:var(--accent)">${d.title}</strong>
+                            <p style="font-size:0.85rem; opacity:0.7;">${d.body}</p>
+                        </div>`;
+                });
+            });
+
+            // Escuchar recordatorios en tiempo real
+            db.collection("reminders").where("owner", "==", currentUser)
+              .orderBy("timestamp", "desc").onSnapshot(snap => {
+                const list = document.getElementById('reminders-list');
+                list.innerHTML = "";
+                snap.forEach(doc => {
+                    const r = doc.data();
+                    const pColor = r.priority === 'high' ? 'var(--high)' : (r.priority === 'mid' ? 'var(--mid)' : 'var(--low)');
+                    list.innerHTML += `
+                        <div class="item-card prio-${r.priority}">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="tag" style="background:${pColor}; color:#000;">${r.priority}</span>
+                                <small style="opacity:0.5; font-size:0.6rem;">${r.deadline}</small>
+                            </div>
+                            <strong>${r.task}</strong>
+                        </div>`;
+                });
+            });
+        }
     </script>
 </body>
 </html>
