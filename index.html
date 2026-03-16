@@ -11,261 +11,223 @@
     
     <style>
         :root {
-            --bg: #000000;
-            --surface: #0f1218;
-            --glass: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.07);
-            --accent: #7c4dff;
+            --bg: #020408;
+            --surface: #0a0f1a;
+            --accent: #00f2ff; /* Cian Eléctrico */
+            --accent-dim: rgba(0, 242, 255, 0.1);
             --text: #ffffff;
-            --high: #ff1744;
-            --mid: #ffea00;
-            --low: #00e676;
+            --danger: #ff3d00;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow: hidden; }
 
-        .screen { display: none; padding: 20px; animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .screen.active { display: block !important; }
+        .screen { display: none; padding: 25px; height: 100vh; overflow-y: auto; transition: 0.3s; }
+        .screen.active { display: block !important; animation: fadeIn 0.4s ease; }
 
-        /* --- DASHBOARD --- */
-        .header { margin: 30px 0; }
-        .header h1 { font-weight: 900; font-size: 2.2rem; }
-        .header p { color: var(--accent); font-size: 0.7rem; letter-spacing: 2px; font-weight: 800; }
+        /* --- TARJETAS CON GESTO --- */
+        .swipe-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px;
+            margin-bottom: 12px;
+            background: var(--danger); /* Fondo que se ve al deslizar */
+        }
 
-        /* --- LISTAS ESTILO ANDROID --- */
-        .data-list { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
-        
         .item-card {
             background: var(--surface);
-            border: 1px solid var(--glass-border);
-            padding: 18px;
-            border-radius: 22px;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 24px;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.2s ease-out;
+            cursor: grab;
             display: flex;
-            flex-direction: column;
-            gap: 8px;
+            align-items: center;
+            gap: 15px;
         }
 
-        .item-card .tag {
-            font-size: 0.6rem;
+        .swipe-label {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
             font-weight: 900;
-            padding: 4px 10px;
-            border-radius: 8px;
-            width: fit-content;
-            text-transform: uppercase;
+            font-size: 0.7rem;
+            z-index: 1;
         }
 
-        /* --- INPUTS Y FORMULARIOS --- */
-        .input-group { background: var(--surface); padding: 20px; border-radius: 28px; border: 1px solid var(--glass-border); margin-bottom: 25px; }
-        label { font-size: 0.7rem; opacity: 0.6; margin-left: 10px; font-weight: 600; }
-        
-        input, textarea, select {
-            width: 100%; padding: 16px; margin: 8px 0 18px 0; border-radius: 18px;
-            border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03);
-            color: #fff; font-size: 15px; outline: none;
+        /* --- BÓVEDA CON PIN --- */
+        .pin-display {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        .pin-dot {
+            width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--accent);
+        }
+        .pin-dot.filled { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+
+        .numpad {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 250px; margin: 0 auto;
+        }
+        .num-btn {
+            width: 60px; height: 60px; border-radius: 50%; background: var(--glass);
+            border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 1.5rem;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .num-btn:active { background: var(--accent); color: black; }
+
+        /* --- DISEÑO ATRACTIVO --- */
+        .vault-link {
+            background: linear-gradient(90deg, var(--surface) 0%, #16213e 100%);
+            border: 1px solid var(--accent-dim);
+            padding: 20px; border-radius: 20px; margin-top: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            text-decoration: none; color: white;
         }
 
-        .btn-main {
-            width: 100%; padding: 18px; background: var(--accent); color: #fff;
-            border: none; border-radius: 18px; font-weight: 800; cursor: pointer;
-        }
-
-        .floating-btn {
-            position: fixed; bottom: 30px; right: 20px;
-            width: 60px; height: 60px; background: var(--accent);
-            border-radius: 20px; display: flex; align-items: center; justify-content: center;
-            font-size: 24px; box-shadow: 0 10px 20px rgba(124, 77, 255, 0.4);
-        }
-
-        /* --- ESTILOS PRIORIDAD --- */
-        .prio-high { border-left: 4px solid var(--high); }
-        .prio-mid { border-left: 4px solid var(--mid); }
-        .prio-low { border-left: 4px solid var(--low); }
-
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
 
-    <div id="login-screen" class="screen active" style="text-align:center; padding-top: 150px;">
-        <h1 style="font-size: 4rem; font-weight: 900;">DATA</h1>
-        <div style="max-width: 300px; margin: 40px auto;">
-            <input type="text" id="userInput" placeholder="Usuario">
-            <input type="password" id="passInput" placeholder="Contraseña">
-            <button class="btn-main" onclick="accessApp()">ENTRAR</button>
-        </div>
-    </div>
-
-    <div id="dashboard" class="screen">
-        <div class="header">
-            <p id="date-now">SYSTEM ONLINE</p>
-            <h1 id="user-title">HOLA</h1>
-        </div>
-
-        <div class="data-list" id="main-grid">
-            <div class="item-card" onclick="showModule('mod-notes')" style="flex-direction: row; align-items: center;">
-                <span style="font-size: 24px;">📂</span>
-                <div><strong style="display:block;">Mis Datos</strong><small style="opacity:0.5;">Ver mi historial de reportes</small></div>
-            </div>
-            
-            <div class="item-card" onclick="showModule('mod-reminders')" style="flex-direction: row; align-items: center;">
-                <span style="font-size: 24px;">⏰</span>
-                <div><strong style="display:block;">Recordatorios</strong><small style="opacity:0.5;">Gestión de tareas y avisos</small></div>
-            </div>
-        </div>
-        <p onclick="location.reload()" style="text-align:center; margin-top:50px; opacity:0.2; font-size:0.7rem;">CERRAR SESIÓN</p>
-    </div>
-
-    <div id="mod-notes" class="screen">
-        <span onclick="showModule('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer;">← VOLVER</span>
-        <h2 style="margin: 20px 0;">Mis Reportes</h2>
+    <div id="dashboard" class="screen active">
+        <h1 style="font-weight: 900; font-size: 2.5rem; margin-bottom: 5px;">DATA</h1>
+        <p style="color: var(--accent); letter-spacing: 3px; font-size: 0.7rem; font-weight: 900; margin-bottom: 30px;">SECURE OS</p>
         
-        <div class="input-group">
-            <label>Nuevo Reporte</label>
-            <input type="text" id="note-title" placeholder="Título del dato">
-            <textarea id="note-body" placeholder="Descripción detallada..." style="height:100px;"></textarea>
-            <button class="btn-main" onclick="saveNote()">GUARDAR EN MI PERFIL</button>
+        <div class="grid">
+            <div class="item-card" onclick="showModule('mod-vault')" style="border: 1px solid var(--accent-dim);">
+                <span style="font-size: 1.5rem;">🔐</span>
+                <div><strong>Bóveda de Enlaces</strong><small style="opacity:0.5; display:block;">Acceso restringido</small></div>
+            </div>
+
+            <div class="item-card" onclick="showModule('mod-reminders')">
+                <span style="font-size: 1.5rem;">🚨</span>
+                <div><strong>Recordatorios</strong><small style="opacity:0.5; display:block;">Desliza para eliminar</small></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mod-vault" class="screen">
+        <span onclick="showModule('dashboard')" style="color:var(--accent); cursor:pointer;">← CANCELAR</span>
+        <div id="pin-screen" style="text-align: center; margin-top: 50px;">
+            <h2 style="font-weight: 900;">INGRESE PIN</h2>
+            <div class="pin-display" id="pin-dots">
+                <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+            </div>
+            <div class="numpad">
+                <div class="num-btn" onclick="pressPin(1)">1</div><div class="num-btn" onclick="pressPin(2)">2</div><div class="num-btn" onclick="pressPin(3)">3</div>
+                <div class="num-btn" onclick="pressPin(4)">4</div><div class="num-btn" onclick="pressPin(5)">5</div><div class="num-btn" onclick="pressPin(6)">6</div>
+                <div class="num-btn" onclick="pressPin(7)">7</div><div class="num-btn" onclick="pressPin(8)">8</div><div class="num-btn" onclick="pressPin(9)">9</div>
+                <div></div><div class="num-btn" onclick="pressPin(0)">0</div>
+            </div>
         </div>
 
-        <div id="my-notes-list" class="data-list">
-            </div>
+        <div id="vault-content" style="display: none;">
+            <h2 style="color: var(--accent); margin-bottom: 20px;">Enlaces Seguros</h2>
+            <a href="#" class="vault-link">
+                <div><strong>Google Drive Proyecto</strong><small style="display:block; opacity:0.5;">Carpeta de evidencias</small></div>
+                <span>🚀</span>
+            </a>
+            <a href="#" class="vault-link">
+                <div><strong>Descargar APK Beta</strong><small style="display:block; opacity:0.5;">Versión 1.0.4</small></div>
+                <span>📲</span>
+            </a>
+        </div>
     </div>
 
     <div id="mod-reminders" class="screen">
-        <span onclick="showModule('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer;">← VOLVER</span>
+        <span onclick="showModule('dashboard')" style="color:var(--accent); cursor:pointer;">← VOLVER</span>
         <h2 style="margin: 20px 0;">Recordatorios</h2>
-
-        <div class="input-group">
-            <label>Tarea / Aviso</label>
-            <input type="text" id="rem-text" placeholder="Ej: Revisar servidor">
-            
-            <div style="display: flex; gap: 10px;">
-                <div style="flex:1;">
-                    <label>Fecha</label>
-                    <input type="date" id="rem-date">
-                </div>
-                <div style="flex:1;">
-                    <label>Hora</label>
-                    <input type="time" id="rem-time">
+        
+        <div id="reminders-list">
+            <div class="swipe-container" id="rem-1">
+                <div class="swipe-label">ELIMINAR</div>
+                <div class="item-card" 
+                     ontouchstart="handleTouchStart(event)" 
+                     ontouchmove="handleTouchMove(event)" 
+                     ontouchend="handleTouchEnd(event)">
+                    <span style="font-size: 1.2rem;">📌</span>
+                    <div><strong>Revisar diseño UI</strong><small style="display:block; opacity:0.5;">Hoy 15:00</small></div>
                 </div>
             </div>
-
-            <label>Clasificación</label>
-            <select id="rem-prio">
-                <option value="low">Baja (Verde)</option>
-                <option value="mid">Media (Amarillo)</option>
-                <option value="high">Crítica (Rojo)</option>
-            </select>
-            <button class="btn-main" onclick="saveReminder()">AGREGAR RECORDATORIO</button>
         </div>
-
-        <div id="reminders-list" class="data-list">
-            </div>
     </div>
 
     <script>
-        // Configuración Firebase (Usando tus llaves de la imagen)
-        const firebaseConfig = {
-            apiKey: "AIzaSyCzrQFgEp82HS_nAzH-3mC9DnfvS5wOMuk",
-            authDomain: "data-dd2e9.firebaseapp.com",
-            projectId: "data-dd2e9",
-            storageBucket: "data-dd2e9.appspot.com",
-            messagingSenderId: "305105650117",
-            appId: "1:305105650117:web:5317772666f7f329994999" 
-        };
+        // --- LÓGICA DE PIN ---
+        let enteredPin = "";
+        const correctPin = "1234"; // Aquí puedes cambiar el PIN
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        let currentUser = "";
+        function pressPin(num) {
+            if(enteredPin.length < 4) {
+                enteredPin += num;
+                updatePinDots();
+                if(enteredPin.length === 4) {
+                    if(enteredPin === correctPin) {
+                        document.getElementById('pin-screen').style.display = 'none';
+                        document.getElementById('vault-content').style.display = 'block';
+                    } else {
+                        alert("PIN INCORRECTO");
+                        enteredPin = "";
+                        updatePinDots();
+                    }
+                }
+            }
+        }
+
+        function updatePinDots() {
+            const dots = document.querySelectorAll('.pin-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('filled', i < enteredPin.length);
+            });
+        }
+
+        // --- LÓGICA DE SWIPE (GESTOS) ---
+        let startX = 0;
+        let currentElement = null;
+
+        function handleTouchStart(e) {
+            startX = e.touches[0].clientX;
+            currentElement = e.currentTarget;
+            currentElement.style.transition = 'none';
+        }
+
+        function handleTouchMove(e) {
+            let diff = e.touches[0].clientX - startX;
+            if (diff < 0) { // Solo deslizar a la izquierda
+                currentElement.style.transform = `translateX(${diff}px)`;
+            }
+        }
+
+        function handleTouchEnd(e) {
+            let diff = e.changedTouches[0].clientX - startX;
+            currentElement.style.transition = 'transform 0.3s ease';
+            
+            if (diff < -150) { // Si deslizó más de 150px
+                currentElement.style.transform = 'translateX(-100%)';
+                setTimeout(() => {
+                    currentElement.parentElement.style.display = 'none';
+                }, 300);
+            } else {
+                currentElement.style.transform = 'translateX(0)';
+            }
+        }
 
         function showModule(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            window.scrollTo(0,0);
-        }
-
-        function accessApp() {
-            const u = document.getElementById('userInput').value.trim().toLowerCase();
-            const p = document.getElementById('passInput').value.trim();
-            if (p === "1234") {
-                currentUser = u;
-                document.getElementById('user-title').innerText = u.toUpperCase();
-                showModule('dashboard');
-                loadUserData();
-            } else { alert("Acceso denegado"); }
-        }
-
-        // --- LÓGICA DE NOTAS (MIS DATOS) ---
-        function saveNote() {
-            const t = document.getElementById('note-title').value;
-            const b = document.getElementById('note-body').value;
-            if(!t) return;
-
-            db.collection("user_data").add({
-                owner: currentUser,
-                title: t,
-                body: b,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('note-title').value = "";
-                document.getElementById('note-body').value = "";
-            });
-        }
-
-        // --- LÓGICA DE RECORDATORIOS ---
-        function saveReminder() {
-            const txt = document.getElementById('rem-text').value;
-            const date = document.getElementById('rem-date').value;
-            const time = document.getElementById('rem-time').value;
-            const prio = document.getElementById('rem-prio').value;
-
-            if(!txt || !date) return alert("Faltan datos");
-
-            db.collection("reminders").add({
-                owner: currentUser,
-                task: txt,
-                deadline: date + " " + time,
-                priority: prio,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('rem-text').value = "";
-            });
-        }
-
-        function loadUserData() {
-            // Escuchar mis notas en tiempo real
-            db.collection("user_data").where("owner", "==", currentUser)
-              .orderBy("timestamp", "desc").onSnapshot(snap => {
-                const list = document.getElementById('my-notes-list');
-                list.innerHTML = "";
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    list.innerHTML += `
-                        <div class="item-card">
-                            <strong style="color:var(--accent)">${d.title}</strong>
-                            <p style="font-size:0.85rem; opacity:0.7;">${d.body}</p>
-                        </div>`;
-                });
-            });
-
-            // Escuchar recordatorios en tiempo real
-            db.collection("reminders").where("owner", "==", currentUser)
-              .orderBy("timestamp", "desc").onSnapshot(snap => {
-                const list = document.getElementById('reminders-list');
-                list.innerHTML = "";
-                snap.forEach(doc => {
-                    const r = doc.data();
-                    const pColor = r.priority === 'high' ? 'var(--high)' : (r.priority === 'mid' ? 'var(--mid)' : 'var(--low)');
-                    list.innerHTML += `
-                        <div class="item-card prio-${r.priority}">
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span class="tag" style="background:${pColor}; color:#000;">${r.priority}</span>
-                                <small style="opacity:0.5; font-size:0.6rem;">${r.deadline}</small>
-                            </div>
-                            <strong>${r.task}</strong>
-                        </div>`;
-                });
-            });
+            // Reset de bóveda si sale
+            if(id !== 'mod-vault') {
+                enteredPin = "";
+                updatePinDots();
+                document.getElementById('pin-screen').style.display = 'block';
+                document.getElementById('vault-content').style.display = 'none';
+            }
         }
     </script>
 </body>
