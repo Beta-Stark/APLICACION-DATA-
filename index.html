@@ -3,200 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA OS - Professional Edition</title>
+    <title>DATA OS - Enterprise Edition</title>
     
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg: #F1F5F9;
+            --bg: #F8FAFC;
             --surface: #FFFFFF;
             --accent: #2563EB;
-            --accent-light: #DBEAFE;
             --text-main: #0F172A;
             --text-sub: #64748B;
+            --border: #E2E8F0;
             --success: #10B981;
             --danger: #EF4444;
-            --border: #E2E8F0;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text-main); min-height: 100vh; overflow: hidden; }
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
 
-        /* BARRA DE ESTADO DEL SISTEMA */
         .system-bar {
-            background: var(--surface); padding: 10px 20px; display: flex; justify-content: space-between;
-            align-items: center; border-bottom: 1px solid var(--border); font-size: 0.7rem; font-weight: 800;
+            background: var(--surface); padding: 12px 20px; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid var(--border); font-size: 0.75rem; font-weight: 800;
         }
-        .status-online { color: var(--success); display: flex; align-items: center; gap: 5px; }
-        .sync-indicator { font-style: italic; color: var(--accent); opacity: 0; transition: 0.3s; }
-        .sync-indicator.active { opacity: 1; }
 
-        /* PANTALLAS */
-        .screen { display: none; padding: 20px; height: calc(100vh - 40px); overflow-y: auto; }
-        .screen.active { display: block !important; animation: screenIn 0.3s ease-out; }
+        .screen { display: none; padding: 20px; height: 100vh; overflow-y: auto; }
+        .screen.active { display: block !important; animation: fadeIn 0.3s ease; }
 
         /* LOGIN */
-        #login-screen { display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); }
+        #login-screen { display: none; flex-direction: column; align-items: center; justify-content: center; }
         #login-screen.active { display: flex !important; }
-        .login-card { background: var(--surface); padding: 40px; border-radius: 35px; width: 100%; max-width: 350px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center; }
+        .login-card { background: var(--surface); padding: 40px; border-radius: 35px; width: 90%; max-width: 360px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
 
-        /* DASHBOARD CARDS */
-        .mod-card {
-            background: var(--surface); padding: 20px; border-radius: 24px; display: flex; align-items: center;
-            gap: 15px; margin-bottom: 12px; border: 1px solid var(--border); cursor: pointer; transition: 0.2s;
-            position: relative;
+        /* DASHBOARD */
+        .grid-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .mod-card { 
+            background: var(--surface); padding: 20px; border-radius: 24px; border: 1px solid var(--border);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer;
         }
-        .mod-card:active { transform: scale(0.97); }
-        .badge { position: absolute; top: 15px; right: 15px; background: var(--danger); color: white; border-radius: 10px; padding: 2px 8px; font-size: 0.6rem; }
+        .full-card { grid-column: span 2; display: flex; align-items: center; gap: 15px; }
 
-        /* INPUTS */
-        input { width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); background: #F8FAFC; outline: none; }
-        .btn-primary { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; margin-top: 10px; }
+        /* BLOC DE NOTAS */
+        .notes-area {
+            width: 100%; height: 200px; padding: 15px; border-radius: 20px;
+            border: 1px solid var(--border); background: #FFFBEB; /* Tono papel post-it */
+            font-size: 1rem; color: #92400E; outline: none; resize: none;
+        }
 
-        /* LOGS DE ACTIVIDAD */
-        .log-item { font-size: 0.75rem; padding: 10px; border-left: 2px solid var(--accent-light); margin-bottom: 5px; background: white; }
+        /* CONTADOR */
+        .counter-box { background: var(--text-main); color: white; padding: 15px; border-radius: 20px; text-align: center; }
+        .counter-controls { display: flex; justify-content: center; gap: 20px; align-items: center; margin-top: 10px; }
+        .btn-c { width: 40px; height: 40px; border-radius: 50%; border: none; font-size: 1.2rem; font-weight: 900; cursor: pointer; }
 
-        @keyframes screenIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        input, select { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid var(--border); background: #F1F5F9; }
+        .btn-main { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; margin-top: 10px; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div class="system-bar" id="sys-bar" style="display:none;">
-        <div class="status-online">● SISTEMA ONLINE</div>
-        <div class="sync-indicator" id="sync-msg">Sincronizando...</div>
-        <div id="clock">00:00</div>
+        <div style="color:var(--success)">● <span id="role-indicator">SISTEMA</span></div>
+        <div id="sync-status" style="color:var(--accent); font-size:0.6rem;">SINCRONIZADO</div>
     </div>
 
     <div id="login-screen" class="screen active">
         <div class="login-card">
-            <h1 style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">DATA</h1>
-            <p style="color: var(--text-sub); margin-bottom: 30px;">Gestión Profesional</p>
-            <input type="text" id="userInput" placeholder="Usuario">
-            <input type="password" id="passInput" placeholder="Contraseña">
-            <button class="btn-primary" onclick="handleLogin()">ENTRAR</button>
+            <h1 style="font-size: 2.2rem; font-weight: 900; margin-bottom: 5px;">DATA OS</h1>
+            <p style="color: var(--text-sub); margin-bottom: 25px;">Acceso Jerárquico</p>
+            
+            <input type="text" id="userInput" placeholder="Nombre de Usuario">
+            <select id="roleInput">
+                <option value="superadmin">Super Admin</option>
+                <option value="tempadmin">Admin Temporal</option>
+                <option value="cliente">Cliente</option>
+            </select>
+            <input type="password" id="passInput" placeholder="PIN (1234)">
+            
+            <button class="btn-main" onclick="login()">INICIAR SESIÓN</button>
         </div>
     </div>
 
     <div id="dashboard" class="screen">
-        <div style="margin-bottom: 25px;">
-            <p id="user-role-tag" style="font-size: 0.6rem; font-weight: 900; color: var(--accent); letter-spacing: 2px;"></p>
-            <h1 id="user-display" style="font-size: 2.2rem; font-weight: 900;">Hola</h1>
-        </div>
+        <h1 id="welcome-text" style="font-size: 2rem; font-weight: 900; margin-bottom: 20px;">Hola</h1>
 
-        <div class="mod-card" onclick="navTo('mod-vault')">
-            <div style="font-size: 1.5rem;">🔐</div>
-            <div><strong>Bóveda</strong><small style="display:block; color:var(--text-sub);">Contenido para <span id="vault-access-label"></span></small></div>
-        </div>
+        <div class="grid-tools">
+            <div class="mod-card full-card" onclick="navTo('mod-notes')">
+                <span style="font-size: 1.5rem;">📝</span>
+                <div><strong>Bloc de Notas</strong><small style="display:block; color:var(--text-sub);">Borrador rápido personal</small></div>
+            </div>
 
-        <div class="mod-card" onclick="navTo('mod-reminders')">
-            <div style="font-size: 1.5rem;">⏰</div>
-            <div class="badge" id="notif-count">2</div>
-            <div><strong>Recordatorios</strong><small style="display:block; color:var(--text-sub);">Tareas del día</small></div>
-        </div>
+            <div id="error-counter-mod" class="mod-card full-card counter-box" style="display:none;">
+                <strong>ERRORES DETECTADOS</strong>
+                <div class="counter-controls">
+                    <button class="btn-c" onclick="updateCount(-1)">-</button>
+                    <span id="err-count" style="font-size: 2rem; font-weight: 900;">0</span>
+                    <button class="btn-c" onclick="updateCount(1)">+</button>
+                </div>
+            </div>
 
-        <div id="admin-only-logs" style="margin-top: 30px; display: none;">
-            <p style="font-weight: 800; font-size: 0.7rem; margin-bottom: 10px;">LOGS DE ACTIVIDAD (ADMIN)</p>
-            <div id="logs-container">
-                <div class="log-item">Sistema iniciado...</div>
+            <div class="mod-card" onclick="navTo('mod-vault')">
+                <span>🔐</span><br><strong>Bóveda</strong>
+            </div>
+            
+            <div class="mod-card" onclick="alert('Módulo de Tareas en desarrollo')">
+                <span>⏰</span><br><strong>Tareas</strong>
             </div>
         </div>
 
-        <p onclick="location.reload()" style="text-align:center; margin-top:40px; color:var(--danger); font-size:0.7rem; font-weight:900; cursor:pointer;">CERRAR SESIÓN</p>
+        <button onclick="location.reload()" style="margin-top:40px; background:none; border:none; color:var(--danger); font-weight:800; width:100%;">SALIR DEL SISTEMA</button>
+    </div>
+
+    <div id="mod-notes" class="screen">
+        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← GUARDAR Y VOLVER</button>
+        <h2 style="margin-bottom: 10px;">Mi Bloc de Notas</h2>
+        <p style="color:var(--text-sub); font-size:0.8rem; margin-bottom:20px;">Lo que escribas aquí se guarda automáticamente en este dispositivo.</p>
+        
+        <textarea id="quick-note" class="notes-area" placeholder="Escribe algo aquí..."></textarea>
+        
+        <button class="btn-main" style="background:var(--danger); margin-top:20px;" onclick="clearNote()">BORRAR TODO</button>
     </div>
 
     <div id="mod-vault" class="screen">
-        <div onclick="navTo('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer; margin-bottom:20px;">← VOLVER</div>
-        <h2 id="vault-title">Cargando...</h2>
-        <div id="vault-links-area">
-            </div>
+        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← VOLVER</button>
+        <h2 id="vault-title">Bóveda</h2>
+        <div id="vault-content" style="margin-top:20px;"></div>
     </div>
 
     <script>
-        // CONFIGURACIÓN (Usando tus datos de Firebase anteriores)
-        const firebaseConfig = {
-            apiKey: "AIzaSyCi_lO7_SUp9X5-Vq_Fm_7yW77v7p_8",
-            projectId: "data-40f4e",
-            // ... resto de tu config
+        let currentRole = "";
+        let errorCount = 0;
+
+        // Cargar nota guardada al iniciar
+        window.onload = () => {
+            if(localStorage.getItem('user_note')) {
+                document.getElementById('quick-note').value = localStorage.getItem('user_note');
+            }
         };
 
-        let currentUser = { name: "", role: "tester" };
+        function login() {
+            const pass = document.getElementById('passInput').value;
+            const user = document.getElementById('userInput').value;
+            const role = document.getElementById('roleInput').value;
 
-        // RELOJ Y ESTADO
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.getHours() + ":" + String(now.getMinutes()).padStart(2, '0');
-        }, 1000);
-
-        function showSync() {
-            const msg = document.getElementById('sync-msg');
-            msg.classList.add('active');
-            setTimeout(() => msg.classList.remove('active'), 2000);
-        }
-
-        // LOGIN CON ROLES
-        function handleLogin() {
-            const u = document.getElementById('userInput').value.trim();
-            const p = document.getElementById('passInput').value;
-
-            if(p === "1234") {
-                currentUser.name = u;
-                // Lógica de Roles Simple
-                currentUser.role = (u.toLowerCase() === 'admin') ? 'admin' : 'tester';
-                
-                setupUI();
-                navTo('dashboard');
+            if(pass === "1234") {
+                currentRole = role;
+                document.getElementById('welcome-text').innerText = "Hola, " + user;
                 document.getElementById('sys-bar').style.display = 'flex';
-                addLog(`Sesión iniciada por ${u}`);
-            } else {
-                alert("Acceso Denegado");
+                document.getElementById('role-indicator').innerText = role.toUpperCase();
+                
+                setupPermissions();
+                navTo('dashboard');
+            } else { alert("PIN Incorrecto"); }
+        }
+
+        function setupPermissions() {
+            if(currentRole === 'superadmin' || currentRole === 'tempadmin') {
+                document.getElementById('error-counter-mod').style.display = 'block';
             }
         }
 
-        function setupUI() {
-            document.getElementById('user-display').innerText = "Hola, " + currentUser.name.toUpperCase();
-            document.getElementById('user-role-tag').innerText = currentUser.role === 'admin' ? "ADMINISTRADOR" : "TESTER AUTORIZADO";
-            
-            // Adaptar Bóveda según Rol
-            document.getElementById('vault-access-label').innerText = currentUser.role === 'admin' ? "Administración" : "Acceso Limitado";
-            
-            if(currentUser.role === 'admin') {
-                document.getElementById('admin-only-logs').style.display = 'block';
-            }
+        function updateCount(val) {
+            errorCount += val;
+            if(errorCount < 0) errorCount = 0;
+            document.getElementById('err-count').innerText = errorCount;
         }
 
         function navTo(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             
-            if(id === 'mod-vault') loadVaultLinks();
+            // Auto-guardado al salir de notas
+            if(id === 'dashboard') {
+                const noteVal = document.getElementById('quick-note').value;
+                localStorage.setItem('user_note', noteVal);
+            }
+            if(id === 'mod-vault') renderVault();
         }
 
-        function loadVaultLinks() {
-            const area = document.getElementById('vault-links-area');
-            const title = document.getElementById('vault-title');
-            area.innerHTML = "";
-            showSync();
-
-            if(currentUser.role === 'admin') {
-                title.innerText = "Bóveda Maestra";
-                area.innerHTML = `<div class="mod-card">📁 Acceso a Base de Datos Central</div>
-                                 <div class="mod-card">📁 Gestión de Usuarios</div>`;
-            } else {
-                title.innerText = "Recursos de Testing";
-                area.innerHTML = `<div class="mod-card">📲 Descargar APK (v2.0)</div>`;
+        function clearNote() {
+            if(confirm("¿Borrar toda la nota?")) {
+                document.getElementById('quick-note').value = "";
+                localStorage.removeItem('user_note');
             }
         }
 
-        function addLog(msg) {
-            const container = document.getElementById('logs-container');
-            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            const item = document.createElement('div');
-            item.className = 'log-item';
-            item.innerHTML = `<strong>[${time}]</strong> ${msg}`;
-            container.prepend(item);
+        function renderVault() {
+            const v = document.getElementById('vault-content');
+            let html = `<div class="mod-card full-card">📄 Reporte_Mensual.pdf</div>`;
+            if(currentRole === 'superadmin') {
+                html += `<div class="mod-card full-card" style="border-color:var(--accent)">✏️ EDITAR DOCUMENTOS MAESTROS</div>`;
+            }
+            v.innerHTML = html;
         }
     </script>
 </body>
