@@ -2,158 +2,276 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DATA OS - Alarm Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>DATA OS - Enterprise & Personal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #F0F4F8; --accent: #6366F1; --surface: #FFFFFF; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-        body { background: var(--bg); padding-bottom: 50px; }
-        
-        .header { background: var(--surface); padding: 20px; text-align: center; border-bottom: 1px solid #ddd; }
-        .screen { display: none; padding: 20px; }
-        .screen.active { display: block; }
-
-        /* EL BOTÓN DE LA CAMPANA */
-        .btn-bell { 
-            background: #E0E7FF; border: 2px solid var(--accent); padding: 20px; 
-            border-radius: 20px; text-align: center; cursor: pointer; margin-bottom: 20px;
+        :root {
+            --bg: #F0F4F8;
+            --surface: #FFFFFF;
+            --accent: #6366F1;
+            --text-main: #1E293B;
+            --text-sub: #64748B;
+            --border: #E2E8F0;
+            --success: #2ED573;
+            --danger: #FF4757;
+            --alarm: #FFA502;
         }
-        .bell-icon { font-size: 2rem; display: block; margin-bottom: 10px; }
 
-        .card { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid #eee; position: relative; }
-        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid #ccc; font-size: 1rem; }
-        .btn-main { width: 100%; padding: 18px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* HEADER */
+        .system-bar {
+            background: var(--surface); padding: 15px 20px; display: none; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000;
+        }
+
+        /* NAVEGACIÓN DE PANTALLAS */
+        .screen { display: none; padding: 20px; width: 100%; min-height: 90vh; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block !important; }
+        #login-screen.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; }
+
+        /* TARJETAS Y MODULOS */
+        .mod-card { background: var(--surface); padding: 18px; border-radius: 22px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); cursor: pointer; }
+        .card-inner { background: white; padding: 20px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
+
+        /* PIN PAD */
+        .pin-dots { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        .dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--border); }
+        .dot.active { background: var(--accent); border-color: var(--accent); }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; margin: 0 auto; }
+        .num-btn { height: 60px; border-radius: 18px; border: 1px solid var(--border); background: var(--surface); font-size: 1.3rem; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+
+        /* INPUTS Y BOTONES */
+        input, select, textarea { width: 100%; padding: 14px; margin: 8px 0; border-radius: 14px; border: 1px solid var(--border); background: #F8FAFC; font-size: 1rem; outline: none; }
+        .btn-main { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 900; cursor: pointer; }
+        .btn-bell { background: #E0E7FF; border: 2px solid var(--accent); padding: 15px; border-radius: 15px; text-align: center; margin-bottom: 20px; color: var(--accent); font-weight: 800; }
         
-        .badge-alarm { background: #FFA502; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 900; }
+        .badge-alarm { background: var(--alarm); color: white; padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div id="login-screen" class="screen active">
-        <div class="header">
-            <h1 style="color: var(--accent); font-weight: 900;">DATA OS</h1>
-            <p>Ingresa PIN 1234</p>
-        </div>
-        <input type="password" id="pin" placeholder="****">
-        <button class="btn-main" onclick="login()">ENTRAR</button>
+    <div class="system-bar" id="sys-bar">
+        <div id="role-indicator" style="font-weight: 900; color: var(--accent);">USER</div>
+        <div id="clock" style="font-weight: 900;">00:00</div>
     </div>
 
-    <div id="main-screen" class="screen">
+    <div id="login-screen" class="screen active">
+        <div style="text-align: center; width: 90%; max-width: 350px;">
+            <h1 style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">DATA OS</h1>
+            <p style="color: var(--text-sub); margin-bottom: 25px;">Acceso Privado</p>
+            <input type="text" id="userInput" placeholder="Nombre de Usuario">
+            <select id="roleInput">
+                <option value="Admin">Administrador</option>
+                <option value="Personal">Uso Personal</option>
+            </select>
+            <input type="password" id="passInput" placeholder="PIN (1234)">
+            <button class="btn-main" onclick="handleLogin()">ENTRAR</button>
+        </div>
+    </div>
+
+    <div id="dashboard" class="screen">
+        <h2 id="welcome-msg" style="font-size: 1.8rem; margin-bottom: 20px;">Hola</h2>
+        
         <div class="btn-bell" onclick="requestPermission()">
-            <span class="bell-icon">🔔</span>
-            <strong>TOCAR AQUÍ PARA ACTIVAR CAMPANA</strong>
-            <p style="font-size: 0.8rem; color: var(--accent);">Haz clic para que el teléfono te pregunte</p>
+            <span style="font-size: 1.5rem; display: block;">🔔</span>
+            ACTIVAR ALERTAS SONORAS
+            <p style="font-size: 0.7rem; font-weight: 400;">Haz clic aquí al iniciar sesión</p>
         </div>
 
-        <div class="card">
-            <h3>Nueva Alarma</h3>
-            <input type="text" id="title" placeholder="¿Qué recordar?">
-            <input type="datetime-local" id="time">
+        <div class="mod-card" onclick="navTo('mod-notes')">
+            <div style="font-size: 1.5rem;">📝</div>
+            <div><strong>Notas & Alarmas</strong><small style="display:block; color:var(--text-sub);">Recordatorios activos</small></div>
+        </div>
+
+        <div class="mod-card" onclick="navTo('mod-vault')">
+            <div style="font-size: 1.5rem;">🔐</div>
+            <div><strong>Bóveda de Datos</strong><small style="display:block; color:var(--text-sub);">Información cifrada</small></div>
+        </div>
+
+        <button onclick="location.reload()" style="margin-top:40px; background:none; border:none; color:var(--danger); font-weight:800; width:100%;">CERRAR SESIÓN</button>
+    </div>
+
+    <div id="mod-notes" class="screen">
+        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:15px;">← VOLVER</button>
+        <div class="card-inner">
+            <h3>Nuevo Recordatorio</h3>
+            <input type="text" id="note-title" placeholder="¿Qué quieres recordar?">
+            <input type="datetime-local" id="note-time">
             <button class="btn-main" onclick="saveAlarm()">GUARDAR ALARMA</button>
         </div>
 
-        <div id="list"></div>
+        <input type="text" id="search-input" placeholder="🔍 Buscar en mis notas..." oninput="renderNotes()">
+        <div id="notes-list" style="margin-top:20px;"></div>
+    </div>
+
+    <div id="mod-vault" class="screen">
+        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:15px;">← VOLVER</button>
+        
+        <div id="vault-auth">
+            <h2 style="text-align:center;">PIN de Bóveda</h2>
+            <div class="pin-dots" id="pin-dots">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+            <div class="numpad">
+                <script>
+                    for(let i=1; i<=9; i++) document.write(`<div class="num-btn" onclick="pressPin('${i}')">${i}</div>`);
+                </script>
+                <div class="num-btn" style="color:var(--danger)" onclick="clearPin()">C</div>
+                <div class="num-btn" onclick="pressPin('0')">0</div>
+            </div>
+        </div>
+
+        <div id="vault-content" style="display:none;">
+            <h3>Datos Privados</h3>
+            <div class="card-inner">
+                <input type="text" id="vault-key" placeholder="Nombre (ej. PIN Tarjeta)">
+                <input type="text" id="vault-val" placeholder="Valor Secreto">
+                <button class="btn-main" onclick="saveVault()">GUARDAR EN BÓVEDA</button>
+            </div>
+            <div id="vault-list"></div>
+        </div>
     </div>
 
     <script>
-        let alarms = JSON.parse(localStorage.getItem('alarms_v3')) || [];
+        let userData = { name: "", role: "" };
+        let alarms = JSON.parse(localStorage.getItem('data_alarms')) || [];
+        let vault = JSON.parse(localStorage.getItem('data_vault')) || [];
+        let pinInput = "";
         let audioCtx = null;
 
-        function login() {
-            if(document.getElementById('pin').value === "1234") {
-                document.getElementById('login-screen').classList.remove('active');
-                document.getElementById('main-screen').classList.add('active');
-            }
-        }
-
-        // FUNCIÓN QUE PIDE EL PERMISO REAL
-        async function requestPermission() {
-            // Inicializar AudioContext (Necesario para sonido en Android)
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            
-            if (!("Notification" in window)) {
-                alert("Este navegador no soporta notificaciones.");
-            } else {
-                const permission = await Notification.requestPermission();
-                if (permission === "granted") {
-                    alert("¡Campana activada! Ahora recibirás alertas.");
-                } else {
-                    alert("Permiso denegado. Revisa la configuración de tu navegador.");
-                }
-            }
-        }
-
-        function saveAlarm() {
-            const t = document.getElementById('title').value;
-            const time = document.getElementById('time').value;
-            if(!t || !time) return alert("Completa los datos");
-
-            alarms.push({ id: Date.now(), title: t, time: time, fired: false });
-            localStorage.setItem('alarms_v3', JSON.stringify(alarms));
-            render();
-            document.getElementById('title').value = "";
-        }
-
-        function render() {
-            const list = document.getElementById('list');
-            list.innerHTML = "<h2>Mis Alarmas</h2>";
-            alarms.forEach(a => {
-                list.innerHTML += `
-                    <div class="card">
-                        <strong>${a.title}</strong><br>
-                        <span class="badge-alarm">⏰ ${a.time.replace('T', ' ')}</span>
-                        <button onclick="deleteAlarm(${a.id})" style="float:right; border:none; background:none; color:red;">Borrar</button>
-                    </div>`;
-            });
-        }
-
-        // EL RELOJ QUE REVISA CADA SEGUNDO
+        // Reloj y Chequeo de Alarmas
         setInterval(() => {
             const now = new Date();
-            // Formato exacto: YYYY-MM-DDTHH:MM
-            const nowStr = now.getFullYear() + "-" + 
-                           (now.getMonth()+1).toString().padStart(2,'0') + "-" + 
-                           now.getDate().toString().padStart(2,'0') + "T" + 
-                           now.getHours().toString().padStart(2,'0') + ":" + 
-                           now.getMinutes().toString().padStart(2,'0');
+            const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+            document.getElementById('clock').innerText = timeStr;
+
+            const nowISO = now.getFullYear() + "-" + 
+                          (now.getMonth()+1).toString().padStart(2,'0') + "-" + 
+                          now.getDate().toString().padStart(2,'0') + "T" + timeStr;
 
             alarms.forEach(a => {
-                if(a.time === nowStr && !a.fired) {
+                if(a.time === nowISO && !a.fired) {
                     a.fired = true;
-                    localStorage.setItem('alarms_v3', JSON.stringify(alarms));
-                    playAlarm(a.title);
+                    localStorage.setItem('data_alarms', JSON.stringify(alarms));
+                    triggerAlarm(a);
                 }
             });
         }, 1000);
 
-        function playAlarm(msg) {
-            // 1. Sonido
+        function handleLogin() {
+            const user = document.getElementById('userInput').value;
+            const pass = document.getElementById('passInput').value;
+            if(pass === "1234" && user !== "") {
+                userData.name = user;
+                userData.role = document.getElementById('roleInput').value;
+                document.getElementById('welcome-msg').innerText = "Hola, " + user;
+                document.getElementById('role-indicator').innerText = userData.role;
+                document.getElementById('sys-bar').style.display = 'flex';
+                navTo('dashboard');
+            } else { alert("PIN Incorrecto"); }
+        }
+
+        function navTo(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(id === 'mod-notes') renderNotes();
+            if(id === 'mod-vault') { pinInput = ""; updateDots(); document.getElementById('vault-auth').style.display='block'; document.getElementById('vault-content').style.display='none'; }
+        }
+
+        // ALARMAS
+        async function requestPermission() {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if ("Notification" in window) {
+                const permission = await Notification.requestPermission();
+                if (permission === "granted") alert("🔔 Campana activada correctamente.");
+            }
+        }
+
+        function saveAlarm() {
+            const title = document.getElementById('note-title').value;
+            const time = document.getElementById('note-time').value;
+            if(!title || !time) return;
+            alarms.unshift({ id: Date.now(), title, time, fired: false });
+            localStorage.setItem('data_alarms', JSON.stringify(alarms));
+            document.getElementById('note-title').value = "";
+            renderNotes();
+        }
+
+        function renderNotes() {
+            const list = document.getElementById('notes-list');
+            const search = document.getElementById('search-input').value.toLowerCase();
+            list.innerHTML = "";
+            alarms.filter(a => a.title.toLowerCase().includes(search)).forEach(a => {
+                list.innerHTML += `
+                    <div class="mod-card" style="flex-direction:column; align-items:flex-start;">
+                        <div style="width:100%; display:flex; justify-content:space-between;">
+                            <strong>${a.title}</strong>
+                            <span onclick="deleteAlarm(${a.id})" style="color:var(--danger)">✕</span>
+                        </div>
+                        <span class="badge-alarm">⏰ ${a.time.replace('T', ' ')}</span>
+                    </div>`;
+            });
+        }
+
+        function triggerAlarm(a) {
             if(audioCtx) {
                 const osc = audioCtx.createOscillator();
                 const g = audioCtx.createGain();
                 osc.connect(g); g.connect(audioCtx.destination);
-                osc.frequency.value = 523.25; // Do
-                osc.start();
-                setTimeout(() => osc.stop(), 3000); // 3 segundos de sonido
+                osc.start(); setTimeout(() => osc.stop(), 3000);
             }
-            
-            // 2. Notificación
-            if (Notification.permission === "granted") {
-                new Notification("🚨 ALARMA DATA OS", { body: msg });
-            }
-
-            // 3. Alerta Visual
-            alert("⏰ ALARMA: " + msg);
+            if(Notification.permission === "granted") new Notification("🚨 DATA OS", { body: a.title });
+            alert("⏰ ALARMA: " + a.title);
+            renderNotes();
         }
 
-        function deleteAlarm(id) {
-            alarms = alarms.filter(x => x.id !== id);
-            localStorage.setItem('alarms_v3', JSON.stringify(alarms));
-            render();
+        // BÓVEDA
+        function pressPin(n) {
+            if(pinInput.length < 4) {
+                pinInput += n;
+                updateDots();
+                if(pinInput === "1234") {
+                    document.getElementById('vault-auth').style.display='none';
+                    document.getElementById('vault-content').style.display='block';
+                    renderVault();
+                } else if(pinInput.length === 4) { alert("PIN BÓVEDA ERROR"); clearPin(); }
+            }
+        }
+        function updateDots() {
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((d, i) => d.classList.toggle('active', i < pinInput.length));
+        }
+        function clearPin() { pinInput = ""; updateDots(); }
+
+        function saveVault() {
+            const k = document.getElementById('vault-key').value;
+            const v = document.getElementById('vault-val').value;
+            if(!k || !v) return;
+            vault.unshift({ k, v: btoa(v) }); // Cifrado simple
+            localStorage.setItem('data_vault', JSON.stringify(vault));
+            renderVault();
         }
 
-        render();
+        function renderVault() {
+            const vList = document.getElementById('vault-list');
+            vList.innerHTML = "";
+            vault.forEach((d, i) => {
+                vList.innerHTML += `
+                    <div class="mod-card" style="justify-content:space-between; background:#F8FAFC;">
+                        <div><strong>${d.k}:</strong> ${atob(d.v)}</div>
+                        <span onclick="deleteVault(${i})" style="color:var(--danger)">✕</span>
+                    </div>`;
+            });
+        }
+
+        function deleteAlarm(id) { alarms = alarms.filter(a => a.id !== id); localStorage.setItem('data_alarms', JSON.stringify(alarms)); renderNotes(); }
+        function deleteVault(i) { vault.splice(i,1); localStorage.setItem('data_vault', JSON.stringify(vault)); renderVault(); }
+
     </script>
 </body>
 </html>
