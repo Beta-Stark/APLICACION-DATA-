@@ -2,172 +2,158 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA OS - Alarm Fix</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA OS - Alarm Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #F0F4F8; --surface: #FFFFFF; --accent: #6366F1; --text-main: #1E293B; --alarm: #FFA502; --danger: #FF4757; }
+        :root { --bg: #F0F4F8; --accent: #6366F1; --surface: #FFFFFF; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-        body { background: var(--bg); color: var(--text-main); min-height: 100vh; }
-        .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
-        .screen.active { display: block !important; }
-        .system-bar { background: var(--surface); padding: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid #ddd; }
-        .mod-card { background: var(--surface); padding: 15px; border-radius: 20px; margin-bottom: 10px; border: 1px solid #eee; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .alarm-tag { font-size: 0.75rem; background: var(--alarm); color: white; padding: 5px 10px; border-radius: 10px; font-weight: 800; display: inline-block; margin-top: 5px; }
-        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #ccc; font-size: 1rem; }
-        .btn-main { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        body { background: var(--bg); padding-bottom: 50px; }
+        
+        .header { background: var(--surface); padding: 20px; text-align: center; border-bottom: 1px solid #ddd; }
+        .screen { display: none; padding: 20px; }
+        .screen.active { display: block; }
+
+        /* EL BOTÓN DE LA CAMPANA */
+        .btn-bell { 
+            background: #E0E7FF; border: 2px solid var(--accent); padding: 20px; 
+            border-radius: 20px; text-align: center; cursor: pointer; margin-bottom: 20px;
+        }
+        .bell-icon { font-size: 2rem; display: block; margin-bottom: 10px; }
+
+        .card { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid #eee; position: relative; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid #ccc; font-size: 1rem; }
+        .btn-main { width: 100%; padding: 18px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; }
+        
+        .badge-alarm { background: #FFA502; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 900; }
     </style>
 </head>
 <body>
 
-    <div class="system-bar" id="sys-bar" style="display:none;">
-        <div style="font-weight: 900; color: var(--accent);">DATA OS</div>
-        <div id="clock" style="font-weight: 900;">00:00</div>
+    <div id="login-screen" class="screen active">
+        <div class="header">
+            <h1 style="color: var(--accent); font-weight: 900;">DATA OS</h1>
+            <p>Ingresa PIN 1234</p>
+        </div>
+        <input type="password" id="pin" placeholder="****">
+        <button class="btn-main" onclick="login()">ENTRAR</button>
     </div>
 
-    <div id="login-screen" class="screen active" style="text-align:center; padding-top:100px;">
-        <h1 style="font-size: 2.5rem; color: var(--accent);">DATA OS</h1>
-        <p>Private Assistant</p>
-        <div style="padding: 20px;">
-            <input type="password" id="passInput" placeholder="PIN de acceso (1234)">
-            <button class="btn-main" onclick="handleLogin()">ACCEDER</button>
+    <div id="main-screen" class="screen">
+        <div class="btn-bell" onclick="requestPermission()">
+            <span class="bell-icon">🔔</span>
+            <strong>TOCAR AQUÍ PARA ACTIVAR CAMPANA</strong>
+            <p style="font-size: 0.8rem; color: var(--accent);">Haz clic para que el teléfono te pregunte</p>
         </div>
-    </div>
 
-    <div id="dashboard" class="screen">
-        <h2>Panel de Control</h2>
-        <div class="mod-card" onclick="enableNotifications()" style="background: #E0E7FF; border: 2px solid var(--accent);">
-            <strong>🔔 ACTIVAR ALERTAS SONORAS</strong>
-            <small style="display:block;">Toca aquí para que las alarmas funcionen</small>
+        <div class="card">
+            <h3>Nueva Alarma</h3>
+            <input type="text" id="title" placeholder="¿Qué recordar?">
+            <input type="datetime-local" id="time">
+            <button class="btn-main" onclick="saveAlarm()">GUARDAR ALARMA</button>
         </div>
-        <div class="mod-card" onclick="navTo('mod-notes')">
-            <strong>📝 Notas y Alarmas</strong>
-        </div>
-        <button onclick="location.reload()" style="width:100%; color:red; margin-top:20px; background:none; border:none; font-weight:800;">CERRAR SESIÓN</button>
-    </div>
 
-    <div id="mod-notes" class="screen">
-        <button onclick="navTo('dashboard')" style="margin-bottom:10px;">← VOLVER</button>
-        <h2>Nueva Alarma</h2>
-        <input type="text" id="note-title" placeholder="Título de la alarma">
-        <input type="datetime-local" id="note-alarm">
-        <button class="btn-main" onclick="addNote()">CONFIGURAR ALARMA</button>
-        <div id="notes-container" style="margin-top:20px;"></div>
+        <div id="list"></div>
     </div>
 
     <script>
-        let notes = JSON.parse(localStorage.getItem('notes_fix')) || [];
+        let alarms = JSON.parse(localStorage.getItem('alarms_v3')) || [];
         let audioCtx = null;
 
-        // 1. RELOJ Y CHEQUEO DE ALARMAS
+        function login() {
+            if(document.getElementById('pin').value === "1234") {
+                document.getElementById('login-screen').classList.remove('active');
+                document.getElementById('main-screen').classList.add('active');
+            }
+        }
+
+        // FUNCIÓN QUE PIDE EL PERMISO REAL
+        async function requestPermission() {
+            // Inicializar AudioContext (Necesario para sonido en Android)
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            if (!("Notification" in window)) {
+                alert("Este navegador no soporta notificaciones.");
+            } else {
+                const permission = await Notification.requestPermission();
+                if (permission === "granted") {
+                    alert("¡Campana activada! Ahora recibirás alertas.");
+                } else {
+                    alert("Permiso denegado. Revisa la configuración de tu navegador.");
+                }
+            }
+        }
+
+        function saveAlarm() {
+            const t = document.getElementById('title').value;
+            const time = document.getElementById('time').value;
+            if(!t || !time) return alert("Completa los datos");
+
+            alarms.push({ id: Date.now(), title: t, time: time, fired: false });
+            localStorage.setItem('alarms_v3', JSON.stringify(alarms));
+            render();
+            document.getElementById('title').value = "";
+        }
+
+        function render() {
+            const list = document.getElementById('list');
+            list.innerHTML = "<h2>Mis Alarmas</h2>";
+            alarms.forEach(a => {
+                list.innerHTML += `
+                    <div class="card">
+                        <strong>${a.title}</strong><br>
+                        <span class="badge-alarm">⏰ ${a.time.replace('T', ' ')}</span>
+                        <button onclick="deleteAlarm(${a.id})" style="float:right; border:none; background:none; color:red;">Borrar</button>
+                    </div>`;
+            });
+        }
+
+        // EL RELOJ QUE REVISA CADA SEGUNDO
         setInterval(() => {
             const now = new Date();
-            const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
-            document.getElementById('clock').innerText = timeStr;
-            
-            // Formato para comparar con datetime-local (yyyy-mm-ddThh:mm)
-            const nowISO = now.getFullYear() + "-" + 
-                          (now.getMonth()+1).toString().padStart(2,'0') + "-" + 
-                          now.getDate().toString().padStart(2,'0') + "T" + 
-                          timeStr;
+            // Formato exacto: YYYY-MM-DDTHH:MM
+            const nowStr = now.getFullYear() + "-" + 
+                           (now.getMonth()+1).toString().padStart(2,'0') + "-" + 
+                           now.getDate().toString().padStart(2,'0') + "T" + 
+                           now.getHours().toString().padStart(2,'0') + ":" + 
+                           now.getMinutes().toString().padStart(2,'0');
 
-            notes.forEach(n => {
-                if(n.alarm === nowISO && !n.fired) {
-                    triggerAlarm(n);
+            alarms.forEach(a => {
+                if(a.time === nowStr && !a.fired) {
+                    a.fired = true;
+                    localStorage.setItem('alarms_v3', JSON.stringify(alarms));
+                    playAlarm(a.title);
                 }
             });
         }, 1000);
 
-        function handleLogin() {
-            if(document.getElementById('passInput').value === "1234") {
-                document.getElementById('sys-bar').style.display = 'flex';
-                navTo('dashboard');
-            } else { alert("PIN Incorrecto"); }
-        }
-
-        function navTo(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(id === 'mod-notes') renderNotes();
-        }
-
-        // 2. ACTIVAR PERMISOS (CRÍTICO)
-        function enableNotifications() {
-            // Inicializar audio (muchos navegadores bloquean sonido si no hay click)
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            
-            if (Notification.permission !== "granted") {
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        alert("✅ Alertas activadas correctamente.");
-                    }
-                });
-            } else {
-                alert("Las alertas ya están activas.");
-            }
-        }
-
-        function addNote() {
-            const title = document.getElementById('note-title').value;
-            const alarm = document.getElementById('note-alarm').value;
-            if(!title || !alarm) return alert("Pon un título y hora");
-
-            notes.unshift({ id: Date.now(), title, alarm, fired: false });
-            localStorage.setItem('notes_fix', JSON.stringify(notes));
-            renderNotes();
-            alert("Alarma guardada para: " + alarm.replace('T', ' '));
-        }
-
-        function renderNotes() {
-            const container = document.getElementById('notes-container');
-            container.innerHTML = "";
-            notes.forEach(n => {
-                const div = document.createElement('div');
-                div.className = 'mod-card';
-                div.innerHTML = `
-                    <strong>${n.title}</strong>
-                    <div class="alarm-tag">⏰ ${n.alarm.replace('T', ' ')}</div>
-                    <button onclick="deleteNote(${n.id})" style="float:right; color:red; background:none; border:none;">Borrar</button>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        // 3. DISPARAR ALARMA (SONIDO + NOTIFICACIÓN)
-        function triggerAlarm(note) {
-            note.fired = true;
-            localStorage.setItem('notes_fix', JSON.stringify(notes));
-
-            // Sonido electrónico
+        function playAlarm(msg) {
+            // 1. Sonido
             if(audioCtx) {
                 const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.type = "sine";
-                osc.frequency.value = 880; // Nota La
+                const g = audioCtx.createGain();
+                osc.connect(g); g.connect(audioCtx.destination);
+                osc.frequency.value = 523.25; // Do
                 osc.start();
-                setTimeout(() => osc.stop(), 2000); // 2 segundos de pitido
-            }
-
-            // Notificación Visual
-            if (Notification.permission === "granted") {
-                new Notification("🚨 ALARMA DATA OS", {
-                    body: note.title,
-                    icon: "https://cdn-icons-png.flaticon.com/512/1827/1827347.png"
-                });
+                setTimeout(() => osc.stop(), 3000); // 3 segundos de sonido
             }
             
-            alert("⏰ ALARMA AHORA: " + note.title);
-            renderNotes();
+            // 2. Notificación
+            if (Notification.permission === "granted") {
+                new Notification("🚨 ALARMA DATA OS", { body: msg });
+            }
+
+            // 3. Alerta Visual
+            alert("⏰ ALARMA: " + msg);
         }
 
-        function deleteNote(id) {
-            notes = notes.filter(n => n.id !== id);
-            localStorage.setItem('notes_fix', JSON.stringify(notes));
-            renderNotes();
+        function deleteAlarm(id) {
+            alarms = alarms.filter(x => x.id !== id);
+            localStorage.setItem('alarms_v3', JSON.stringify(alarms));
+            render();
         }
+
+        render();
     </script>
 </body>
 </html>
