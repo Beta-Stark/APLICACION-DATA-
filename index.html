@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA - OS PRO</title>
+    <title>DATA OS - Professional Edition</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
@@ -11,216 +11,192 @@
     
     <style>
         :root {
-            --bg: #F8FAFC; /* Blanco azulado muy suave */
+            --bg: #F1F5F9;
             --surface: #FFFFFF;
-            --accent: #2563EB; /* Azul profesional */
+            --accent: #2563EB;
             --accent-light: #DBEAFE;
-            --text-main: #1E293B;
+            --text-main: #0F172A;
             --text-sub: #64748B;
-            --border: #E2E8F0;
+            --success: #10B981;
             --danger: #EF4444;
+            --border: #E2E8F0;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            background: var(--bg); 
-            color: var(--text-main); 
-            min-height: 100vh; 
-            overflow: hidden;
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; overflow: hidden; }
+
+        /* BARRA DE ESTADO DEL SISTEMA */
+        .system-bar {
+            background: var(--surface); padding: 10px 20px; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid var(--border); font-size: 0.7rem; font-weight: 800;
         }
+        .status-online { color: var(--success); display: flex; align-items: center; gap: 5px; }
+        .sync-indicator { font-style: italic; color: var(--accent); opacity: 0; transition: 0.3s; }
+        .sync-indicator.active { opacity: 1; }
 
-        .screen { display: none; padding: 25px; height: 100vh; overflow-y: auto; transition: 0.3s; }
-        .screen.active { display: block !important; animation: fadeIn 0.4s ease; }
+        /* PANTALLAS */
+        .screen { display: none; padding: 20px; height: calc(100vh - 40px); overflow-y: auto; }
+        .screen.active { display: block !important; animation: screenIn 0.3s ease-out; }
 
-        /* --- HEADER --- */
-        .header { margin-bottom: 30px; }
-        .header h1 { font-weight: 900; font-size: 2.5rem; letter-spacing: -1px; color: var(--accent); }
-        .header p { color: var(--text-sub); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
+        /* LOGIN */
+        #login-screen { display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); }
+        #login-screen.active { display: flex !important; }
+        .login-card { background: var(--surface); padding: 40px; border-radius: 35px; width: 100%; max-width: 350px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center; }
 
-        /* --- TARJETAS (ESTILO CLARO) --- */
-        .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-        
+        /* DASHBOARD CARDS */
         .mod-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            padding: 22px;
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            transition: 0.2s;
-            cursor: pointer;
+            background: var(--surface); padding: 20px; border-radius: 24px; display: flex; align-items: center;
+            gap: 15px; margin-bottom: 12px; border: 1px solid var(--border); cursor: pointer; transition: 0.2s;
+            position: relative;
         }
-        .mod-card:active { transform: scale(0.97); background: #F1F5F9; }
-        
-        .icon-box { 
-            width: 54px; height: 54px; border-radius: 16px; 
-            background: var(--accent-light);
-            display: flex; align-items: center; justify-content: center; font-size: 22px;
-        }
+        .mod-card:active { transform: scale(0.97); }
+        .badge { position: absolute; top: 15px; right: 15px; background: var(--danger); color: white; border-radius: 10px; padding: 2px 8px; font-size: 0.6rem; }
 
-        /* --- BÓVEDA PIN (LUMINOUS STYLE) --- */
-        .pin-dots { display: flex; justify-content: center; gap: 12px; margin: 30px 0; }
-        .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border); transition: 0.3s; }
-        .dot.active { background: var(--accent); border-color: var(--accent); transform: scale(1.2); }
+        /* INPUTS */
+        input { width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); background: #F8FAFC; outline: none; }
+        .btn-primary { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; margin-top: 10px; }
 
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 260px; margin: 0 auto; }
-        .num-btn { 
-            height: 65px; border-radius: 50%; background: var(--surface); 
-            border: 1px solid var(--border); color: var(--text-main); 
-            font-size: 1.4rem; font-weight: 600; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .num-btn:active { background: var(--accent); color: white; }
+        /* LOGS DE ACTIVIDAD */
+        .log-item { font-size: 0.75rem; padding: 10px; border-left: 2px solid var(--accent-light); margin-bottom: 5px; background: white; }
 
-        /* --- SWIPE GESTURE --- */
-        .swipe-container { position: relative; overflow: hidden; border-radius: 24px; background: var(--danger); margin-bottom: 12px; }
-        .swipe-action { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: white; font-weight: 800; font-size: 0.7rem; }
-
-        /* --- VAULT LINKS --- */
-        .vault-link {
-            background: var(--surface); border: 1px solid var(--border);
-            padding: 20px; border-radius: 20px; margin-bottom: 12px; display: flex;
-            justify-content: space-between; align-items: center; text-decoration: none; color: var(--text-main);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes screenIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="dashboard" class="screen active">
-        <div class="header">
-            <p>Panel de Control</p>
-            <h1>DATA OS</h1>
-        </div>
-        
-        <div class="grid">
-            <div class="mod-card" onclick="showModule('mod-vault')">
-                <div class="icon-box">🔐</div>
-                <div><strong style="display:block; font-size:1.1rem;">Bóveda Segura</strong><small style="color:var(--text-sub);">Enlaces con acceso PIN</small></div>
-            </div>
+    <div class="system-bar" id="sys-bar" style="display:none;">
+        <div class="status-online">● SISTEMA ONLINE</div>
+        <div class="sync-indicator" id="sync-msg">Sincronizando...</div>
+        <div id="clock">00:00</div>
+    </div>
 
-            <div class="mod-card" onclick="showModule('mod-notes')">
-                <div class="icon-box">📂</div>
-                <div><strong style="display:block; font-size:1.1rem;">Mis Datos</strong><small style="color:var(--text-sub);">Gestión de reportes</small></div>
-            </div>
+    <div id="login-screen" class="screen active">
+        <div class="login-card">
+            <h1 style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">DATA</h1>
+            <p style="color: var(--text-sub); margin-bottom: 30px;">Gestión Profesional</p>
+            <input type="text" id="userInput" placeholder="Usuario">
+            <input type="password" id="passInput" placeholder="Contraseña">
+            <button class="btn-primary" onclick="handleLogin()">ENTRAR</button>
+        </div>
+    </div>
 
-            <div class="mod-card" onclick="showModule('mod-reminders')">
-                <div class="icon-box">⏰</div>
-                <div><strong style="display:block; font-size:1.1rem;">Recordatorios</strong><small style="color:var(--text-sub);">Desliza para borrar</small></div>
+    <div id="dashboard" class="screen">
+        <div style="margin-bottom: 25px;">
+            <p id="user-role-tag" style="font-size: 0.6rem; font-weight: 900; color: var(--accent); letter-spacing: 2px;"></p>
+            <h1 id="user-display" style="font-size: 2.2rem; font-weight: 900;">Hola</h1>
+        </div>
+
+        <div class="mod-card" onclick="navTo('mod-vault')">
+            <div style="font-size: 1.5rem;">🔐</div>
+            <div><strong>Bóveda</strong><small style="display:block; color:var(--text-sub);">Contenido para <span id="vault-access-label"></span></small></div>
+        </div>
+
+        <div class="mod-card" onclick="navTo('mod-reminders')">
+            <div style="font-size: 1.5rem;">⏰</div>
+            <div class="badge" id="notif-count">2</div>
+            <div><strong>Recordatorios</strong><small style="display:block; color:var(--text-sub);">Tareas del día</small></div>
+        </div>
+
+        <div id="admin-only-logs" style="margin-top: 30px; display: none;">
+            <p style="font-weight: 800; font-size: 0.7rem; margin-bottom: 10px;">LOGS DE ACTIVIDAD (ADMIN)</p>
+            <div id="logs-container">
+                <div class="log-item">Sistema iniciado...</div>
             </div>
         </div>
+
+        <p onclick="location.reload()" style="text-align:center; margin-top:40px; color:var(--danger); font-size:0.7rem; font-weight:900; cursor:pointer;">CERRAR SESIÓN</p>
     </div>
 
     <div id="mod-vault" class="screen">
-        <div onclick="showModule('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer; margin-bottom:20px;">← VOLVER AL INICIO</div>
-        
-        <div id="pin-screen" style="text-align: center; background: var(--surface); padding: 30px; border-radius: 30px; border: 1px solid var(--border);">
-            <h2 style="font-weight: 900;">Seguridad</h2>
-            <p style="color: var(--text-sub); font-size: 0.9rem;">Ingrese su código PIN</p>
-            
-            <div class="pin-dots" id="dots-container">
-                <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <div onclick="navTo('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer; margin-bottom:20px;">← VOLVER</div>
+        <h2 id="vault-title">Cargando...</h2>
+        <div id="vault-links-area">
             </div>
-
-            <div class="numpad">
-                <div class="num-btn" onclick="addPin('1')">1</div><div class="num-btn" onclick="addPin('2')">2</div><div class="num-btn" onclick="addPin('3')">3</div>
-                <div class="num-btn" onclick="addPin('4')">4</div><div class="num-btn" onclick="addPin('5')">5</div><div class="num-btn" onclick="addPin('6')">6</div>
-                <div class="num-btn" onclick="addPin('7')">7</div><div class="num-btn" onclick="addPin('8')">8</div><div class="num-btn" onclick="addPin('9')">9</div>
-                <div class="num-btn" style="border:none; background:none; font-size:0.8rem; color:var(--danger)" onclick="clearPin()">BORRAR</div>
-                <div class="num-btn" onclick="addPin('0')">0</div>
-            </div>
-        </div>
-
-        <div id="vault-content" style="display:none;">
-            <h2 style="margin-bottom: 20px;">Enlaces del Cliente</h2>
-            <a href="#" class="vault-link">
-                <div><strong>Acceso a Drive</strong><small style="display:block; color:var(--text-sub);">Documentos compartidos</small></div>
-                <span style="color:var(--accent)">↗</span>
-            </a>
-            <a href="#" class="vault-link">
-                <div><strong>Panel Administrativo</strong><small style="display:block; color:var(--text-sub);">Web externa</small></div>
-                <span style="color:var(--accent)">↗</span>
-            </a>
-        </div>
-    </div>
-
-    <div id="mod-reminders" class="screen">
-        <div onclick="showModule('dashboard')" style="color:var(--accent); font-weight:800; cursor:pointer; margin-bottom:20px;">← VOLVER</div>
-        <h2>Recordatorios</h2>
-        <p style="color:var(--text-sub); margin-bottom:20px;">Desliza a la izquierda para eliminar</p>
-        
-        <div id="reminders-list">
-            <div class="swipe-container">
-                <div class="swipe-action">ELIMINAR</div>
-                <div class="mod-card" style="margin-bottom:0; border:none; border-radius:0;" 
-                     ontouchstart="hStart(event)" ontouchmove="hMove(event)" ontouchend="hEnd(event)">
-                    <div class="icon-box" style="background:#FEF3C7; color:#D97706;">📝</div>
-                    <div><strong>Revisar feedback cliente</strong><small style="display:block; color:var(--text-sub);">Pendiente hoy</small></div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
-        // --- NAVEGACIÓN ---
-        function showModule(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(id !== 'mod-vault') resetVault();
+        // CONFIGURACIÓN (Usando tus datos de Firebase anteriores)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCi_lO7_SUp9X5-Vq_Fm_7yW77v7p_8",
+            projectId: "data-40f4e",
+            // ... resto de tu config
+        };
+
+        let currentUser = { name: "", role: "tester" };
+
+        // RELOJ Y ESTADO
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.getHours() + ":" + String(now.getMinutes()).padStart(2, '0');
+        }, 1000);
+
+        function showSync() {
+            const msg = document.getElementById('sync-msg');
+            msg.classList.add('active');
+            setTimeout(() => msg.classList.remove('active'), 2000);
         }
 
-        // --- LÓGICA PIN ---
-        let pin = "";
-        const MASTER_PIN = "1234";
+        // LOGIN CON ROLES
+        function handleLogin() {
+            const u = document.getElementById('userInput').value.trim();
+            const p = document.getElementById('passInput').value;
 
-        function addPin(n) {
-            if(pin.length < 4) {
-                pin += n;
-                updateDots();
-                if(pin.length === 4) {
-                    if(pin === MASTER_PIN) {
-                        document.getElementById('pin-screen').style.display = 'none';
-                        document.getElementById('vault-content').style.display = 'block';
-                    } else {
-                        alert("PIN INCORRECTO");
-                        clearPin();
-                    }
-                }
+            if(p === "1234") {
+                currentUser.name = u;
+                // Lógica de Roles Simple
+                currentUser.role = (u.toLowerCase() === 'admin') ? 'admin' : 'tester';
+                
+                setupUI();
+                navTo('dashboard');
+                document.getElementById('sys-bar').style.display = 'flex';
+                addLog(`Sesión iniciada por ${u}`);
+            } else {
+                alert("Acceso Denegado");
             }
         }
 
-        function clearPin() { pin = ""; updateDots(); }
-        function updateDots() {
-            const dots = document.querySelectorAll('.dot');
-            dots.forEach((dot, i) => dot.classList.toggle('active', i < pin.length));
-        }
-        function resetVault() {
-            pin = ""; updateDots();
-            document.getElementById('pin-screen').style.display = 'block';
-            document.getElementById('vault-content').style.display = 'none';
+        function setupUI() {
+            document.getElementById('user-display').innerText = "Hola, " + currentUser.name.toUpperCase();
+            document.getElementById('user-role-tag').innerText = currentUser.role === 'admin' ? "ADMINISTRADOR" : "TESTER AUTORIZADO";
+            
+            // Adaptar Bóveda según Rol
+            document.getElementById('vault-access-label').innerText = currentUser.role === 'admin' ? "Administración" : "Acceso Limitado";
+            
+            if(currentUser.role === 'admin') {
+                document.getElementById('admin-only-logs').style.display = 'block';
+            }
         }
 
-        // --- LÓGICA SWIPE (LIGHT) ---
-        let sX = 0;
-        let cEl = null;
-
-        function hStart(e) { sX = e.touches[0].clientX; cEl = e.currentTarget; cEl.style.transition = 'none'; }
-        function hMove(e) { 
-            let d = e.touches[0].clientX - sX; 
-            if (d < 0) cEl.style.transform = `translateX(${d}px)`; 
+        function navTo(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            if(id === 'mod-vault') loadVaultLinks();
         }
-        function hEnd(e) {
-            let d = e.changedTouches[0].clientX - sX;
-            cEl.style.transition = 'transform 0.3s ease';
-            if (d < -120) {
-                cEl.style.transform = 'translateX(-100%)';
-                setTimeout(() => cEl.parentElement.style.display = 'none', 300);
-            } else { cEl.style.transform = 'translateX(0)'; }
+
+        function loadVaultLinks() {
+            const area = document.getElementById('vault-links-area');
+            const title = document.getElementById('vault-title');
+            area.innerHTML = "";
+            showSync();
+
+            if(currentUser.role === 'admin') {
+                title.innerText = "Bóveda Maestra";
+                area.innerHTML = `<div class="mod-card">📁 Acceso a Base de Datos Central</div>
+                                 <div class="mod-card">📁 Gestión de Usuarios</div>`;
+            } else {
+                title.innerText = "Recursos de Testing";
+                area.innerHTML = `<div class="mod-card">📲 Descargar APK (v2.0)</div>`;
+            }
+        }
+
+        function addLog(msg) {
+            const container = document.getElementById('logs-container');
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const item = document.createElement('div');
+            item.className = 'log-item';
+            item.innerHTML = `<strong>[${time}]</strong> ${msg}`;
+            container.prepend(item);
         }
     </script>
 </body>
