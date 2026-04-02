@@ -9,100 +9,102 @@
         :root {
             --bg: #F7EFE2; --surface: #FFFFFF; --header-accent: #2A3A4A;
             --card-cloud: #BBCBBD; --card-vault: #C9A091; --text-main: #2A3A4A;
-            --nav-icon: #6366F1; --danger: #EF4444; --clock-icon: #D97706;
+            --danger: #EF4444; --clock: #D97706;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--text-main); min-height: 100vh; padding-bottom: 90px; }
         
-        /* HEADER */
+        /* HEADER FIJO */
         .system-bar { background: var(--surface); padding: 15px 25px; display: none; justify-content: space-between; align-items: center; border-bottom: 1px solid #E2E8F0; position: sticky; top: 0; z-index: 1000; }
-        .role-tag { font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; background: #000; color: #fff; font-weight: 800; }
+        .role-tag { font-size: 0.7rem; padding: 4px 12px; border-radius: 20px; background: #000; color: #fff; font-weight: 800; text-transform: uppercase; }
 
-        .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; max-width: 600px; margin: 0 auto; }
         .screen.active { display: block !important; }
         #login-screen.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
 
-        /* TARJETAS Y LISTAS */
-        .mod-card { padding: 20px; border-radius: 28px; margin-bottom: 15px; position: relative; }
+        /* DISEÑO DE TARJETAS (MAQUETA) */
+        .mod-card { padding: 25px; border-radius: 28px; margin-bottom: 20px; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .notes-area { background: var(--card-cloud); }
         .vault-area { background: var(--card-vault); color: white; cursor: pointer; }
         
-        .data-item { background: white; padding: 15px; border-radius: 18px; margin-bottom: 10px; position: relative; color: var(--text-main); border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .delete-btn { position: absolute; right: 12px; top: 12px; color: var(--danger) !important; font-weight: 900; font-size: 1.2rem; cursor: pointer; z-index: 10; }
+        /* ITEMS DE DATOS */
+        .data-item { 
+            background: white; padding: 18px; border-radius: 20px; 
+            margin-bottom: 12px; position: relative; color: var(--text-main); 
+            border: 1px solid rgba(0,0,0,0.05); animation: slideUp 0.3s ease;
+        }
+        .delete-btn { 
+            position: absolute; right: 15px; top: 15px; 
+            color: var(--danger) !important; font-weight: 900; 
+            font-size: 1.3rem; cursor: pointer; z-index: 10; padding: 5px;
+        }
 
-        /* BÓVEDA PIN */
-        .pin-dots { display: flex; justify-content: center; gap: 12px; margin: 20px 0; }
-        .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #ccc; background: white; }
-        .dot.active { background: var(--header-accent); border-color: var(--header-accent); }
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 250px; margin: 0 auto; }
-        .num-btn { height: 55px; background: white; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; }
-
-        /* NAV INFERIOR */
-        .pwa-nav { background: white; padding: 12px; display: none; justify-content: space-around; position: fixed; bottom: 0; width: 100%; border-top: 1px solid #ddd; z-index: 1000; }
+        /* NAVEGACIÓN INFERIOR */
+        .pwa-nav { background: white; padding: 15px; display: none; justify-content: space-around; position: fixed; bottom: 0; width: 100%; border-top: 1px solid #ddd; z-index: 1000; border-radius: 25px 25px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
         .nav-item { text-align: center; font-size: 0.75rem; color: #888; cursor: pointer; }
-        .nav-item.active { color: var(--nav-icon); font-weight: 900; }
+        .nav-item.active { color: #6366F1; font-weight: 900; }
 
-        input, select, textarea { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ddd; margin: 8px 0; font-size: 1rem; }
-        .btn-main { width: 100%; padding: 16px; background: var(--header-accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
+        input, textarea { width: 100%; padding: 16px; border-radius: 15px; border: 1px solid #ddd; margin: 10px 0; font-size: 1rem; outline: none; }
+        .btn-main { width: 100%; padding: 18px; background: var(--header-accent); color: white; border: none; border-radius: 15px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.98); }
         
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div class="system-bar" id="sys-bar">
-        <div style="font-weight:900; color:var(--header-accent)">DATA OS</div>
-        <div id="role-display" class="role-tag">VERIFICANDO...</div>
-        <div id="clock" style="font-weight:800;">00:00</div>
+        <div style="font-weight:900; letter-spacing: 1px;">DATA OS</div>
+        <div id="role-display" class="role-tag">VERIFICANDO</div>
+        <div id="clock" style="font-weight:800; color:var(--clock)">00:00</div>
     </div>
 
     <div id="login-screen" class="screen active">
-        <h1 style="font-size: 3rem; font-weight: 900; margin-bottom: 5px;">DATA OS</h1>
-        <p style="margin-bottom: 30px; color: #666;">Acceso Restringido</p>
-        <input type="text" id="userInput" placeholder="Usuario Autorizado">
+        <h1 style="font-size: 3.5rem; font-weight: 900; margin-bottom: 10px;">DATA OS</h1>
+        <p style="margin-bottom: 40px; color: #666; font-weight: 300;">Ingreso de Usuario Autorizado</p>
+        <input type="text" id="userInput" placeholder="Nombre de Usuario">
         <input type="password" id="passInput" placeholder="PIN de Acceso">
-        <button class="btn-main" onclick="handleLogin()">VERIFICAR IDENTIDAD</button>
+        <button class="btn-main" onclick="handleLogin()">ACCEDER AL CLOUD</button>
     </div>
 
     <div id="dashboard" class="screen">
-        <h2 id="welcome-msg" style="margin-bottom:20px; font-size: 2rem;">Hola</h2>
+        <h2 id="welcome-msg" style="margin-bottom:25px; font-size: 2.2rem; font-weight: 900;">Hola</h2>
         
         <div class="mod-card notes-area">
-            <h3 style="margin-bottom:12px;">📝 RECORDATORIOS</h3>
-            <div id="notes-preview">Cargando datos de la nube...</div>
-            <button class="btn-main" onclick="navTo('mod-notes')" style="background:rgba(255,255,255,0.4); color:black; margin-top:10px;">Gestionar Todo</button>
+            <h3 style="margin-bottom:15px; font-size: 0.9rem; letter-spacing: 1px;">📝 RECORDATORIOS ACTIVOS</h3>
+            <div id="notes-preview">Sincronizando con la nube...</div>
+            <button class="btn-main" onclick="navTo('mod-notes')" style="background:rgba(255,255,255,0.5); color:black; margin-top:15px; border-radius: 12px; padding: 12px;">Gestionar Lista</button>
         </div>
 
         <div class="mod-card vault-area" onclick="navTo('mod-vault')">
-            <h3>🔐 BÓVEDA CLOUD</h3>
-            <p id="vault-status">Toca para desbloquear seguridad</p>
+            <h3 style="font-size: 0.9rem; letter-spacing: 1px;">🔐 BÓVEDA PRIVADA</h3>
+            <p id="vault-status" style="margin-top: 10px; font-weight: 300; opacity: 0.9;">Toca para desbloquear seguridad</p>
         </div>
     </div>
 
     <div id="mod-notes" class="screen">
-        <h2>Recordatorios</h2>
-        <div style="background: white; padding: 15px; border-radius: 20px; margin: 15px 0;">
-            <textarea id="note-text" placeholder="Escribe tu recordatorio..."></textarea>
-            <button class="btn-main" id="btnGuardarNota">SUBIR A LA NUBE</button>
+        <h2 style="margin-bottom: 20px;">Recordatorios</h2>
+        <div style="background: white; padding: 20px; border-radius: 25px; margin-bottom: 25px;">
+            <textarea id="note-text" placeholder="Escribe tu nota aquí..." style="height: 100px; border:none; background: #f9f9f9;"></textarea>
+            <button class="btn-main" id="btnSaveNota">SUBIR A LA NUBE</button>
         </div>
-        <div id="notes-list-full"></div>
+        <div id="notes-full-list"></div>
     </div>
 
     <div id="mod-vault" class="screen">
         <div id="vault-auth">
-            <h2 style="text-align:center;">PIN REQUERIDO</h2>
-            <div class="pin-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-            <div class="numpad" id="numpad"></div>
+            <h2 style="text-align:center; margin-bottom: 30px;">PIN DE SEGURIDAD</h2>
+            <div id="numpad" style="display:grid; grid-template-columns:repeat(3,1fr); gap:15px; max-width: 280px; margin: 0 auto;"></div>
         </div>
-
         <div id="vault-content" style="display:none;">
-            <h2>Bóveda Privada</h2>
-            <div style="background: white; padding: 15px; border-radius: 20px; margin: 15px 0;">
-                <input type="text" id="v-title" placeholder="Título (Ej. Contraseña)">
-                <input type="text" id="v-secret" placeholder="Dato Secreto">
-                <button class="btn-main" id="btnGuardarVault" style="background: var(--card-vault);">GUARDAR EN BÓVEDA</button>
+            <h2 style="margin-bottom: 20px;">Bóveda Cloud</h2>
+            <div style="background: white; padding: 20px; border-radius: 25px; margin-bottom: 25px;">
+                <input type="text" id="v-title" placeholder="Título (Ej. Tarjeta)">
+                <input type="text" id="v-secret" placeholder="Contenido Privado">
+                <button class="btn-main" id="btnSaveVault" style="background: var(--card-vault);">GUARDAR EN BÓVEDA</button>
             </div>
-            <div id="vault-list-full"></div>
+            <div id="vault-full-list"></div>
         </div>
     </div>
 
@@ -129,91 +131,75 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- VERIFICACIÓN DE USUARIO (SOLO AUTORIZADOS) ---
+        // LOGIN POR BASE DE DATOS
         window.handleLogin = async () => {
             const userIn = document.getElementById('userInput').value.trim();
             const pinIn = document.getElementById('passInput').value;
 
-            if(!userIn || pinIn !== "1234") { alert("Datos incompletos o PIN genérico incorrecto."); return; }
+            if(!userIn || pinIn !== "1234") { alert("Datos incorrectos"); return; }
 
-            // Buscamos el documento con el nombre del usuario
             const userRef = doc(db, "usuarios_autorizados", userIn);
             const userSnap = await getDoc(userRef);
 
             if (userSnap.exists()) {
                 window.currentUser = userIn;
-                window.userRole = userSnap.data().rol;
+                const rol = userSnap.data().rol || "Usuario";
                 
                 document.getElementById('welcome-msg').innerText = "Hola, " + userIn;
-                document.getElementById('role-display').innerText = window.userRole.toUpperCase() + ": " + userIn;
+                document.getElementById('role-display').innerText = rol.toUpperCase() + ": " + userIn;
                 
-                document.getElementById('login-screen').classList.remove('active');
+                document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('dashboard').classList.add('active');
                 document.getElementById('sys-bar').style.display = 'flex';
                 document.getElementById('pwa-nav').style.display = 'flex';
                 
-                activarSincronizacion(userIn);
+                activarSinc(userIn);
             } else {
-                alert("Acceso denegado: El usuario no está registrado en la base de datos.");
+                alert("Acceso Denegado: Usuario no registrado en el sistema.");
             }
         };
 
-        // --- ACCIONES DE NUBE ---
+        // BORRAR
         window.borrarDato = async (col, id) => {
-            if(confirm("¿Deseas eliminar este registro de la nube?")) {
-                await deleteDoc(doc(db, col, id));
-            }
+            if(confirm("¿Deseas eliminar este registro de la nube?")) await deleteDoc(doc(db, col, id));
         };
 
-        document.getElementById('btnGuardarNota').onclick = async () => {
+        // GUARDAR
+        document.getElementById('btnSaveNota').onclick = async () => {
             const txt = document.getElementById('note-text').value;
             if(!txt) return;
-            await addDoc(collection(db, "recordatorios"), {
-                usuario: window.currentUser,
-                texto: txt,
-                timestamp: serverTimestamp()
-            });
+            await addDoc(collection(db, "recordatorios"), { usuario: window.currentUser, texto: txt, timestamp: serverTimestamp() });
             document.getElementById('note-text').value = "";
         };
 
-        document.getElementById('btnGuardarVault').onclick = async () => {
+        document.getElementById('btnSaveVault').onclick = async () => {
             const tit = document.getElementById('v-title').value;
             const sec = document.getElementById('v-secret').value;
             if(!tit || !sec) return;
-            await addDoc(collection(db, "boveda"), {
-                usuario: window.currentUser,
-                titulo: tit,
-                secreto: sec,
-                timestamp: serverTimestamp()
-            });
-            document.getElementById('v-title').value = "";
-            document.getElementById('v-secret').value = "";
+            await addDoc(collection(db, "boveda"), { usuario: window.currentUser, titulo: tit, secreto: sec, timestamp: serverTimestamp() });
+            document.getElementById('v-title').value = ""; document.getElementById('v-secret').value = "";
         };
 
-        function activarSincronizacion(user) {
-            // Sincronizar Recordatorios
+        // SINCRONIZACIÓN REAL
+        function activarSinc(user) {
             onSnapshot(query(collection(db, "recordatorios"), where("usuario", "==", user), orderBy("timestamp", "desc")), (snap) => {
                 let h = "";
                 snap.forEach(d => {
                     h += `<div class="data-item"><span class="delete-btn" onclick="borrarDato('recordatorios','${d.id}')">✕</span>${d.data().texto}</div>`;
                 });
-                document.getElementById('notes-list-full').innerHTML = h || "No hay recordatorios guardados.";
+                document.getElementById('notes-full-list').innerHTML = h || "No hay recordatorios.";
                 document.getElementById('notes-preview').innerHTML = h ? h.substring(0, 500) : "Sin pendientes hoy.";
             });
 
-            // Sincronizar Bóveda
             onSnapshot(query(collection(db, "boveda"), where("usuario", "==", user), orderBy("timestamp", "desc")), (snap) => {
                 let vh = "";
                 snap.forEach(d => {
-                    const data = d.data();
                     vh += `<div class="data-item" style="border-left: 5px solid var(--card-vault);">
                         <span class="delete-btn" onclick="borrarDato('boveda','${d.id}')">✕</span>
-                        <strong>${data.titulo}</strong><br>
-                        <span style="font-family:monospace; background:#eee; padding:2px 4px;">${data.secreto}</span>
-                    </div>`;
+                        <strong>${d.data().titulo}</strong><br><code>${d.data().secreto}</code></div>`;
                 });
-                document.getElementById('vault-list-full').innerHTML = vh || "La bóveda está vacía.";
-                document.getElementById('vault-status').innerText = `Seguridad activa: ${snap.size} registros.`;
+                document.getElementById('vault-full-list').innerHTML = vh || "Bóveda vacía.";
+                document.getElementById('vault-status').innerText = `${snap.size} registros guardados.`;
             });
         }
     </script>
@@ -228,19 +214,17 @@
         }
 
         const np = document.getElementById('numpad');
-        for(let i=1; i<=9; i++) np.innerHTML += `<div class="num-btn" onclick="tecP('${i}')">${i}</div>`;
-        np.innerHTML += `<div class="num-btn" onclick="pinB=''; updD()">C</div><div class="num-btn" onclick="tecP('0')">0</div>`;
+        for(let i=1; i<=9; i++) np.innerHTML += `<button onclick="tecP('${i}')" style="padding:18px; border-radius:15px; border:1px solid #ddd; background:white; font-size:1.2rem; font-weight:bold;">${i}</button>`;
+        np.innerHTML += `<button onclick="pinB=''" style="padding:18px; border-radius:15px; border:none; background:#eee;">C</button>`;
+        np.innerHTML += `<button onclick="tecP('0')" style="padding:18px; border-radius:15px; border:1px solid #ddd; background:white; font-size:1.2rem; font-weight:bold;">0</button>`;
 
         window.tecP = (n) => {
-            if(pinB.length < 4) {
-                pinB += n; updD();
-                if(pinB === "1234") {
-                    document.getElementById('vault-auth').style.display = 'none';
-                    document.getElementById('vault-content').style.display = 'block';
-                } else if(pinB.length === 4) { pinB = ""; setTimeout(updD, 500); }
-            }
+            pinB += n;
+            if(pinB === "1234") {
+                document.getElementById('vault-auth').style.display = 'none';
+                document.getElementById('vault-content').style.display = 'block';
+            } else if(pinB.length >= 4) pinB = "";
         };
-        function updD() { document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i < pinB.length)); }
 
         setInterval(() => {
             const now = new Date();
