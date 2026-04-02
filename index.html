@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA OS - Enterprise Cloud</title>
+    <title>DATA OS - Versión Estable</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,92 +11,100 @@
             --card-cloud: #BBCBBD; --card-vault: #C9A091; --text-main: #2A3A4A;
             --danger: #EF4444;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text-main); min-height: 100vh; padding-bottom: 100px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
         
-        .system-bar { background: var(--surface); padding: 15px 25px; display: none; justify-content: space-between; align-items: center; border-bottom: 1px solid #E2E8F0; position: sticky; top: 0; z-index: 1000; }
-        .role-tag { font-size: 0.7rem; padding: 4px 12px; border-radius: 20px; background: #000; color: #fff; font-weight: 800; }
+        /* Contenedor de pantallas para evitar que se encimen */
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
+        .screen { display: none; width: 100%; min-height: 100vh; padding: 20px; position: absolute; top: 0; left: 0; }
+        .active { display: block !important; }
 
-        .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; max-width: 500px; margin: 0 auto; }
-        .screen.active { display: block !important; }
-        #login-screen.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+        /* Estilo Login */
+        #login-screen { display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); z-index: 2000; }
+        #login-screen.active { display: flex !important; }
 
-        .mod-card { padding: 20px; border-radius: 28px; margin-bottom: 20px; }
+        /* Barras de Sistema */
+        .system-bar { background: var(--surface); padding: 15px; display: none; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 1000; }
+        .role-tag { background: #000; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; }
+
+        /* Tarjetas */
+        .mod-card { padding: 20px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .notes-area { background: var(--card-cloud); }
         .vault-area { background: var(--card-vault); color: white; }
-        
-        .data-item { 
-            background: white; padding: 15px; border-radius: 18px; 
-            margin-bottom: 10px; position: relative; color: var(--text-main); 
-            border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-        .delete-btn { position: absolute; right: 12px; top: 12px; color: var(--danger) !important; font-weight: 900; cursor: pointer; z-index: 10; font-size: 1.2rem;}
 
-        .pwa-nav { background: white; padding: 15px; display: none; justify-content: space-around; position: fixed; bottom: 0; width: 100%; border-top: 1px solid #ddd; z-index: 1000; border-radius: 20px 20px 0 0; }
+        /* Items de la lista */
+        .data-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; position: relative; color: var(--text-main); border: 1px solid rgba(0,0,0,0.05); }
+        .delete-btn { position: absolute; right: 15px; top: 12px; color: var(--danger); font-weight: 900; cursor: pointer; font-size: 1.3rem; }
+
+        /* Navegación */
+        .pwa-nav { background: white; position: fixed; bottom: 0; width: 100%; display: none; justify-content: space-around; padding: 15px; border-top: 1px solid #ddd; z-index: 1000; border-radius: 20px 20px 0 0; }
         .nav-item { text-align: center; font-size: 0.75rem; color: #888; cursor: pointer; }
-        .nav-item.active { color: #6366F1; font-weight: 900; }
+        .nav-item.active { color: #6366F1; font-weight: 800; }
 
-        input, textarea { width: 100%; padding: 15px; border-radius: 15px; border: 1px solid #ddd; margin: 10px 0; font-size: 1rem; outline: none; }
-        .btn-main { width: 100%; padding: 16px; background: var(--header-accent); color: white; border: none; border-radius: 15px; font-weight: 800; cursor: pointer; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        input, textarea { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin: 10px 0; font-size: 1rem; }
+        .btn-main { width: 100%; padding: 16px; background: var(--header-accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="system-bar" id="sys-bar">
         <div style="font-weight:900;">DATA OS</div>
-        <div id="role-display" class="role-tag">VERIFICANDO</div>
-        <div id="clock" style="font-weight:800;">00:00</div>
+        <div id="role-display" class="role-tag">USUARIO</div>
+        <div id="clock">00:00</div>
     </div>
 
     <div id="login-screen" class="screen active">
-        <h1 style="font-size: 3rem; font-weight: 900; margin-bottom: 40px;">DATA OS</h1>
-        <input type="text" id="userInput" placeholder="Usuario">
-        <input type="password" id="passInput" placeholder="PIN">
-        <button class="btn-main" onclick="handleLogin()">ACCEDER</button>
+        <h1 style="font-size: 3rem; font-weight: 900; margin-bottom: 10px;">DATA OS</h1>
+        <p style="margin-bottom: 30px; color: #666;">Seguridad de Acceso</p>
+        <div style="width: 100%; max-width: 320px;">
+            <input type="text" id="userInput" placeholder="Nombre de Usuario">
+            <input type="password" id="passInput" placeholder="PIN (1234)">
+            <button class="btn-main" onclick="handleLogin()">ENTRAR</button>
+        </div>
     </div>
 
     <div id="dashboard" class="screen">
-        <h2 id="welcome-msg" style="margin-bottom:20px; font-size: 2.2rem;">Hola</h2>
-        <div class="mod-card notes-area">
-            <h3 style="margin-bottom:10px; font-size: 0.9rem;">📝 RECORDATORIOS ACTIVOS</h3>
-            <div id="notes-preview">Cargando datos...</div>
-            <button class="btn-main" onclick="navTo('mod-notes')" style="background:rgba(255,255,255,0.5); color:black; margin-top:15px; border-radius: 12px; padding: 10px;">Ver Todo / Añadir</button>
-        </div>
-        <div class="mod-card vault-area" onclick="navTo('mod-vault')">
-            <h3 style="font-size: 0.9rem;">🔐 BÓVEDA CLOUD</h3>
-            <p id="vault-status">Toca para desbloquear</p>
+        <div style="margin-top: 60px;"> <h2 id="welcome-msg" style="margin-bottom:20px; font-size: 2rem;">Hola</h2>
+            <div class="mod-card notes-area">
+                <h3 style="margin-bottom:10px;">📝 RECORDATORIOS</h3>
+                <div id="notes-dash">No hay notas registradas.</div>
+                <button class="btn-main" onclick="navTo('mod-notes')" style="background:rgba(255,255,255,0.4); color:black; margin-top:10px;">Gestionar Todo</button>
+            </div>
+            <div class="mod-card vault-area" onclick="navTo('mod-vault')">
+                <h3>🔐 BÓVEDA CLOUD</h3>
+                <p id="vault-status">Bloqueada</p>
+            </div>
         </div>
     </div>
 
     <div id="mod-notes" class="screen">
-        <h2 style="margin-bottom:20px;">Recordatorios</h2>
-        <div style="background:white; padding:15px; border-radius:20px; margin-bottom:20px;">
-            <textarea id="note-text" placeholder="Escribe tu nota aquí..."></textarea>
-            <button class="btn-main" id="btnSaveNota">GUARDAR EN LA NUBE</button>
+        <div style="margin-top: 60px;">
+            <h2>Notas en la Nube</h2>
+            <textarea id="note-text" placeholder="¿Qué quieres guardar?"></textarea>
+            <button class="btn-main" id="btnSaveNota">GUARDAR</button>
+            <div id="notes-full-list" style="margin-top:20px;"></div>
         </div>
-        <div id="notes-full-list"></div>
     </div>
 
     <div id="mod-vault" class="screen">
-        <div id="vault-auth">
-            <h2 style="text-align:center;">PIN DE BÓVEDA</h2>
-            <div id="numpad" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:20px;"></div>
-        </div>
-        <div id="vault-content" style="display:none;">
-            <h2>Mi Bóveda</h2>
-            <input type="text" id="v-title" placeholder="Título">
-            <input type="text" id="v-secret" placeholder="Secreto">
-            <button class="btn-main" id="btnSaveVault" style="background:var(--card-vault)">GUARDAR</button>
-            <div id="vault-full-list" style="margin-top:20px;"></div>
+        <div style="margin-top: 60px;">
+            <div id="vault-auth">
+                <h2 style="text-align:center;">PIN REQUERIDO</h2>
+                <div id="numpad" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:20px; max-width: 280px; margin-left:auto; margin-right:auto;"></div>
+            </div>
+            <div id="vault-content" style="display:none;">
+                <h2>Bóveda Privada</h2>
+                <input type="text" id="v-title" placeholder="Título">
+                <input type="text" id="v-secret" placeholder="Secreto">
+                <button class="btn-main" id="btnSaveVault" style="background:var(--card-vault)">GUARDAR EN NUBE</button>
+                <div id="vault-full-list" style="margin-top:20px;"></div>
+            </div>
         </div>
     </div>
 
     <nav class="pwa-nav" id="pwa-nav">
-        <div class="nav-item active" onclick="navTo('dashboard')" id="nav-home">🏠<br>Inicio</div>
-        <div class="nav-item" onclick="navTo('mod-notes')" id="nav-notes-btn">📝<br>Notas</div>
-        <div class="nav-item" onclick="navTo('mod-vault')" id="nav-vault-btn">🔐<br>Bóveda</div>
+        <div class="nav-item active" onclick="navTo('dashboard')" id="n-home">🏠<br>Inicio</div>
+        <div class="nav-item" onclick="navTo('mod-notes')" id="n-notes">📝<br>Notas</div>
+        <div class="nav-item" onclick="navTo('mod-vault')" id="n-vault">🔐<br>Bóveda</div>
         <div class="nav-item" onclick="location.reload()" style="color:var(--danger)">✕<br>Salir</div>
     </nav>
 
@@ -116,80 +124,61 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // LOGIN
+        // LOGIN SEGURO
         window.handleLogin = async () => {
-            const userIn = document.getElementById('userInput').value.trim();
-            const pinIn = document.getElementById('passInput').value;
+            const u = document.getElementById('userInput').value.trim();
+            const p = document.getElementById('passInput').value;
+            if(!u || p !== "1234") return alert("Usuario o PIN inválido");
 
-            if(!userIn || pinIn !== "1234") { alert("PIN 1234"); return; }
-
-            const userSnap = await getDoc(doc(db, "usuarios_autorizados", userIn));
-
-            if (userSnap.exists()) {
-                window.currentUser = userIn;
-                document.getElementById('welcome-msg').innerText = "Hola, " + userIn;
-                document.getElementById('role-display').innerText = userSnap.data().rol.toUpperCase();
-                
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('dashboard').classList.add('active');
-                document.getElementById('sys-bar').style.display = 'flex';
-                document.getElementById('pwa-nav').style.display = 'flex';
-                
-                activarSinc(userIn);
-            } else { alert("Usuario no registrado en Firestore"); }
+            try {
+                const userSnap = await getDoc(doc(db, "usuarios_autorizados", u));
+                if(userSnap.exists()){
+                    window.currentUser = u;
+                    document.getElementById('welcome-msg').innerText = "Hola, " + u;
+                    document.getElementById('role-display').innerText = userSnap.data().rol.toUpperCase();
+                    
+                    document.getElementById('login-screen').classList.remove('active');
+                    document.getElementById('dashboard').classList.add('active');
+                    document.getElementById('sys-bar').style.display = 'flex';
+                    document.getElementById('pwa-nav').style.display = 'flex';
+                    activarSinc(u);
+                } else { alert("Usuario no autorizado en base de datos."); }
+            } catch(e) { alert("Error de conexión"); }
         };
 
-        // BORRAR
-        window.borrarDato = async (col, id) => {
-            if(confirm("¿Borrar permanentemente?")) await deleteDoc(doc(db, col, id));
-        };
+        // ACCIONES
+        window.borrar = async (col, id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, col, id)); };
 
-        // GUARDAR NOTA
         document.getElementById('btnSaveNota').onclick = async () => {
             const txt = document.getElementById('note-text').value;
-            if(!txt) return;
-            try {
-                await addDoc(collection(db, "recordatorios"), {
-                    usuario: window.currentUser,
-                    texto: txt,
-                    timestamp: serverTimestamp()
-                });
-                document.getElementById('note-text').value = "";
-            } catch(e) { alert("Error al guardar"); }
+            if(txt) await addDoc(collection(db, "recordatorios"), { usuario: window.currentUser, texto: txt, timestamp: serverTimestamp() });
+            document.getElementById('note-text').value = "";
         };
 
-        // GUARDAR BÓVEDA
         document.getElementById('btnSaveVault').onclick = async () => {
             const tit = document.getElementById('v-title').value;
             const sec = document.getElementById('v-secret').value;
-            if(tit && sec) {
-                await addDoc(collection(db, "boveda"), { usuario: window.currentUser, titulo: tit, secreto: sec, timestamp: serverTimestamp() });
-                document.getElementById('v-title').value = ""; document.getElementById('v-secret').value = "";
-            }
+            if(tit && sec) await addDoc(collection(db, "boveda"), { usuario: window.currentUser, titulo: tit, secreto: sec, timestamp: serverTimestamp() });
+            document.getElementById('v-title').value = ""; document.getElementById('v-secret').value = "";
         };
 
-        // SINCRONIZACIÓN
         function activarSinc(user) {
-            // Notas
-            const qN = query(collection(db, "recordatorios"), where("usuario", "==", user), orderBy("timestamp", "desc"));
-            onSnapshot(qN, (snap) => {
-                let html = "";
+            onSnapshot(query(collection(db, "recordatorios"), where("usuario", "==", user), orderBy("timestamp", "desc")), (snap) => {
+                let h = "";
                 snap.forEach(d => {
-                    html += `<div class="data-item"><span class="delete-btn" onclick="borrarDato('recordatorios','${d.id}')">✕</span>${d.data().texto}</div>`;
+                    h += `<div class="data-item"><span class="delete-btn" onclick="borrar('recordatorios','${d.id}')">✕</span>${d.data().texto}</div>`;
                 });
-                document.getElementById('notes-full-list').innerHTML = html || "No tienes notas aún.";
-                document.getElementById('notes-preview').innerHTML = html ? "Tareas pendientes..." : "Sin pendientes.";
-            }, (error) => { console.log(error); });
+                document.getElementById('notes-dash').innerHTML = h || "Sin notas.";
+                document.getElementById('notes-full-list').innerHTML = h;
+            });
 
-            // Bóveda
-            const qV = query(collection(db, "boveda"), where("usuario", "==", user), orderBy("timestamp", "desc"));
-            onSnapshot(qV, (snap) => {
-                let html = "";
+            onSnapshot(query(collection(db, "boveda"), where("usuario", "==", user), orderBy("timestamp", "desc")), (snap) => {
+                let h = "";
                 snap.forEach(d => {
-                    html += `<div class="data-item"><span class="delete-btn" onclick="borrarDato('boveda','${d.id}')">✕</span><b>${d.data().titulo}</b><br>${d.data().secreto}</div>`;
+                    h += `<div class="data-item"><span class="delete-btn" onclick="borrar('boveda','${d.id}')">✕</span><b>${d.data().titulo}</b><br>${d.data().secreto}</div>`;
                 });
-                document.getElementById('vault-full-list').innerHTML = html || "Bóveda vacía.";
-                document.getElementById('vault-status').innerText = snap.size + " secretos guardados.";
+                document.getElementById('vault-full-list').innerHTML = h || "Vacía";
+                document.getElementById('vault-status').innerText = snap.size + " secretos guardados";
             });
         }
     </script>
@@ -199,14 +188,20 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            if(id === 'dashboard') document.getElementById('nav-home').classList.add('active');
+            if(id === 'dashboard') document.getElementById('n-home').classList.add('active');
+            if(id === 'mod-notes') document.getElementById('n-notes').classList.add('active');
+            if(id === 'mod-vault') document.getElementById('n-vault').classList.add('active');
         }
 
         const np = document.getElementById('numpad');
-        for(let i=1; i<=9; i++) np.innerHTML += `<button onclick="tec('${i}')" style="padding:15px; border-radius:12px; border:1px solid #ddd; background:white; font-weight:bold;">${i}</button>`;
+        for(let i=1; i<=9; i++) np.innerHTML += `<button onclick="checkP('${i}')" style="padding:20px; border-radius:15px; border:1px solid #ddd; background:white; font-size:1.2rem; font-weight:bold;">${i}</button>`;
         let p = "";
-        window.tec = (n) => {
-            p += n; if(p === "1234") { document.getElementById('vault-auth').style.display='none'; document.getElementById('vault-content').style.display='block'; }
+        window.checkP = (n) => {
+            p += n; 
+            if(p === "1234") { 
+                document.getElementById('vault-auth').style.display='none'; 
+                document.getElementById('vault-content').style.display='block'; 
+            }
             if(p.length >= 4 && p !== "1234") p = "";
         }
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }, 1000);
