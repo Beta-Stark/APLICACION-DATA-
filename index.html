@@ -1,54 +1,283 @@
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
-    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-messaging.js";
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>DATA OS - Enterprise Pro Max</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/APLICACION-DATA-/manifest.json">
+    <style>
+        :root {
+            --bg: #F8FAFC;
+            --surface: #FFFFFF;
+            --accent: #6366F1;
+            --text-main: #0F172A;
+            --text-sub: #64748B;
+            --border: #E2E8F0;
+            --success: #10B981;
+            --danger: #EF4444;
+            --alarm: #F59E0B;
+        }
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDlmtpUfYjs33qa9tLE7Fv2C5yszSZEnUw",
-        authDomain: "data-os-db30b.firebaseapp.com",
-        projectId: "data-os-db30b",
-        storageBucket: "data-os-db30b.firebasestorage.app",
-        messagingSenderId: "149593183974",
-        appId: "1:149593183974:web:e588fbee9a618e21980d27",
-        measurementId: "G-VT52P7RX7K"
-    };
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
 
-    const app = initializeApp(firebaseConfig);
-    const messaging = getMessaging(app);
+        .system-bar {
+            background: var(--surface); padding: 12px 20px; display: none; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid var(--border); font-size: 0.75rem; font-weight: 800;
+            position: sticky; top: 0; z-index: 1000;
+        }
 
-    // Registro específico para la subcarpeta de GitHub Pages
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/APLICACION-DATA-/firebase-messaging-sw.js', {
-            scope: '/APLICACION-DATA-/'
-        }).then(reg => console.log('FCM SW Registrado:', reg.scope))
-          .catch(err => console.log('Fallo registro SW:', err));
-    }
+        .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block !important; }
+        #login-screen.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
 
-    window.requestPermission = async () => {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
+        .mod-card { background: var(--surface); padding: 20px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; }
+        .mod-card:active { transform: scale(0.97); }
+
+        .pin-dots { display: flex; justify-content: center; gap: 15px; margin: 25px 0; }
+        .dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--border); }
+        .dot.active { background: var(--accent); border-color: var(--accent); }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; margin: 0 auto; }
+        .num-btn { height: 60px; border-radius: 18px; border: 1px solid var(--border); background: var(--surface); font-size: 1.5rem; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+
+        input, select, textarea { width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); background: #F1F5F9; font-size: 1rem; outline: none; }
+        .btn-main { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
+        
+        .btn-bell { background: #EEF2FF; border: 2px solid var(--accent); color: var(--accent); padding: 15px; border-radius: 15px; text-align: center; margin-bottom: 20px; font-weight: 800; cursor: pointer; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="system-bar" id="sys-bar">
+        <div style="color:var(--success)">● <span id="role-indicator">SISTEMA</span></div>
+        <div id="clock">00:00</div>
+    </div>
+
+    <div id="login-screen" class="screen active">
+        <div style="text-align: center; width: 90%; max-width: 360px;">
+            <h1 style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">DATA OS</h1>
+            <p style="color: var(--text-sub); margin-bottom: 30px;">Enterprise & Personal</p>
+            <input type="text" id="userInput" placeholder="Usuario">
+            <select id="roleInput">
+                <option value="SuperAdmin">Super Administrador</option>
+                <option value="Cliente">Usuario Cliente</option>
+            </select>
+            <input type="password" id="passInput" placeholder="PIN (1234)">
+            <button class="btn-main" onclick="handleLogin()">INICIAR SESIÓN</button>
+        </div>
+    </div>
+
+    <div id="dashboard" class="screen">
+        <div style="margin-bottom: 25px;">
+            <p id="user-role-label" style="font-size: 0.65rem; font-weight: 900; color: var(--accent); letter-spacing: 2px;"></p>
+            <h1 id="welcome-msg" style="font-size: 2.2rem; font-weight: 900;">Hola</h1>
+        </div>
+
+        <div class="btn-bell" onclick="vincularFirebase()">
+            🔔 ACTIVAR RECORDATORIOS ANDROID
+        </div>
+
+        <div id="error-module" style="background:var(--text-main); color:white; padding:20px; border-radius:24px; text-align:center; margin-bottom:20px; display:none;">
+            <p style="font-size: 0.7rem; font-weight: 800;">CONTADOR DE ERRORES</p>
+            <div style="display:flex; justify-content:center; gap:25px; align-items:center; margin-top:10px;">
+                <button onclick="changeCount(-1)" style="width:40px; height:40px; border-radius:50%; border:none; font-weight:900;">-</button>
+                <span id="err-display" style="font-size: 2rem; font-weight: 900;">0</span>
+                <button onclick="changeCount(1)" style="width:40px; height:40px; border-radius:50%; border:none; font-weight:900;">+</button>
+            </div>
+        </div>
+
+        <div class="mod-card" onclick="navTo('mod-notes')">
+            <span style="font-size: 1.5rem;">📝</span>
+            <div><strong>Reportes & Alarmas</strong><small style="display:block; color:var(--text-sub);">Notas y recordatorios</small></div>
+        </div>
+
+        <div class="mod-card" onclick="navTo('mod-vault')">
+            <span style="font-size: 1.5rem;">🔐</span>
+            <div><strong>Bóveda Privada</strong><small style="display:block; color:var(--text-sub);">Datos cifrados con PIN</small></div>
+        </div>
+        
+        <button onclick="location.reload()" style="margin-top:40px; background:none; border:none; color:var(--danger); font-weight:800; width:100%;">CERRAR SESIÓN</button>
+    </div>
+
+    <div id="mod-notes" class="screen">
+        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← VOLVER</button>
+        <h2>Nuevo Reporte</h2>
+        <textarea id="note-text" placeholder="Escribe el reporte..."></textarea>
+        <button class="btn-main" onclick="addNote()">GUARDAR REPORTE</button>
+        <div id="notes-container" style="margin-top:20px;"></div>
+    </div>
+
+    <div id="mod-vault" class="screen">
+        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← VOLVER</button>
+        <div id="vault-auth">
+            <h2 style="text-align:center;">PIN de Acceso</h2>
+            <div class="pin-dots" id="pin-dots">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+            <div class="numpad" id="pad-container"></div>
+        </div>
+        <div id="vault-content" style="display:none;">
+            <h2>Bóveda</h2>
+            <input type="text" id="v-key" placeholder="Título">
+            <input type="text" id="v-val" placeholder="Valor">
+            <button class="btn-main" onclick="saveVault()">GUARDAR</button>
+            <div id="vault-list" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-messaging.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDlmtpUfYjs33qa9tLE7Fv2C5yszSZEnUw",
+            authDomain: "data-os-db30b.firebaseapp.com",
+            projectId: "data-os-db30b",
+            storageBucket: "data-os-db30b.firebasestorage.app",
+            messagingSenderId: "149593183974",
+            appId: "1:149593183974:web:e588fbee9a618e21980d27",
+            measurementId: "G-VT52P7RX7K"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const messaging = getMessaging(app);
+
+        // Registro de Service Workers
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Registro del SW principal
+                navigator.serviceWorker.register('/APLICACION-DATA-/sw.js', { scope: '/APLICACION-DATA-/' });
+                
+                // Registro del SW de Firebase con ruta explícita para evitar 404
+                navigator.serviceWorker.register('/APLICACION-DATA-/firebase-messaging-sw.js', { scope: '/APLICACION-DATA-/' })
+                .then(reg => console.log('FCM Registrado:', reg.scope))
+                .catch(err => console.log('Error FCM:', err));
+            });
+        }
+
+        window.vincularFirebase = async () => {
             try {
-                // Obtenemos el registro actual para pasárselo a Firebase
-                const registration = await navigator.serviceWorker.getRegistration('/APLICACION-DATA-/');
-                
-                const token = await getToken(messaging, { 
-                    vapidKey: 'BPqre3i_E99vzlH1LUr0iYibIU2nLffn_3J4iyjs2w4EFd1b87FZH01ltDkrQQng7ZSrHIJTdE0TnqaJQeOGKiA', 
-                    serviceWorkerRegistration: registration 
-                });
-                
-                if (token) {
-                    console.log("Token FCM:", token);
-                    alert("¡Dispositivo vinculado! Token generado en consola.");
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    // Forzamos la búsqueda del SW en la subcarpeta
+                    const registration = await navigator.serviceWorker.getRegistration('/APLICACION-DATA-/');
+                    
+                    const token = await getToken(messaging, { 
+                        vapidKey: 'TU_CLAVE_VAPID_AQUÍ', // <--- PEGA TU CLAVE AQUÍ
+                        serviceWorkerRegistration: registration 
+                    });
+
+                    if (token) {
+                        console.log("TOKEN FCM:", token);
+                        alert("¡Dispositivo Vinculado con Éxito!");
+                    }
                 }
-            } catch (err) {
-                console.error("Error al obtener token:", err);
+            } catch (err) { 
+                console.error("Error:", err);
+                alert("Error al vincular. Revisa la consola.");
+            }
+        };
+
+        onMessage(messaging, (payload) => {
+            new Notification(payload.notification.title, {
+                body: payload.notification.body,
+                icon: 'https://cdn-icons-png.flaticon.com/512/1087/1087815.png'
+            });
+        });
+    </script>
+
+    <script>
+        // Lógica de interfaz (PIN, Reloj, Navegación)
+        let userData = { name: "", role: "" };
+        let pinInput = "";
+        let notes = JSON.parse(localStorage.getItem('notes_v4')) || [];
+        let vault = JSON.parse(localStorage.getItem('vault_v4')) || [];
+        let errors = 0;
+
+        // Generar Numpad
+        const pad = document.getElementById('pad-container');
+        for(let i=1; i<=9; i++) pad.innerHTML += `<div class="num-btn" onclick="pressPin('${i}')">${i}</div>`;
+        pad.innerHTML += `<div class="num-btn" style="color:var(--danger)" onclick="clearPin()">C</div>`;
+        pad.innerHTML += `<div class="num-btn" onclick="pressPin('0')">0</div>`;
+
+        setInterval(() => {
+            const d = new Date();
+            document.getElementById('clock').innerText = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
+        }, 1000);
+
+        function handleLogin() {
+            const pass = document.getElementById('passInput').value;
+            const user = document.getElementById('userInput').value;
+            if(pass === "1234" && user !== "") {
+                userData.name = user;
+                userData.role = document.getElementById('roleInput').value;
+                document.getElementById('welcome-msg').innerText = "Hola, " + user;
+                document.getElementById('user-role-label').innerText = userData.role.toUpperCase();
+                document.getElementById('sys-bar').style.display = 'flex';
+                document.getElementById('error-module').style.display = (userData.role === 'SuperAdmin') ? 'block' : 'none';
+                navTo('dashboard');
+            } else { alert("Datos incorrectos"); }
+        }
+
+        function navTo(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function pressPin(n) {
+            if(pinInput.length < 4) {
+                pinInput += n;
+                updateDots();
+                if(pinInput === "1234") {
+                    document.getElementById('vault-auth').style.display='none';
+                    document.getElementById('vault-content').style.display='block';
+                    renderVault();
+                } else if(pinInput.length === 4) { alert("PIN Incorrecto"); clearPin(); }
             }
         }
-    };
+        function updateDots() {
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((d, i) => d.classList.toggle('active', i < pinInput.length));
+        }
+        function clearPin() { pinInput = ""; updateDots(); }
 
-    onMessage(messaging, (payload) => {
-        new Notification(payload.notification.title, {
-            body: payload.notification.body,
-            icon: 'https://cdn-icons-png.flaticon.com/512/1087/1087815.png'
-        });
-    });
-</script>
+        function addNote() {
+            const text = document.getElementById('note-text').value;
+            if(!text) return;
+            notes.unshift({ id: Date.now(), text, date: new Date().toLocaleString() });
+            localStorage.setItem('notes_v4', JSON.stringify(notes));
+            document.getElementById('note-text').value = "";
+            renderNotes();
+        }
+
+        function renderNotes() {
+            const container = document.getElementById('notes-container');
+            container.innerHTML = "";
+            notes.forEach(n => {
+                container.innerHTML += `<div class="mod-card"><div><strong>${n.date}</strong><p>${n.text}</p></div></div>`;
+            });
+        }
+
+        function saveVault() {
+            const k = document.getElementById('v-key').value;
+            const v = document.getElementById('v-val').value;
+            if(!k || !v) return;
+            vault.unshift({ k, v: btoa(v) });
+            localStorage.setItem('vault_v4', JSON.stringify(vault));
+            renderVault();
+        }
+
+        function renderVault() {
+            const container = document.getElementById('vault-list');
+            container.innerHTML = "";
+            vault.forEach(d => {
+                container.innerHTML += `<div class="mod-card"><div><strong>${d.k}:</strong> ${atob(d.v)}</div></div>`;
+            });
+        }
+        function changeCount(v) { errors += v; document.getElementById('err-display').innerText = errors; }
+    </script>
+</body>
+</html>
