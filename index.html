@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA OS - Cloud Edition</title>
+    <title>DATA OS - Cloud Module</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <link rel="manifest" href="./manifest.json">
     <style>
@@ -41,7 +41,7 @@
     <div id="login-screen" class="screen active">
         <div style="text-align: center; width: 90%; max-width: 360px;">
             <h1 style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">DATA OS</h1>
-            <p style="color: var(--text-sub); margin-bottom: 30px;">Cloud Module Enabled</p>
+            <p style="color: var(--text-sub); margin-bottom: 30px;">Cloud Sincronización Activa</p>
             <input type="text" id="userInput" placeholder="Usuario">
             <select id="roleInput">
                 <option value="SuperAdmin">Super Administrador</option>
@@ -59,17 +59,17 @@
         </div>
 
         <div class="btn-bell" onclick="vincularFirebase()">
-            🔔 ACTIVAR NOTIFICACIONES PUSH
+            🔔 VINCULAR DISPOSITIVO PARA NOTIFICACIONES
         </div>
 
         <div class="mod-card" onclick="navTo('mod-notes')">
             <span style="font-size: 1.5rem;">📝</span>
-            <div><strong>Recordatorios en la Nube</strong><small style="display:block; color:var(--text-sub);">Sincronizado entre dispositivos</small></div>
+            <div><strong>Recordatorios en la Nube</strong><small style="display:block; color:var(--text-sub);">Sincronizado en tiempo real</small></div>
         </div>
 
         <div class="mod-card" onclick="navTo('mod-vault')">
             <span style="font-size: 1.5rem;">🔐</span>
-            <div><strong>Bóveda Privada</strong><small style="display:block; color:var(--text-sub);">Datos cifrados localmente</small></div>
+            <div><strong>Bóveda Privada</strong><small style="display:block; color:var(--text-sub);">Datos cifrados</small></div>
         </div>
         
         <button onclick="location.reload()" style="margin-top:40px; background:none; border:none; color:var(--danger); font-weight:800; width:100%;">CERRAR SESIÓN</button>
@@ -104,8 +104,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
         import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-messaging.js";
-        // Importación de Firestore (Base de datos)
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDlmtpUfYjs33qa9tLE7Fv2C5yszSZEnUw",
@@ -123,23 +122,30 @@
 
         // Registro de Service Worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./firebase-messaging-sw.js').then(reg => console.log('SW OK'));
+            navigator.serviceWorker.register('./firebase-messaging-sw.js');
         }
 
-        // FUNCIÓN: Vincular para Notificaciones
+        // VINCULAR DISPOSITIVO
         window.vincularFirebase = async () => {
             const permission = await Notification.requestPermission();
             if (permission === 'granted') {
                 const registration = await navigator.serviceWorker.ready;
-                const token = await getToken(messaging, { 
-                    vapidKey: 'BPqre3i_E99vzlH1LUr0iYibIU2nLffn_3J4iyjs2w4EFd1b87FZH01ltDkrQQng7ZSrHIJTdE0TnqaJQeOGKiA', // RECUERDA CAMBIAR ESTO
+                const currentToken = await getToken(messaging, { 
+                    vapidKey: 'TU_CLAVE_VAPID_AQUÍ', // <--- CAMBIA ESTO
                     serviceWorkerRegistration: registration 
                 });
-                if (token) prompt("Copia tu Token:", token);
+                if (currentToken) {
+                    await addDoc(collection(db, "dispositivos"), {
+                        usuario: window.userData.name,
+                        token: currentToken,
+                        timestamp: serverTimestamp()
+                    });
+                    alert("¡Dispositivo vinculado y guardado en la nube!");
+                }
             }
         };
 
-        // FUNCIÓN: Guardar Nota en Firestore
+        // GUARDAR NOTA
         document.getElementById('btnGuardarNota').onclick = async () => {
             const text = document.getElementById('note-text').value;
             if(!text) return;
@@ -153,26 +159,37 @@
             } catch (e) { alert("Error al guardar"); }
         };
 
-        // FUNCIÓN: Leer Notas de Firestore en Tiempo Real
+        // ESCUCHAR NOTAS EN TIEMPO REAL
         window.cargarNotasNube = (userName) => {
             const q = query(collection(db, "recordatorios"), where("usuario", "==", userName), orderBy("timestamp", "desc"));
             onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('notes-container');
                 container.innerHTML = "";
-                snapshot.forEach((doc) => {
-                    const n = doc.data();
+                snapshot.forEach((docRef) => {
+                    const n = docRef.data();
+                    const id = docRef.id;
                     container.innerHTML += `
-                        <div class="mod-card" style="flex-direction:column; align-items:flex-start;">
-                            <small style="color:var(--accent); font-weight:800;">${n.timestamp?.toDate().toLocaleString() || 'Enviando...'}</small>
-                            <p>${n.texto}</p>
+                        <div class="mod-card" style="flex-direction:column; align-items:flex-start; position:relative;">
+                            <span onclick="window.eliminarNotaNube('${id}')" style="position:absolute; right:20px; top:20px; color:var(--danger); font-weight:bold; cursor:pointer;">✕</span>
+                            <small style="color:var(--accent); font-weight:800;">${n.timestamp?.toDate().toLocaleString() || 'Sincronizando...'}</small>
+                            <p style="margin-top:5px;">${n.texto}</p>
                         </div>`;
                 });
             });
         };
+
+        // ELIMINAR NOTA DE LA NUBE
+        window.eliminarNotaNube = async (id) => {
+            if(confirm("¿Eliminar este recordatorio permanentemente?")) {
+                try {
+                    await deleteDoc(doc(db, "recordatorios", id));
+                } catch (e) { alert("No se pudo eliminar"); }
+            }
+        };
     </script>
 
     <script>
-        // Lógica de Interfaz General
+        // INTERFAZ Y NAVEGACIÓN
         window.userData = { name: "", role: "" };
         let pinInput = "";
 
@@ -184,9 +201,8 @@
                 document.getElementById('welcome-msg').innerText = "Hola, " + user;
                 document.getElementById('sys-bar').style.display = 'flex';
                 navTo('dashboard');
-                // Al loguear, empezamos a escuchar las notas de la nube
                 window.cargarNotasNube(user);
-            } else { alert("Error"); }
+            } else { alert("PIN incorrecto"); }
         }
 
         function navTo(id) {
@@ -194,7 +210,6 @@
             document.getElementById(id).classList.add('active');
         }
 
-        // (Mantengo tus funciones de PIN y Bóveda igual para no confundirte)
         const pad = document.getElementById('pad-container');
         for(let i=1; i<=9; i++) pad.innerHTML += `<div class="num-btn" onclick="pressPin('${i}')">${i}</div>`;
         pad.innerHTML += `<div class="num-btn" style="color:var(--danger)" onclick="clearPin()">C</div><div class="num-btn" onclick="pressPin('0')">0</div>`;
