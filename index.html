@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA OS - Cloud Module</title>
+    <title>DATA OS - Cloud Module v2</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <link rel="manifest" href="./manifest.json">
     <style>
@@ -18,8 +18,30 @@
         .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
         .screen.active { display: block !important; }
         #login-screen.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
-        .mod-card { background: var(--surface); padding: 20px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; }
+        
+        /* TARJETAS DE NOTAS */
+        .mod-card { background: var(--surface); padding: 20px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; position: relative; }
         .mod-card:active { transform: scale(0.97); }
+
+        /* BOTÓN DE ELIMINAR (LA X) */
+        .delete-btn {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            color: var(--danger) !important;
+            font-weight: 900;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #FEE2E2;
+            border-radius: 50%;
+        }
+
         .pin-dots { display: flex; justify-content: center; gap: 15px; margin: 25px 0; }
         .dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--border); }
         .dot.active { background: var(--accent); border-color: var(--accent); }
@@ -59,7 +81,7 @@
         </div>
 
         <div class="btn-bell" onclick="vincularFirebase()">
-            🔔 VINCULAR DISPOSITIVO PARA NOTIFICACIONES
+            🔔 VINCULAR DISPOSITIVO PUSH
         </div>
 
         <div class="mod-card" onclick="navTo('mod-notes')">
@@ -120,7 +142,6 @@
         const messaging = getMessaging(app);
         const db = getFirestore(app);
 
-        // Registro de Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./firebase-messaging-sw.js');
         }
@@ -131,7 +152,7 @@
             if (permission === 'granted') {
                 const registration = await navigator.serviceWorker.ready;
                 const currentToken = await getToken(messaging, { 
-                    vapidKey: 'BPqre3i_E99vzlH1LUr0iYibIU2nLffn_3J4iyjs2w4EFd1b87FZH01ltDkrQQng7ZSrHIJTdE0TnqaJQeOGKiA', // <--- CAMBIA ESTO
+                    vapidKey: 'TU_CLAVE_VAPID_AQUÍ', // <--- PEGA TU CLAVE AQUÍ
                     serviceWorkerRegistration: registration 
                 });
                 if (currentToken) {
@@ -140,7 +161,7 @@
                         token: currentToken,
                         timestamp: serverTimestamp()
                     });
-                    alert("¡Dispositivo vinculado y guardado en la nube!");
+                    alert("¡Token guardado en la nube!");
                 }
             }
         };
@@ -156,10 +177,19 @@
                     timestamp: serverTimestamp()
                 });
                 document.getElementById('note-text').value = "";
-            } catch (e) { alert("Error al guardar"); }
+            } catch (e) { console.error(e); }
         };
 
-        // ESCUCHAR NOTAS EN TIEMPO REAL
+        // ELIMINAR NOTA (GLOBAL PARA QUE FUNCIONE EN EL HTML DINÁMICO)
+        window.eliminarNotaNube = async (id) => {
+            if(confirm("¿Eliminar permanentemente?")) {
+                try {
+                    await deleteDoc(doc(db, "recordatorios", id));
+                } catch (e) { alert("Error al borrar"); }
+            }
+        };
+
+        // ESCUCHAR NOTAS EN TIEMPO REAL CON BOTÓN DE CIERRE
         window.cargarNotasNube = (userName) => {
             const q = query(collection(db, "recordatorios"), where("usuario", "==", userName), orderBy("timestamp", "desc"));
             onSnapshot(q, (snapshot) => {
@@ -168,28 +198,21 @@
                 snapshot.forEach((docRef) => {
                     const n = docRef.data();
                     const id = docRef.id;
+                    const fecha = n.timestamp ? n.timestamp.toDate().toLocaleString() : 'Sincronizando...';
+                    
                     container.innerHTML += `
-                        <div class="mod-card" style="flex-direction:column; align-items:flex-start; position:relative;">
-                            <span onclick="window.eliminarNotaNube('${id}')" style="position:absolute; right:20px; top:20px; color:var(--danger); font-weight:bold; cursor:pointer;">✕</span>
-                            <small style="color:var(--accent); font-weight:800;">${n.timestamp?.toDate().toLocaleString() || 'Sincronizando...'}</small>
-                            <p style="margin-top:5px;">${n.texto}</p>
+                        <div class="mod-card" style="flex-direction:column; align-items:flex-start;">
+                            <div class="delete-btn" onclick="window.eliminarNotaNube('${id}')">✕</div>
+                            <small style="color:var(--accent); font-weight:800;">${fecha}</small>
+                            <p style="margin-top:10px; padding-right:25px;">${n.texto}</p>
                         </div>`;
                 });
             });
         };
-
-        // ELIMINAR NOTA DE LA NUBE
-        window.eliminarNotaNube = async (id) => {
-            if(confirm("¿Eliminar este recordatorio permanentemente?")) {
-                try {
-                    await deleteDoc(doc(db, "recordatorios", id));
-                } catch (e) { alert("No se pudo eliminar"); }
-            }
-        };
     </script>
 
     <script>
-        // INTERFAZ Y NAVEGACIÓN
+        // INTERFAZ GENERAL
         window.userData = { name: "", role: "" };
         let pinInput = "";
 
@@ -202,7 +225,7 @@
                 document.getElementById('sys-bar').style.display = 'flex';
                 navTo('dashboard');
                 window.cargarNotasNube(user);
-            } else { alert("PIN incorrecto"); }
+            } else { alert("Error de PIN"); }
         }
 
         function navTo(id) {
