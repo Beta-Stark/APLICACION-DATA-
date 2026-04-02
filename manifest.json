@@ -1,11 +1,11 @@
 {
   "name": "DATA OS Enterprise",
   "short_name": "DATA OS",
-  "description": "Sistema de gestión y reportes con notificaciones push.",
-  "start_url": "./index.html",
+  "description": "Sistema de gestión con notificaciones en Android.",
+  "start_url": "/APLICACION-DATA-/index.html",
   "display": "standalone",
-  "background_color": "#F8FAFC",
-  "theme_color": "#6366F1",
+  "background_color": "#1a237e",
+  "theme_color": "#1a237e",
   "orientation": "portrait",
   "icons": [
     {
