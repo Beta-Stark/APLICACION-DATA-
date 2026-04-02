@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>DATA OS - Enterprise Pro Max</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
-    <link rel="manifest" href="/APLICACION-DATA-/manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <style>
         :root {
             --bg: #F8FAFC;
@@ -145,16 +145,17 @@
         const app = initializeApp(firebaseConfig);
         const messaging = getMessaging(app);
 
-        // Registro de Service Workers
+        // Registro de Service Workers con rutas relativas
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                // Registro del SW principal
-                navigator.serviceWorker.register('/APLICACION-DATA-/sw.js', { scope: '/APLICACION-DATA-/' });
-                
-                // Registro del SW de Firebase con ruta explícita para evitar 404
-                navigator.serviceWorker.register('/APLICACION-DATA-/firebase-messaging-sw.js', { scope: '/APLICACION-DATA-/' })
-                .then(reg => console.log('FCM Registrado:', reg.scope))
-                .catch(err => console.log('Error FCM:', err));
+            window.addEventListener('load', async () => {
+                try {
+                    // Registramos ambos, el navegador gestionará la prioridad
+                    await navigator.serviceWorker.register('./sw.js');
+                    await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+                    console.log("Service Workers registrados correctamente.");
+                } catch (e) {
+                    console.log("Error registrando SW:", e);
+                }
             });
         }
 
@@ -162,26 +163,30 @@
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    // Forzamos la búsqueda del SW en la subcarpeta
-                    const registration = await navigator.serviceWorker.getRegistration('/APLICACION-DATA-/');
+                    // Obtenemos el registro del SW actual
+                    const registration = await navigator.serviceWorker.ready;
                     
                     const token = await getToken(messaging, { 
-                        vapidKey: 'TU_CLAVE_VAPID_AQUÍ', // <--- PEGA TU CLAVE AQUÍ
+                        vapidKey: 'BPqre3i_E99vzlH1LUr0iYibIU2nLffn_3J4iyjs2w4EFd1b87FZH01ltDkrQQng7ZSrHIJTdE0TnqaJQeOGKiA', // <--- COLOCA TU CLAVE VAPID AQUÍ
                         serviceWorkerRegistration: registration 
                     });
 
                     if (token) {
                         console.log("TOKEN FCM:", token);
-                        alert("¡Dispositivo Vinculado con Éxito!");
+                        // ALERT PARA COPIAR EL TOKEN DESDE EL CELULAR
+                        prompt("¡Vinculado! Copia este Token para Firebase Console:", token);
                     }
+                } else {
+                    alert("Permiso de notificaciones denegado.");
                 }
             } catch (err) { 
-                console.error("Error:", err);
-                alert("Error al vincular. Revisa la consola.");
+                console.error("Error detallado:", err);
+                alert("Error al vincular. Revisa que tu clave VAPID sea correcta.");
             }
         };
 
         onMessage(messaging, (payload) => {
+            console.log("Mensaje recibido:", payload);
             new Notification(payload.notification.title, {
                 body: payload.notification.body,
                 icon: 'https://cdn-icons-png.flaticon.com/512/1087/1087815.png'
@@ -197,7 +202,6 @@
         let vault = JSON.parse(localStorage.getItem('vault_v4')) || [];
         let errors = 0;
 
-        // Generar Numpad
         const pad = document.getElementById('pad-container');
         for(let i=1; i<=9; i++) pad.innerHTML += `<div class="num-btn" onclick="pressPin('${i}')">${i}</div>`;
         pad.innerHTML += `<div class="num-btn" style="color:var(--danger)" onclick="clearPin()">C</div>`;
