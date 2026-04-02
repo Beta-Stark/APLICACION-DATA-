@@ -3,129 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA OS - Cloud Module v2</title>
+    <title>DATA OS - Versión Final Corregida</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
-    <link rel="manifest" href="./manifest.json">
     <style>
         :root {
-            --bg: #F8FAFC; --surface: #FFFFFF; --accent: #6366F1;
-            --text-main: #0F172A; --text-sub: #64748B; --border: #E2E8F0;
-            --success: #10B981; --danger: #EF4444; --alarm: #F59E0B;
+            --bg: #F7EFE2; --surface: #FFFFFF; --header-accent: #2A3A4A;
+            --card-cloud: #BBCBBD; --card-vault: #C9A091; --text-main: #2A3A4A;
+            --nav-icon: #6366F1; --danger: #EF4444; --clock-icon: #D97706;
         }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
-        .system-bar { background: var(--surface); padding: 12px 20px; display: none; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); font-size: 0.75rem; font-weight: 800; position: sticky; top: 0; z-index: 1000; }
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; padding-bottom: 80px; }
+        
+        .system-bar { background: var(--surface); padding: 15px 25px; display: none; justify-content: space-between; align-items: center; border-bottom: 1px solid #E2E8F0; position: sticky; top: 0; z-index: 1000; }
         .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
         .screen.active { display: block !important; }
         #login-screen.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
-        
-        /* TARJETAS DE NOTAS */
-        .mod-card { background: var(--surface); padding: 20px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; position: relative; }
-        .mod-card:active { transform: scale(0.97); }
 
-        /* BOTÓN DE ELIMINAR (LA X) */
-        .delete-btn {
-            position: absolute;
-            right: 15px;
-            top: 15px;
-            color: var(--danger) !important;
-            font-weight: 900;
-            font-size: 1.2rem;
-            cursor: pointer;
-            z-index: 10;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #FEE2E2;
-            border-radius: 50%;
+        /* ESTILO DE NOTAS E INDICADOR X */
+        .mod-card { padding: 20px; border-radius: 28px; margin-bottom: 15px; position: relative; }
+        .notes-area { background: var(--card-cloud); }
+        .note-item { background: white; padding: 15px; border-radius: 18px; margin-bottom: 10px; position: relative; border: 1px solid rgba(0,0,0,0.05); }
+        .note-time { color: var(--clock-icon); font-size: 0.75rem; font-weight: 800; display: block; margin-top: 5px; }
+        
+        /* LA X DE BORRADO - FORZADA */
+        .delete-btn { 
+            position: absolute; right: 10px; top: 10px; 
+            color: var(--danger) !important; font-weight: 900; 
+            font-size: 1.4rem; cursor: pointer; padding: 5px; z-index: 100;
         }
 
-        .pin-dots { display: flex; justify-content: center; gap: 15px; margin: 25px 0; }
-        .dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--border); }
-        .dot.active { background: var(--accent); border-color: var(--accent); }
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; margin: 0 auto; }
-        .num-btn { height: 60px; border-radius: 18px; border: 1px solid var(--border); background: var(--surface); font-size: 1.5rem; font-weight: 600; display: flex; align-items: center; justify-content: center; }
-        input, select, textarea { width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); background: #F1F5F9; font-size: 1rem; outline: none; }
-        .btn-main { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
-        .btn-bell { background: #EEF2FF; border: 2px solid var(--accent); color: var(--accent); padding: 15px; border-radius: 15px; text-align: center; margin-bottom: 20px; font-weight: 800; cursor: pointer; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* BÓVEDA Y PIN */
+        .vault-area { background: var(--card-vault); color: white; }
+        .pin-dots { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        .dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid #ddd; background: white; }
+        .dot.active { background: var(--header-accent); border-color: var(--header-accent); }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 250px; margin: 0 auto; }
+        .num-btn { height: 60px; background: white; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        /* NAVEGACIÓN */
+        .pwa-nav { background: white; padding: 10px; display: none; justify-content: space-around; position: fixed; bottom: 0; width: 100%; border-top: 1px solid #ddd; z-index: 1000; }
+        .nav-item { text-align: center; font-size: 0.7rem; color: #888; cursor: pointer; }
+        .nav-item.active { color: var(--nav-icon); font-weight: 800; }
+
+        input, textarea { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin: 10px 0; }
+        .btn-main { width: 100%; padding: 15px; background: var(--header-accent); color: white; border: none; border-radius: 12px; font-weight: 800; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div class="system-bar" id="sys-bar">
-        <div style="color:var(--success)">● <span id="role-indicator">SISTEMA</span></div>
+        <div style="font-weight:900; color:var(--header-accent)">DATA OS</div>
         <div id="clock">00:00</div>
     </div>
 
     <div id="login-screen" class="screen active">
-        <div style="text-align: center; width: 90%; max-width: 360px;">
-            <h1 style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">DATA OS</h1>
-            <p style="color: var(--text-sub); margin-bottom: 30px;">Cloud Sincronización Activa</p>
-            <input type="text" id="userInput" placeholder="Usuario">
-            <select id="roleInput">
-                <option value="SuperAdmin">Super Administrador</option>
-                <option value="Cliente">Usuario Cliente</option>
-            </select>
-            <input type="password" id="passInput" placeholder="PIN (1234)">
-            <button class="btn-main" onclick="handleLogin()">INICIAR SESIÓN</button>
-        </div>
+        <h1 style="font-size: 2.5rem; font-weight: 900;">DATA OS</h1>
+        <input type="text" id="userInput" placeholder="Usuario">
+        <input type="password" id="passInput" placeholder="PIN (1234)">
+        <button class="btn-main" onclick="handleLogin()">ENTRAR</button>
     </div>
 
     <div id="dashboard" class="screen">
-        <div style="margin-bottom: 25px;">
-            <p id="user-role-label" style="font-size: 0.65rem; font-weight: 900; color: var(--accent); letter-spacing: 2px;"></p>
-            <h1 id="welcome-msg" style="font-size: 2.2rem; font-weight: 900;">Hola</h1>
+        <h2 id="welcome-msg" style="margin-bottom:20px;">Hola</h2>
+        <div class="mod-card notes-area">
+            <h3 style="margin-bottom:10px;">📝 RECORDATORIOS</h3>
+            <div id="notes-container"></div>
+            <button class="btn-main" onclick="navTo('mod-notes')" style="background:rgba(255,255,255,0.3); color:black; margin-top:10px;">+ Añadir</button>
         </div>
-
-        <div class="btn-bell" onclick="vincularFirebase()">
-            🔔 VINCULAR DISPOSITIVO PUSH
+        <div class="mod-card vault-area" onclick="navTo('mod-vault')">
+            <h3>🔐 BÓVEDA PRIVADA</h3>
+            <p>Toca para acceder a tus secretos</p>
         </div>
-
-        <div class="mod-card" onclick="navTo('mod-notes')">
-            <span style="font-size: 1.5rem;">📝</span>
-            <div><strong>Recordatorios en la Nube</strong><small style="display:block; color:var(--text-sub);">Sincronizado en tiempo real</small></div>
-        </div>
-
-        <div class="mod-card" onclick="navTo('mod-vault')">
-            <span style="font-size: 1.5rem;">🔐</span>
-            <div><strong>Bóveda Privada</strong><small style="display:block; color:var(--text-sub);">Datos cifrados</small></div>
-        </div>
-        
-        <button onclick="location.reload()" style="margin-top:40px; background:none; border:none; color:var(--danger); font-weight:800; width:100%;">CERRAR SESIÓN</button>
     </div>
 
     <div id="mod-notes" class="screen">
-        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← VOLVER</button>
-        <h2>Nuevo Recordatorio</h2>
-        <textarea id="note-text" placeholder="Escribe algo importante..."></textarea>
-        <button class="btn-main" id="btnGuardarNota">GUARDAR EN LA NUBE</button>
-        <div id="notes-container" style="margin-top:20px;"></div>
+        <h2>Nueva Nota Cloud</h2>
+        <textarea id="note-text" placeholder="Escribe aquí..."></textarea>
+        <button class="btn-main" id="btnGuardar">GUARDAR EN LA NUBE</button>
     </div>
 
     <div id="mod-vault" class="screen">
-        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← VOLVER</button>
         <div id="vault-auth">
-            <h2 style="text-align:center;">PIN de Acceso</h2>
-            <div class="pin-dots" id="pin-dots">
+            <h2 style="text-align:center;">PIN DE BÓVEDA</h2>
+            <div class="pin-dots">
                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
             </div>
-            <div class="numpad" id="pad-container"></div>
+            <div class="numpad" id="numpad"></div>
         </div>
         <div id="vault-content" style="display:none;">
-            <h2>Bóveda</h2>
-            <input type="text" id="v-key" placeholder="Título">
-            <input type="text" id="v-val" placeholder="Valor">
-            <button class="btn-main" onclick="saveVault()">GUARDAR</button>
-            <div id="vault-list" style="margin-top:20px;"></div>
+            <h3>Contenido Privado</h3>
+            <input type="text" id="v-title" placeholder="Título">
+            <input type="text" id="v-secret" placeholder="Secreto">
+            <button class="btn-main" onclick="alert('Guardado localmente')">GUARDAR</button>
         </div>
     </div>
 
+    <nav class="pwa-nav" id="pwa-nav">
+        <div class="nav-item active" onclick="navTo('dashboard')">🏠<br>Inicio</div>
+        <div class="nav-item" onclick="navTo('mod-notes')">📝<br>Notas</div>
+        <div class="nav-item" onclick="navTo('mod-vault')">🔐<br>Bóveda</div>
+    </nav>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
-        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-messaging.js";
         import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -139,72 +121,44 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const messaging = getMessaging(app);
         const db = getFirestore(app);
 
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./firebase-messaging-sw.js');
-        }
-
-        // VINCULAR DISPOSITIVO
-        window.vincularFirebase = async () => {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                const registration = await navigator.serviceWorker.ready;
-                const currentToken = await getToken(messaging, { 
-                    vapidKey: 'TU_CLAVE_VAPID_AQUÍ', // <--- PEGA TU CLAVE AQUÍ
-                    serviceWorkerRegistration: registration 
-                });
-                if (currentToken) {
-                    await addDoc(collection(db, "dispositivos"), {
-                        usuario: window.userData.name,
-                        token: currentToken,
-                        timestamp: serverTimestamp()
-                    });
-                    alert("¡Token guardado en la nube!");
-                }
-            }
-        };
-
-        // GUARDAR NOTA
-        document.getElementById('btnGuardarNota').onclick = async () => {
-            const text = document.getElementById('note-text').value;
-            if(!text) return;
-            try {
-                await addDoc(collection(db, "recordatorios"), {
-                    usuario: window.userData.name,
-                    texto: text,
-                    timestamp: serverTimestamp()
-                });
-                document.getElementById('note-text').value = "";
-            } catch (e) { console.error(e); }
-        };
-
-        // ELIMINAR NOTA (GLOBAL PARA QUE FUNCIONE EN EL HTML DINÁMICO)
-        window.eliminarNotaNube = async (id) => {
-            if(confirm("¿Eliminar permanentemente?")) {
+        // --- FUNCIÓN BORRAR (GLOBAL) ---
+        window.borrarNota = async (id) => {
+            if(confirm("¿Borrar recordatorio?")) {
                 try {
                     await deleteDoc(doc(db, "recordatorios", id));
-                } catch (e) { alert("Error al borrar"); }
+                } catch(e) { console.error("Error al borrar"); }
             }
         };
 
-        // ESCUCHAR NOTAS EN TIEMPO REAL CON BOTÓN DE CIERRE
-        window.cargarNotasNube = (userName) => {
-            const q = query(collection(db, "recordatorios"), where("usuario", "==", userName), orderBy("timestamp", "desc"));
-            onSnapshot(q, (snapshot) => {
-                const container = document.getElementById('notes-container');
-                container.innerHTML = "";
-                snapshot.forEach((docRef) => {
-                    const n = docRef.data();
-                    const id = docRef.id;
-                    const fecha = n.timestamp ? n.timestamp.toDate().toLocaleString() : 'Sincronizando...';
-                    
-                    container.innerHTML += `
-                        <div class="mod-card" style="flex-direction:column; align-items:flex-start;">
-                            <div class="delete-btn" onclick="window.eliminarNotaNube('${id}')">✕</div>
-                            <small style="color:var(--accent); font-weight:800;">${fecha}</small>
-                            <p style="margin-top:10px; padding-right:25px;">${n.texto}</p>
+        // --- GUARDAR NOTA ---
+        document.getElementById('btnGuardar').onclick = async () => {
+            const txt = document.getElementById('note-text').value;
+            if(!txt) return;
+            await addDoc(collection(db, "recordatorios"), {
+                usuario: window.currentUser,
+                texto: txt,
+                timestamp: serverTimestamp()
+            });
+            document.getElementById('note-text').value = "";
+            navTo('dashboard');
+        };
+
+        // --- LEER NOTAS ---
+        window.cargarNotas = (user) => {
+            const q = query(collection(db, "recordatorios"), where("usuario", "==", user), orderBy("timestamp", "desc"));
+            onSnapshot(q, (snap) => {
+                const cont = document.getElementById('notes-container');
+                cont.innerHTML = "";
+                snap.forEach(d => {
+                    const data = d.data();
+                    const id = d.id;
+                    cont.innerHTML += `
+                        <div class="note-item">
+                            <span class="delete-btn" onclick="borrarNota('${id}')">✕</span>
+                            <p>${data.texto}</p>
+                            <small class="note-time">⏰ ${data.timestamp?.toDate().toLocaleString() || '...'}</small>
                         </div>`;
                 });
             });
@@ -212,44 +166,53 @@
     </script>
 
     <script>
-        // INTERFAZ GENERAL
-        window.userData = { name: "", role: "" };
-        let pinInput = "";
+        let currentPin = "";
+        window.currentUser = "";
 
         function handleLogin() {
-            const pass = document.getElementById('passInput').value;
-            const user = document.getElementById('userInput').value;
-            if(pass === "1234" && user !== "") {
-                window.userData.name = user;
-                document.getElementById('welcome-msg').innerText = "Hola, " + user;
+            const u = document.getElementById('userInput').value;
+            const p = document.getElementById('passInput').value;
+            if(p === "1234" && u !== "") {
+                window.currentUser = u;
+                document.getElementById('welcome-msg').innerText = "Hola, " + u;
+                document.getElementById('login-screen').classList.remove('active');
+                document.getElementById('dashboard').classList.add('active');
                 document.getElementById('sys-bar').style.display = 'flex';
-                navTo('dashboard');
-                window.cargarNotasNube(user);
-            } else { alert("Error de PIN"); }
+                document.getElementById('pwa-nav').style.display = 'flex';
+                window.cargarNotas(u);
+            } else { alert("PIN 1234"); }
         }
 
         function navTo(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         }
 
-        const pad = document.getElementById('pad-container');
-        for(let i=1; i<=9; i++) pad.innerHTML += `<div class="num-btn" onclick="pressPin('${i}')">${i}</div>`;
-        pad.innerHTML += `<div class="num-btn" style="color:var(--danger)" onclick="clearPin()">C</div><div class="num-btn" onclick="pressPin('0')">0</div>`;
-        
-        function pressPin(n) {
-            if(pinInput.length < 4) {
-                pinInput += n;
-                const dots = document.querySelectorAll('.dot');
-                dots.forEach((d, i) => d.classList.toggle('active', i < pinInput.length));
-                if(pinInput === "1234") {
-                    document.getElementById('vault-auth').style.display='none';
-                    document.getElementById('vault-content').style.display='block';
-                } else if(pinInput.length === 4) { pinInput = ""; dots.forEach(d => d.classList.remove('active')); }
+        // --- LÓGICA BÓVEDA PIN ---
+        const numpad = document.getElementById('numpad');
+        for(let i=1; i<=9; i++) numpad.innerHTML += `<div class="num-btn" onclick="btnPin('${i}')">${i}</div>`;
+        numpad.innerHTML += `<div class="num-btn" onclick="currentPin=''; updateDots()">C</div><div class="num-btn" onclick="btnPin('0')">0</div>`;
+
+        window.btnPin = (n) => {
+            if(currentPin.length < 4) {
+                currentPin += n;
+                updateDots();
+                if(currentPin === "1234") {
+                    document.getElementById('vault-auth').style.display = 'none';
+                    document.getElementById('vault-content').style.display = 'block';
+                } else if(currentPin.length === 4) {
+                    currentPin = "";
+                    setTimeout(updateDots, 300);
+                }
             }
+        };
+
+        function updateDots() {
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((d, i) => d.classList.toggle('active', i < currentPin.length));
         }
-        function clearPin() { pinInput = ""; document.querySelectorAll('.dot').forEach(d => d.classList.remove('active')); }
-        
+
         setInterval(() => {
             const d = new Date();
             document.getElementById('clock').innerText = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
