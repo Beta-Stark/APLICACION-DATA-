@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>DATA OS - Enterprise Pro Max</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F8FAFC;
+            --surface: #FFFFFF;
+            --accent: #6366F1;
+            --text-main: #0F172A;
+            --text-sub: #64748B;
+            --border: #E2E8F0;
+            --success: #10B981;
+            --danger: #EF4444;
+            --alarm: #F59E0B;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
+
+        .system-bar {
+            background: var(--surface); padding: 12px 20px; display: none; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid var(--border); font-size: 0.75rem; font-weight: 800;
+            position: sticky; top: 0; z-index: 1000;
+        }
+
+        .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block !important; }
+        #login-screen.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+
+        .mod-card { background: var(--surface); padding: 20px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; }
+        .mod-card:active { transform: scale(0.97); }
+
+        .pin-dots { display: flex; justify-content: center; gap: 15px; margin: 25px 0; }
+        .dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--border); }
+        .dot.active { background: var(--accent); border-color: var(--accent); }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; margin: 0 auto; }
+        .num-btn { height: 60px; border-radius: 18px; border: 1px solid var(--border); background: var(--surface); font-size: 1.5rem; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+
+        input, select, textarea { width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--border); background: #F1F5F9; font-size: 1rem; outline: none; }
+        .btn-main { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
+        
+        .btn-bell { background: #EEF2FF; border: 2px solid var(--accent); color: var(--accent); padding: 15px; border-radius: 15px; text-align: center; margin-bottom: 20px; font-weight: 800; cursor: pointer; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="system-bar" id="sys-bar">
+        <div style="color:var(--success)">● <span id="role-indicator">SISTEMA</span></div>
+        <div id="clock">00:00</div>
+    </div>
+
+    <div id="login-screen" class="screen active">
+        <div style="text-align: center; width: 90%; max-width: 360px;">
+            <h1 style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">DATA OS</h1>
+            <p style="color: var(--text-sub); margin-bottom: 30px;">Enterprise & Personal</p>
+            <input type="text" id="userInput" placeholder="Usuario">
+            <select id="roleInput">
+                <option value="SuperAdmin">Super Administrador</option>
+                <option value="Cliente">Usuario Cliente</option>
+            </select>
+            <input type="password" id="passInput" placeholder="PIN (1234)">
+            <button class="btn-main" onclick="handleLogin()">INICIAR SESIÓN</button>
+        </div>
+    </div>
+
+    <div id="dashboard" class="screen">
+        <div style="margin-bottom: 25px;">
+            <p id="user-role-label" style="font-size: 0.65rem; font-weight: 900; color: var(--accent); letter-spacing: 2px;"></p>
+            <h1 id="welcome-msg" style="font-size: 2.2rem; font-weight: 900;">Hola</h1>
+        </div>
+
+        <div class="btn-bell" onclick="vincularFirebase()">
+            🔔 ACTIVAR RECORDATORIOS ANDROID
+        </div>
+
+        <div id="error-module" style="background:var(--text-main); color:white; padding:20px; border-radius:24px; text-align:center; margin-bottom:20px; display:none;">
+            <p style="font-size: 0.7rem; font-weight: 800;">CONTADOR DE ERRORES</p>
+            <div style="display:flex; justify-content:center; gap:25px; align-items:center; margin-top:10px;">
+                <button onclick="changeCount(-1)" style="width:40px; height:40px; border-radius:50%; border:none; font-weight:900;">-</button>
+                <span id="err-display" style="font-size: 2rem; font-weight: 900;">0</span>
+                <button onclick="changeCount(1)" style="width:40px; height:40px; border-radius:50%; border:none; font-weight:900;">+</button>
+            </div>
+        </div>
+
+        <div class="mod-card" onclick="navTo('mod-notes')">
+            <span style="font-size: 1.5rem;">📝</span>
+            <div><strong>Reportes & Alarmas</strong><small style="display:block; color:var(--text-sub);">Notas y recordatorios</small></div>
+        </div>
+
+        <div class="mod-card" onclick="navTo('mod-vault')">
+            <span style="font-size: 1.5rem;">🔐</span>
+            <div><strong>Bóveda Privada</strong><small style="display:block; color:var(--text-sub);">Datos cifrados con PIN</small></div>
+        </div>
+        
+        <button onclick="location.reload()" style="margin-top:40px; background:none; border:none; color:var(--danger); font-weight:800; width:100%;">CERRAR SESIÓN</button>
+    </div>
+
+    <div id="mod-notes" class="screen">
+        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← VOLVER</button>
+        <h2>Nuevo Reporte</h2>
+        <textarea id="note-text" placeholder="Escribe el reporte o nota personal..."></textarea>
+        
+        <div style="margin: 10px 0;">
+            <label style="font-size: 0.75rem; font-weight: 800; color: var(--text-sub);">PONER ALARMA (OPCIONAL):</label>
+            <input type="datetime-local" id="note-alarm">
+        </div>
+        
+        <button class="btn-main" onclick="addNote()">GUARDAR Y PROGRAMAR</button>
+        
+        <input type="text" id="search-notes" placeholder="🔍 Buscar notas..." oninput="renderNotes()" style="margin-top:20px;">
+        <div id="notes-container" style="margin-top:10px;"></div>
+    </div>
+
+    <div id="mod-vault" class="screen">
+        <button onclick="navTo('dashboard')" style="background:none; border:none; color:var(--accent); font-weight:800; margin-bottom:20px;">← VOLVER</button>
+        <div id="vault-auth">
+            <h2 style="text-align:center;">PIN de Acceso</h2>
+            <div class="pin-dots" id="pin-dots">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+            <div class="numpad" id="pad-container"></div>
+        </div>
+        <div id="vault-content" style="display:none;">
+            <h2>Datos Cifrados</h2>
+            <div style="background:white; padding:15px; border-radius:20px; border:1px solid var(--border); margin-bottom:20px;">
+                <input type="text" id="v-key" placeholder="Título">
+                <input type="text" id="v-val" placeholder="Valor Secreto">
+                <button class="btn-main" onclick="saveVault()">GUARDAR EN BÓVEDA</button>
+            </div>
+            <div id="vault-list"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-messaging.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDlmtpUfYjs33qa9tLE7Fv2C5yszSZEnUw",
+            authDomain: "data-os-db30b.firebaseapp.com",
+            projectId: "data-os-db30b",
+            storageBucket: "data-os-db30b.firebasestorage.app",
+            messagingSenderId: "149593183974",
+            appId: "1:149593183974:web:e588fbee9a618e21980d27",
+            measurementId: "G-VT52P7RX7K"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const messaging = getMessaging(app);
+
+        // Registro del SW para GitHub Pages
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./firebase-messaging-sw.js')
+                .then(reg => console.log('FCM SW Registrado', reg.scope))
+                .catch(err => console.log('Error SW:', err));
+            });
+        }
+
+        window.vincularFirebase = async () => {
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    const token = await getToken(messaging, { 
+                        vapidKey: 'TU_CLAVE_VAPID_AQUÍ' // <--- COLOCA TU CLAVE VAPID AQUÍ
+                    });
+                    if (token) {
+                        console.log("TOKEN DISPOSITIVO:", token);
+                        alert("Dispositivo vinculado. Token en consola.");
+                    }
+                }
+            } catch (err) { console.error("Error Firebase:", err); }
+        };
+
+        onMessage(messaging, (payload) => {
+            console.log('Mensaje Recibido:', payload);
+            new Notification(payload.notification.title, {
+                body: payload.notification.body,
+                icon: 'https://cdn-icons-png.flaticon.com/512/1087/1087815.png'
+            });
+        });
+    </script>
+
+    <script>
+        let userData = { name: "", role: "" };
+        let notes = JSON.parse(localStorage.getItem('notes_v4')) || [];
+        let vault = JSON.parse(localStorage.getItem('vault_v4')) || [];
+        let errors = 0;
+        let pinInput = "";
+        let audioCtx = null;
+
+        // Generar Numpad dinámico
+        const pad = document.getElementById('pad-container');
+        for(let i=1; i<=9; i++) pad.innerHTML += `<div class="num-btn" onclick="pressPin('${i}')">${i}</div>`;
+        pad.innerHTML += `<div class="num-btn" style="color:var(--danger)" onclick="clearPin()">C</div>`;
+        pad.innerHTML += `<div class="num-btn" onclick="pressPin('0')">0</div>`;
+
+        // Reloj y lógica de alarma local
+        setInterval(() => {
+            const d = new Date();
+            const timeStr = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
+            document.getElementById('clock').innerText = timeStr;
+
+            const nowISO = d.getFullYear() + "-" + (d.getMonth()+1).toString().padStart(2,'0') + "-" + d.getDate().toString().padStart(2,'0') + "T" + timeStr;
+            notes.forEach(n => {
+                if(n.alarm === nowISO && !n.fired) {
+                    n.fired = true;
+                    localStorage.setItem('notes_v4', JSON.stringify(notes));
+                    triggerAlarm(n.text);
+                }
+            });
+        }, 1000);
+
+        function handleLogin() {
+            const user = document.getElementById('userInput').value;
+            const pass = document.getElementById('passInput').value;
+            if(pass === "1234" && user !== "") {
+                userData.name = user;
+                userData.role = document.getElementById('roleInput').value;
+                document.getElementById('welcome-msg').innerText = "Hola, " + user;
+                document.getElementById('user-role-label').innerText = userData.role.toUpperCase();
+                document.getElementById('sys-bar').style.display = 'flex';
+                document.getElementById('error-module').style.display = (userData.role === 'SuperAdmin') ? 'block' : 'none';
+                navTo('dashboard');
+            } else { alert("Datos incorrectos"); }
+        }
+
+        function navTo(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(id === 'mod-notes') renderNotes();
+        }
+
+        function triggerAlarm(msg) {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.connect(g); g.connect(audioCtx.destination);
+            osc.start(); setTimeout(() => osc.stop(), 2000);
+            
+            if(Notification.permission === "granted") {
+                new Notification("🚨 DATA OS ALERTA", { body: msg });
+            }
+            alert("⏰ RECORDATORIO: " + msg);
+            renderNotes();
+        }
+
+        function addNote() {
+            const text = document.getElementById('note-text').value;
+            const alarm = document.getElementById('note-alarm').value;
+            if(!text) return;
+            notes.unshift({ id: Date.now(), text, alarm, fired: false, date: new Date().toLocaleString() });
+            localStorage.setItem('notes_v4', JSON.stringify(notes));
+            document.getElementById('note-text').value = "";
+            renderNotes();
+            alert("Reporte guardado.");
+        }
+
+        function renderNotes() {
+            const container = document.getElementById('notes-container');
+            const search = document.getElementById('search-notes').value.toLowerCase();
+            container.innerHTML = "";
+            notes.filter(n => n.text.toLowerCase().includes(search)).forEach(n => {
+                const div = document.createElement('div');
+                div.className = 'mod-card';
+                div.style.flexDirection = 'column';
+                div.style.alignItems = 'flex-start';
+                div.innerHTML = `
+                    <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
+                        <small style="font-weight:800; color:var(--accent)">${n.date}</small>
+                        <span onclick="deleteNote(${n.id})" style="color:var(--danger)">✕</span>
+                    </div>
+                    <p style="margin:5px 0;">${n.text}</p>
+                    ${n.alarm ? `<span style="background:var(--alarm); color:white; padding:3px 8px; border-radius:6px; font-size:0.7rem; font-weight:800;">⏰ ${n.alarm.replace('T', ' ')}</span>` : ''}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function deleteNote(id) { notes = notes.filter(n => n.id !== id); localStorage.setItem('notes_v4', JSON.stringify(notes)); renderNotes(); }
+
+        function pressPin(n) {
+            if(pinInput.length < 4) {
+                pinInput += n;
+                updateDots();
+                if(pinInput === "1234") {
+                    document.getElementById('vault-auth').style.display='none';
+                    document.getElementById('vault-content').style.display='block';
+                    renderVault();
+                } else if(pinInput.length === 4) { alert("PIN Incorrecto"); clearPin(); }
+            }
+        }
+        function updateDots() {
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((d, i) => d.classList.toggle('active', i < pinInput.length));
+        }
+        function clearPin() { pinInput = ""; updateDots(); }
+
+        function saveVault() {
+            const k = document.getElementById('v-key').value;
+            const v = document.getElementById('v-val').value;
+            if(!k || !v) return;
+            vault.unshift({ k, v: btoa(v) });
+            localStorage.setItem('vault_v4', JSON.stringify(vault));
+            document.getElementById('v-key').value = ""; document.getElementById('v-val').value = "";
+            renderVault();
+        }
+
+        function renderVault() {
+            const container = document.getElementById('vault-list');
+            container.innerHTML = "";
+            vault.forEach((d, i) => {
+                container.innerHTML += `<div class="mod-card" style="justify-content:space-between; background:#F8FAFC;">
+                    <div><strong>${d.k}:</strong> ${atob(d.v)}</div>
+                    <span onclick="deleteVault(${i})" style="color:var(--danger)">✕</span>
+                </div>`;
+            });
+        }
+        function deleteVault(i) { vault.splice(i,1); localStorage.setItem('vault_v4', JSON.stringify(vault)); renderVault(); }
+        function changeCount(v) { errors += v; if(errors < 0) errors = 0; document.getElementById('err-display').innerText = errors; }
+    </script>
+</body>
+</html>
