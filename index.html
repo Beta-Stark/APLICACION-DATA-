@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA OS - Versión Estable</title>
+    <title>DATA OS - Sincronización Total</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -12,31 +12,27 @@
             --danger: #EF4444;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-        
-        /* Contenedor de pantallas para evitar que se encimen */
-        body { background: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
-        .screen { display: none; width: 100%; min-height: 100vh; padding: 20px; position: absolute; top: 0; left: 0; }
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; }
+
+        /* Capas de Pantallas */
+        .screen { display: none; width: 100%; min-height: 100vh; padding: 20px; position: absolute; top: 0; left: 0; padding-top: 80px; }
         .active { display: block !important; }
+        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; padding-top: 20px; }
 
-        /* Estilo Login */
-        #login-screen { display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); z-index: 2000; }
-        #login-screen.active { display: flex !important; }
-
-        /* Barras de Sistema */
-        .system-bar { background: var(--surface); padding: 15px; display: none; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 1000; }
+        /* Barras */
+        .system-bar { background: var(--surface); padding: 15px 25px; display: none; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; position: fixed; top: 0; width: 100%; z-index: 1500; }
         .role-tag { background: #000; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; }
 
         /* Tarjetas */
         .mod-card { padding: 20px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .notes-area { background: var(--card-cloud); }
-        .vault-area { background: var(--card-vault); color: white; }
+        .vault-area { background: var(--card-vault); color: white; cursor: pointer; }
 
-        /* Items de la lista */
-        .data-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; position: relative; color: var(--text-main); border: 1px solid rgba(0,0,0,0.05); }
-        .delete-btn { position: absolute; right: 15px; top: 12px; color: var(--danger); font-weight: 900; cursor: pointer; font-size: 1.3rem; }
+        /* Items de Lista (Importante para visualización) */
+        .data-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; position: relative; color: var(--text-main); border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .delete-btn { position: absolute; right: 15px; top: 12px; color: var(--danger); font-weight: 900; cursor: pointer; font-size: 1.3rem; z-index: 10; }
 
-        /* Navegación */
-        .pwa-nav { background: white; position: fixed; bottom: 0; width: 100%; display: none; justify-content: space-around; padding: 15px; border-top: 1px solid #ddd; z-index: 1000; border-radius: 20px 20px 0 0; }
+        .pwa-nav { background: white; position: fixed; bottom: 0; left: 0; width: 100%; display: none; justify-content: space-around; padding: 15px; border-top: 1px solid #ddd; z-index: 1000; border-radius: 20px 20px 0 0; }
         .nav-item { text-align: center; font-size: 0.75rem; color: #888; cursor: pointer; }
         .nav-item.active { color: #6366F1; font-weight: 800; }
 
@@ -48,7 +44,7 @@
 
     <div class="system-bar" id="sys-bar">
         <div style="font-weight:900;">DATA OS</div>
-        <div id="role-display" class="role-tag">USUARIO</div>
+        <div id="role-display" class="role-tag">USER</div>
         <div id="clock">00:00</div>
     </div>
 
@@ -58,46 +54,45 @@
         <div style="width: 100%; max-width: 320px;">
             <input type="text" id="userInput" placeholder="Nombre de Usuario">
             <input type="password" id="passInput" placeholder="PIN (1234)">
-            <button class="btn-main" onclick="handleLogin()">ENTRAR</button>
+            <button class="btn-main" onclick="handleLogin()">ENTRAR AL SISTEMA</button>
         </div>
     </div>
 
     <div id="dashboard" class="screen">
-        <div style="margin-top: 60px;"> <h2 id="welcome-msg" style="margin-bottom:20px; font-size: 2rem;">Hola</h2>
-            <div class="mod-card notes-area">
-                <h3 style="margin-bottom:10px;">📝 RECORDATORIOS</h3>
-                <div id="notes-dash">No hay notas registradas.</div>
-                <button class="btn-main" onclick="navTo('mod-notes')" style="background:rgba(255,255,255,0.4); color:black; margin-top:10px;">Gestionar Todo</button>
-            </div>
-            <div class="mod-card vault-area" onclick="navTo('mod-vault')">
-                <h3>🔐 BÓVEDA CLOUD</h3>
-                <p id="vault-status">Bloqueada</p>
-            </div>
+        <h2 id="welcome-msg" style="margin-bottom:20px; font-size: 2rem;">Hola</h2>
+        <div class="mod-card notes-area">
+            <h3 style="margin-bottom:10px;">📝 RECORDATORIOS</h3>
+            <div id="notes-dash">No hay notas en la nube.</div>
+            <button class="btn-main" onclick="navTo('mod-notes')" style="background:rgba(255,255,255,0.4); color:black; margin-top:10px;">Ver o Añadir</button>
+        </div>
+        <div class="mod-card vault-area" onclick="navTo('mod-vault')">
+            <h3>🔐 BÓVEDA CLOUD</h3>
+            <p id="vault-status">Cargando seguridad...</p>
         </div>
     </div>
 
     <div id="mod-notes" class="screen">
-        <div style="margin-top: 60px;">
-            <h2>Notas en la Nube</h2>
-            <textarea id="note-text" placeholder="¿Qué quieres guardar?"></textarea>
-            <button class="btn-main" id="btnSaveNota">GUARDAR</button>
-            <div id="notes-full-list" style="margin-top:20px;"></div>
+        <h2>Gestión de Notas</h2>
+        <div style="background:white; padding:15px; border-radius:20px; margin-bottom:20px;">
+            <textarea id="note-text" placeholder="¿Qué quieres guardar en la nube?"></textarea>
+            <button class="btn-main" id="btnSaveNota">GUARDAR EN CLOUD</button>
         </div>
+        <div id="notes-full-list"></div>
     </div>
 
     <div id="mod-vault" class="screen">
-        <div style="margin-top: 60px;">
-            <div id="vault-auth">
-                <h2 style="text-align:center;">PIN REQUERIDO</h2>
-                <div id="numpad" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:20px; max-width: 280px; margin-left:auto; margin-right:auto;"></div>
+        <div id="vault-auth">
+            <h2 style="text-align:center;">PIN DE BÓVEDA</h2>
+            <div id="numpad" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:20px; max-width: 280px; margin: 0 auto;"></div>
+        </div>
+        <div id="vault-content" style="display:none;">
+            <h2>Bóveda Privada</h2>
+            <div style="background:white; padding:15px; border-radius:20px; margin-bottom:20px;">
+                <input type="text" id="v-title" placeholder="Título (ej: Banco)">
+                <input type="text" id="v-secret" placeholder="Dato Secreto">
+                <button class="btn-main" id="btnSaveVault" style="background:var(--card-vault)">GUARDAR SECRETO</button>
             </div>
-            <div id="vault-content" style="display:none;">
-                <h2>Bóveda Privada</h2>
-                <input type="text" id="v-title" placeholder="Título">
-                <input type="text" id="v-secret" placeholder="Secreto">
-                <button class="btn-main" id="btnSaveVault" style="background:var(--card-vault)">GUARDAR EN NUBE</button>
-                <div id="vault-full-list" style="margin-top:20px;"></div>
-            </div>
+            <div id="vault-full-list"></div>
         </div>
     </div>
 
@@ -124,11 +119,11 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // LOGIN SEGURO
+        // LOGIN CORREGIDO
         window.handleLogin = async () => {
             const u = document.getElementById('userInput').value.trim();
             const p = document.getElementById('passInput').value;
-            if(!u || p !== "1234") return alert("Usuario o PIN inválido");
+            if(!u || p !== "1234") { alert("Datos incorrectos"); return; }
 
             try {
                 const userSnap = await getDoc(doc(db, "usuarios_autorizados", u));
@@ -141,49 +136,76 @@
                     document.getElementById('dashboard').classList.add('active');
                     document.getElementById('sys-bar').style.display = 'flex';
                     document.getElementById('pwa-nav').style.display = 'flex';
-                    activarSinc(u);
-                } else { alert("Usuario no autorizado en base de datos."); }
-            } catch(e) { alert("Error de conexión"); }
+                    
+                    // IMPORTANTE: Primero cambiamos de pantalla, luego activamos sincronización
+                    activarSincronizacionTotal(u);
+                } else { alert("Usuario no autorizado"); }
+            } catch(e) { alert("Error de conexión con Firebase"); }
         };
 
-        // ACCIONES
-        window.borrar = async (col, id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, col, id)); };
+        // FUNCIÓN BORRAR GLOBAL
+        window.borrarRegistro = async (col, id) => {
+            if(confirm("¿Eliminar permanentemente de la nube?")) {
+                await deleteDoc(doc(db, col, id));
+            }
+        };
 
+        // GUARDAR DATOS
         document.getElementById('btnSaveNota').onclick = async () => {
             const txt = document.getElementById('note-text').value;
-            if(txt) await addDoc(collection(db, "recordatorios"), { usuario: window.currentUser, texto: txt, timestamp: serverTimestamp() });
+            if(!txt) return;
+            await addDoc(collection(db, "recordatorios"), { usuario: window.currentUser, texto: txt, timestamp: serverTimestamp() });
             document.getElementById('note-text').value = "";
         };
 
         document.getElementById('btnSaveVault').onclick = async () => {
             const tit = document.getElementById('v-title').value;
             const sec = document.getElementById('v-secret').value;
-            if(tit && sec) await addDoc(collection(db, "boveda"), { usuario: window.currentUser, titulo: tit, secreto: sec, timestamp: serverTimestamp() });
-            document.getElementById('v-title').value = ""; document.getElementById('v-secret').value = "";
+            if(tit && sec) {
+                await addDoc(collection(db, "boveda"), { usuario: window.currentUser, titulo: tit, secreto: sec, timestamp: serverTimestamp() });
+                document.getElementById('v-title').value = ""; document.getElementById('v-secret').value = "";
+            }
         };
 
-        function activarSinc(user) {
-            onSnapshot(query(collection(db, "recordatorios"), where("usuario", "==", user), orderBy("timestamp", "desc")), (snap) => {
-                let h = "";
+        // ESTA ES LA FUNCIÓN CLAVE QUE ESTABA FALLANDO
+        function activarSincronizacionTotal(user) {
+            console.log("Sincronizando para:", user);
+
+            // Sincronizar Recordatorios
+            const qNotes = query(collection(db, "recordatorios"), where("usuario", "==", user), orderBy("timestamp", "desc"));
+            onSnapshot(qNotes, (snap) => {
+                let html = "";
                 snap.forEach(d => {
-                    h += `<div class="data-item"><span class="delete-btn" onclick="borrar('recordatorios','${d.id}')">✕</span>${d.data().texto}</div>`;
+                    const data = d.data();
+                    html += `<div class="data-item">
+                                <span class="delete-btn" onclick="borrarRegistro('recordatorios','${d.id}')">✕</span>
+                                ${data.texto}
+                             </div>`;
                 });
-                document.getElementById('notes-dash').innerHTML = h || "Sin notas.";
-                document.getElementById('notes-full-list').innerHTML = h;
+                document.getElementById('notes-dash').innerHTML = html || "Sin notas pendientes.";
+                document.getElementById('notes-full-list').innerHTML = html || "No hay nada guardado.";
             });
 
-            onSnapshot(query(collection(db, "boveda"), where("usuario", "==", user), orderBy("timestamp", "desc")), (snap) => {
-                let h = "";
+            // Sincronizar Bóveda
+            const qVault = query(collection(db, "boveda"), where("usuario", "==", user), orderBy("timestamp", "desc"));
+            onSnapshot(qVault, (snap) => {
+                let html = "";
                 snap.forEach(d => {
-                    h += `<div class="data-item"><span class="delete-btn" onclick="borrar('boveda','${d.id}')">✕</span><b>${d.data().titulo}</b><br>${d.data().secreto}</div>`;
+                    const data = d.data();
+                    html += `<div class="data-item">
+                                <span class="delete-btn" onclick="borrarRegistro('boveda','${d.id}')">✕</span>
+                                <strong>${data.titulo}</strong><br>
+                                <span style="font-size:0.9rem; color:#666;">${data.secreto}</span>
+                             </div>`;
                 });
-                document.getElementById('vault-full-list').innerHTML = h || "Vacía";
-                document.getElementById('vault-status').innerText = snap.size + " secretos guardados";
+                document.getElementById('vault-full-list').innerHTML = html || "Bóveda vacía.";
+                document.getElementById('vault-status').innerText = snap.size + " secretos protegidos.";
             });
         }
     </script>
 
     <script>
+        // NAVEGACIÓN
         function navTo(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
@@ -193,6 +215,7 @@
             if(id === 'mod-vault') document.getElementById('n-vault').classList.add('active');
         }
 
+        // TECLADO PIN
         const np = document.getElementById('numpad');
         for(let i=1; i<=9; i++) np.innerHTML += `<button onclick="checkP('${i}')" style="padding:20px; border-radius:15px; border:1px solid #ddd; background:white; font-size:1.2rem; font-weight:bold;">${i}</button>`;
         let p = "";
@@ -204,6 +227,7 @@
             }
             if(p.length >= 4 && p !== "1234") p = "";
         }
+        
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }, 1000);
     </script>
 </body>
