@@ -81,7 +81,7 @@
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
                     // RECUERDA: Genera tu clave en la consola de Firebase y pégala aquí
-                    const claveVapid = "TU_CLAVE_VAPID_GENERADA_AQUI"; 
+                    const claveVapid = "BPqre3i_E99vzlH1LUr0iYibIU2nLffn_3J4iyjs2w4EFd1b87FZH01ltDkrQQng7ZSrHIJTdE0TnqaJQeOGKiA"; 
                     
                     const token = await getToken(messaging, { vapidKey: claveVapid });
                     if (token) {
