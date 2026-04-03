@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DATA OS - Emergency Fix</title>
+    <title>DATA OS - Push Ready</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #F7EFE2; --surface: #FFFFFF; --header: #2A3A4A; --accent: #BBCBBD; --danger: #EF4444; }
@@ -14,13 +14,13 @@
         .active { display: block !important; }
         #login-screen.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
         
-        /* TARJETAS */
         .mod-card { background: var(--accent); padding: 20px; border-radius: 25px; margin-bottom: 20px; }
         .data-item { 
             background: white !important; color: #2A3A4A !important; 
             padding: 15px; border-radius: 15px; margin-bottom: 10px; 
             position: relative; border: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        .time-tag { font-size: 0.7rem; color: #888; display: block; margin-top: 5px; }
         .delete-btn { position: absolute; right: 10px; top: 10px; color: var(--danger); font-weight: 900; cursor: pointer; }
 
         .pwa-nav { background: white; position: fixed; bottom: 0; width: 100%; display: none; justify-content: space-around; padding: 15px; border-top: 1px solid #ddd; z-index: 1000; }
@@ -46,7 +46,7 @@
         <h2 id="welcome-msg">Hola</h2>
         <div class="mod-card">
             <h3>📝 RECORDATORIOS</h3>
-            <div id="notes-list" style="margin-top:15px;">Esperando datos de la nube...</div>
+            <div id="notes-list" style="margin-top:15px;">Cargando...</div>
         </div>
         <button class="btn-main" onclick="navTo('add-screen')">AÑADIR NUEVA NOTA</button>
     </div>
@@ -65,7 +65,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDoc, doc, onSnapshot, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDoc, doc, onSnapshot, query, where, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDlmtpUfYjs33qa9tLE7Fv2C5yszSZEnUw",
@@ -79,7 +79,18 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // LOGIN SIN FILTROS COMPLEJOS
+        // FUNCIÓN PARA PEDIR PERMISO DE NOTIFICACIONES
+        async function solicitarPermisoNotificaciones() {
+            if (!("Notification" in window)) {
+                console.log("Este navegador no soporta notificaciones.");
+                return;
+            }
+            const permiso = await Notification.requestPermission();
+            if (permiso === "granted") {
+                console.log("Permiso de notificaciones concedido.");
+            }
+        }
+
         window.handleLogin = async () => {
             const u = document.getElementById('userInput').value.trim();
             if(!u || document.getElementById('passInput').value !== "1234") return alert("PIN incorrecto");
@@ -93,14 +104,23 @@
                 document.getElementById('sys-bar').style.display = 'flex';
                 document.getElementById('pwa-nav').style.display = 'flex';
                 
-                // CARGAR DATOS
+                // PEDIR PERMISO JUSTO DESPUÉS DE LOGUEAR
+                solicitarPermisoNotificaciones();
+
                 const q = query(collection(db, "recordatorios"), where("usuario", "==", u));
                 onSnapshot(q, (snap) => {
                     let html = "";
                     snap.forEach(d => {
+                        const data = d.data();
+                        let fechaLegible = "";
+                        if(data.fecha_creacion) {
+                            const date = data.fecha_creacion.toDate();
+                            fechaLegible = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " - " + date.toLocaleDateString();
+                        }
                         html += `<div class="data-item">
                             <span class="delete-btn" onclick="borrarNota('${d.id}')">✕</span>
-                            ${d.data().texto}
+                            ${data.texto}
+                            <span class="time-tag">${fechaLegible}</span>
                         </div>`;
                     });
                     document.getElementById('notes-list').innerHTML = html || "No tienes notas aún.";
@@ -115,7 +135,11 @@
         document.getElementById('btnSave').onclick = async () => {
             const txt = document.getElementById('note-text').value;
             if(!txt) return;
-            await addDoc(collection(db, "recordatorios"), { usuario: window.currentUser, texto: txt });
+            await addDoc(collection(db, "recordatorios"), { 
+                usuario: window.currentUser, 
+                texto: txt,
+                fecha_creacion: serverTimestamp() 
+            });
             document.getElementById('note-text').value = "";
             navTo('dashboard');
         };
