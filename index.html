@@ -2,87 +2,70 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA OS - Core Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA OS - Emergency Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #F7EFE2; --surface: #FFFFFF; --header-accent: #2A3A4A;
-            --card-cloud: #BBCBBD; --text-main: #2A3A4A; --danger: #EF4444;
-        }
+        :root { --bg: #F7EFE2; --surface: #FFFFFF; --header: #2A3A4A; --accent: #BBCBBD; --danger: #EF4444; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-        body { background: var(--bg); color: var(--text-main); min-height: 100vh; padding-top: 70px; padding-bottom: 90px; }
-
-        .system-bar { background: var(--surface); padding: 15px 25px; display: none; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; position: fixed; top: 0; width: 100%; z-index: 2000; }
-        .role-tag { background: #000; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; }
-
-        .screen { display: none; width: 100%; padding: 20px; animation: fadeIn 0.3s ease; max-width: 500px; margin: 0 auto; }
+        body { background: var(--bg); padding-bottom: 100px; }
+        .system-bar { background: var(--surface); padding: 15px; display: none; justify-content: space-between; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; }
+        .screen { display: none; padding: 20px; max-width: 500px; margin: 0 auto; }
         .active { display: block !important; }
-        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; position: fixed; top:0; left:0; height: 100vh; background: var(--bg); }
-
-        .mod-card { padding: 25px; border-radius: 28px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: var(--card-cloud); }
+        #login-screen.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
         
+        /* TARJETAS */
+        .mod-card { background: var(--accent); padding: 20px; border-radius: 25px; margin-bottom: 20px; }
         .data-item { 
-            background: white !important; color: #2A3A4A; padding: 18px; 
-            border-radius: 18px; margin-bottom: 12px; position: relative; 
-            border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+            background: white !important; color: #2A3A4A !important; 
+            padding: 15px; border-radius: 15px; margin-bottom: 10px; 
+            position: relative; border: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .delete-btn { position: absolute; right: 15px; top: 12px; color: var(--danger); font-weight: 900; cursor: pointer; font-size: 1.2rem; z-index: 10; }
+        .delete-btn { position: absolute; right: 10px; top: 10px; color: var(--danger); font-weight: 900; cursor: pointer; }
 
-        .pwa-nav { background: white; position: fixed; bottom: 0; width: 100%; display: none; justify-content: space-around; padding: 15px; border-top: 1px solid #ddd; z-index: 1000; border-radius: 20px 20px 0 0; }
-        .nav-item { text-align: center; font-size: 0.75rem; color: #888; cursor: pointer; padding: 5px 15px; }
-        .nav-item.active { color: #6366F1; font-weight: 800; border-bottom: 2px solid #6366F1; }
-
-        input, textarea { width: 100%; padding: 16px; border-radius: 15px; border: 1px solid #ddd; margin: 10px 0; font-size: 1rem; outline: none; }
-        .btn-main { width: 100%; padding: 16px; background: var(--header-accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .pwa-nav { background: white; position: fixed; bottom: 0; width: 100%; display: none; justify-content: space-around; padding: 15px; border-top: 1px solid #ddd; z-index: 1000; }
+        input, textarea { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin: 10px 0; font-size: 1rem; }
+        .btn-main { width: 100%; padding: 15px; background: var(--header); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="system-bar" id="sys-bar">
         <div style="font-weight:900;">DATA OS</div>
-        <div id="role-display" class="role-tag">USER</div>
-        <div id="clock">00:00</div>
+        <div id="role-display" style="background:#000; color:#fff; padding:2px 10px; border-radius:10px; font-size:0.7rem;">ADMIN</div>
     </div>
 
     <div id="login-screen" class="screen active">
-        <h1 style="font-size: 3.5rem; font-weight: 900;">DATA OS</h1>
-        <div style="width: 100%; max-width: 320px; margin-top: 30px;">
-            <input type="text" id="userInput" placeholder="Usuario Autorizado">
-            <input type="password" id="passInput" placeholder="PIN (1234)">
-            <button class="btn-main" onclick="handleLogin()">ENTRAR</button>
-        </div>
+        <h1 style="font-size: 3rem; font-weight: 900;">DATA OS</h1>
+        <input type="text" id="userInput" placeholder="Usuario">
+        <input type="password" id="passInput" placeholder="PIN">
+        <button class="btn-main" onclick="handleLogin()">INICIAR</button>
     </div>
 
     <div id="dashboard" class="screen">
-        <h2 id="welcome-msg" style="margin-bottom:20px; font-size: 2.2rem;">Hola</h2>
+        <h2 id="welcome-msg">Hola</h2>
         <div class="mod-card">
-            <h3 style="margin-bottom:12px; font-size: 0.9rem; letter-spacing: 1px;">📝 RECORDATORIOS RECIENTES</h3>
-            <div id="notes-dash">Conectando a la nube...</div>
-            <button class="btn-main" onclick="navTo('mod-notes')" style="background:rgba(255,255,255,0.4); color:black; margin-top:15px; border-radius: 12px;">Ver Todo / Añadir</button>
+            <h3>📝 RECORDATORIOS</h3>
+            <div id="notes-list" style="margin-top:15px;">Esperando datos de la nube...</div>
         </div>
+        <button class="btn-main" onclick="navTo('add-screen')">AÑADIR NUEVA NOTA</button>
     </div>
 
-    <div id="mod-notes" class="screen">
-        <h2>Gestionar Notas</h2>
-        <div style="background:white; padding:15px; border-radius:20px; margin-bottom:25px;">
-            <textarea id="note-text" placeholder="¿Qué tienes en mente?"></textarea>
-            <button class="btn-main" onclick="subirNota()">GUARDAR EN NUBE</button>
-        </div>
-        <div id="notes-full-list"></div>
+    <div id="add-screen" class="screen">
+        <h2>Nueva Nota</h2>
+        <textarea id="note-text" placeholder="Escribe aquí..."></textarea>
+        <button class="btn-main" id="btnSave">GUARDAR EN CLOUD</button>
     </div>
 
     <nav class="pwa-nav" id="pwa-nav">
-        <div class="nav-item active" onclick="navTo('dashboard')" id="n-home">🏠<br>Inicio</div>
-        <div class="nav-item" onclick="navTo('mod-notes')" id="n-notes">📝<br>Notas</div>
-        <div class="nav-item" onclick="location.reload()" style="color:var(--danger)">✕<br>Salir</div>
+        <div onclick="navTo('dashboard')">🏠 Inicio</div>
+        <div onclick="navTo('add-screen')">📝 Notas</div>
+        <div onclick="location.reload()">✕ Salir</div>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDoc, doc, query, where, onSnapshot, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDoc, doc, onSnapshot, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDlmtpUfYjs33qa9tLE7Fv2C5yszSZEnUw",
@@ -96,82 +79,53 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // LOGIN
+        // LOGIN SIN FILTROS COMPLEJOS
         window.handleLogin = async () => {
             const u = document.getElementById('userInput').value.trim();
-            const p = document.getElementById('passInput').value;
-            if(!u || p !== "1234") return alert("Acceso denegado");
+            if(!u || document.getElementById('passInput').value !== "1234") return alert("PIN incorrecto");
 
-            try {
-                const userSnap = await getDoc(doc(db, "usuarios_autorizados", u));
-                if(userSnap.exists()){
-                    window.currentUser = u;
-                    document.getElementById('welcome-msg').innerText = "Hola, " + u;
-                    document.getElementById('role-display').innerText = userSnap.data().rol.toUpperCase();
-                    
-                    document.getElementById('login-screen').style.display = 'none';
-                    document.getElementById('dashboard').classList.add('active');
-                    document.getElementById('sys-bar').style.display = 'flex';
-                    document.getElementById('pwa-nav').style.display = 'flex';
-                    
-                    activarSincronizacion(u);
-                } else { alert("Usuario no registrado en base de datos."); }
-            } catch(e) { alert("Error de conexión"); }
+            const userSnap = await getDoc(doc(db, "usuarios_autorizados", u));
+            if(userSnap.exists()){
+                window.currentUser = u;
+                document.getElementById('welcome-msg').innerText = "Hola, " + u;
+                document.getElementById('login-screen').classList.remove('active');
+                document.getElementById('dashboard').classList.add('active');
+                document.getElementById('sys-bar').style.display = 'flex';
+                document.getElementById('pwa-nav').style.display = 'flex';
+                
+                // CARGAR DATOS
+                const q = query(collection(db, "recordatorios"), where("usuario", "==", u));
+                onSnapshot(q, (snap) => {
+                    let html = "";
+                    snap.forEach(d => {
+                        html += `<div class="data-item">
+                            <span class="delete-btn" onclick="borrarNota('${d.id}')">✕</span>
+                            ${d.data().texto}
+                        </div>`;
+                    });
+                    document.getElementById('notes-list').innerHTML = html || "No tienes notas aún.";
+                });
+            } else { alert("Usuario no registrado"); }
         };
 
-        // ACCIONES
         window.borrarNota = async (id) => {
-            if(confirm("¿Eliminar recordatorio?")) await deleteDoc(doc(db, "recordatorios", id));
+            if(confirm("¿Borrar?")) await deleteDoc(doc(db, "recordatorios", id));
         };
 
-        window.subirNota = async () => {
-            const t = document.getElementById('note-text').value;
-            if(!t) return;
-            await addDoc(collection(db, "recordatorios"), { 
-                usuario: window.currentUser, 
-                texto: t, 
-                timestamp: serverTimestamp() 
-            });
+        document.getElementById('btnSave').onclick = async () => {
+            const txt = document.getElementById('note-text').value;
+            if(!txt) return;
+            await addDoc(collection(db, "recordatorios"), { usuario: window.currentUser, texto: txt });
             document.getElementById('note-text').value = "";
             navTo('dashboard');
         };
-
-        // SINCRONIZACIÓN SIMPLIFICADA (Garantiza que se vea la lista)
-        function activarSincronizacion(user) {
-            const q = query(collection(db, "recordatorios"), where("usuario", "==", user));
-            onSnapshot(q, (snap) => {
-                let html = "";
-                snap.forEach(d => {
-                    const data = d.data();
-                    html += `
-                        <div class="data-item">
-                            <span class="delete-btn" onclick="borrarNota('${d.id}')">✕</span>
-                            ${data.texto}
-                        </div>`;
-                });
-                document.getElementById('notes-dash').innerHTML = html || "Sin recordatorios pendientes.";
-                document.getElementById('notes-full-list').innerHTML = html || "Lista vacía.";
-            }, (error) => {
-                document.getElementById('notes-dash').innerHTML = "Error al cargar datos.";
-                console.error(error);
-            });
-        }
     </script>
 
     <script>
         function navTo(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            if(id === 'dashboard') document.getElementById('n-home').classList.add('active');
-            if(id === 'mod-notes') document.getElementById('n-notes').classList.add('active');
         }
-
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
-        }, 1000);
     </script>
 </body>
-</html>
 </html>
