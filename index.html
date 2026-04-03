@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DATA OS - Power Fix</title>
+    <title>DATA OS - Core Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #F7EFE2; --surface: #FFFFFF; --header-accent: #2A3A4A;
-            --card-cloud: #BBCBBD; --card-vault: #C9A091; --text-main: #2A3A4A;
-            --danger: #EF4444;
+            --card-cloud: #BBCBBD; --text-main: #2A3A4A; --danger: #EF4444;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
         body { background: var(--bg); color: var(--text-main); min-height: 100vh; padding-top: 70px; padding-bottom: 90px; }
@@ -21,10 +20,8 @@
         .active { display: block !important; }
         #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; position: fixed; top:0; left:0; height: 100vh; background: var(--bg); }
 
-        .mod-card { padding: 20px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .notes-area { background: var(--card-cloud); }
-        .vault-area { background: var(--card-vault); color: white; cursor: pointer; }
-
+        .mod-card { padding: 25px; border-radius: 28px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: var(--card-cloud); }
+        
         .data-item { 
             background: white !important; color: #2A3A4A; padding: 18px; 
             border-radius: 18px; margin-bottom: 12px; position: relative; 
@@ -33,10 +30,10 @@
         .delete-btn { position: absolute; right: 15px; top: 12px; color: var(--danger); font-weight: 900; cursor: pointer; font-size: 1.2rem; z-index: 10; }
 
         .pwa-nav { background: white; position: fixed; bottom: 0; width: 100%; display: none; justify-content: space-around; padding: 15px; border-top: 1px solid #ddd; z-index: 1000; border-radius: 20px 20px 0 0; }
-        .nav-item { text-align: center; font-size: 0.75rem; color: #888; cursor: pointer; }
-        .nav-item.active { color: #6366F1; font-weight: 800; }
+        .nav-item { text-align: center; font-size: 0.75rem; color: #888; cursor: pointer; padding: 5px 15px; }
+        .nav-item.active { color: #6366F1; font-weight: 800; border-bottom: 2px solid #6366F1; }
 
-        input, textarea { width: 100%; padding: 16px; border-radius: 15px; border: 1px solid #ddd; margin: 10px 0; font-size: 1rem; }
+        input, textarea { width: 100%; padding: 16px; border-radius: 15px; border: 1px solid #ddd; margin: 10px 0; font-size: 1rem; outline: none; }
         .btn-main { width: 100%; padding: 16px; background: var(--header-accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -53,50 +50,33 @@
     <div id="login-screen" class="screen active">
         <h1 style="font-size: 3.5rem; font-weight: 900;">DATA OS</h1>
         <div style="width: 100%; max-width: 320px; margin-top: 30px;">
-            <input type="text" id="userInput" placeholder="Usuario">
-            <input type="password" id="passInput" placeholder="PIN">
+            <input type="text" id="userInput" placeholder="Usuario Autorizado">
+            <input type="password" id="passInput" placeholder="PIN (1234)">
             <button class="btn-main" onclick="handleLogin()">ENTRAR</button>
         </div>
     </div>
 
     <div id="dashboard" class="screen">
         <h2 id="welcome-msg" style="margin-bottom:20px; font-size: 2.2rem;">Hola</h2>
-        <div class="mod-card notes-area">
-            <h3>📝 RECORDATORIOS</h3>
-            <div id="notes-dash">Buscando datos...</div>
-            <button class="btn-main" onclick="navTo('mod-notes')" style="background:rgba(255,255,255,0.4); color:black; margin-top:15px; border-radius: 12px;">Ver Todo</button>
-        </div>
-        <div class="mod-card vault-area" onclick="navTo('mod-vault')">
-            <h3>🔐 BÓVEDA CLOUD</h3>
-            <p id="vault-status">Bloqueada</p>
+        <div class="mod-card">
+            <h3 style="margin-bottom:12px; font-size: 0.9rem; letter-spacing: 1px;">📝 RECORDATORIOS RECIENTES</h3>
+            <div id="notes-dash">Conectando a la nube...</div>
+            <button class="btn-main" onclick="navTo('mod-notes')" style="background:rgba(255,255,255,0.4); color:black; margin-top:15px; border-radius: 12px;">Ver Todo / Añadir</button>
         </div>
     </div>
 
     <div id="mod-notes" class="screen">
-        <h2>Notas</h2>
-        <textarea id="note-text" placeholder="Escribe aquí..."></textarea>
-        <button class="btn-main" onclick="subirNota()">GUARDAR</button>
-        <div id="notes-full-list" style="margin-top:20px;"></div>
-    </div>
-
-    <div id="mod-vault" class="screen">
-        <div id="vault-auth">
-            <h2 style="text-align:center;">PIN REQUERIDO</h2>
-            <div id="numpad" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:20px; max-width: 250px; margin: 0 auto;"></div>
+        <h2>Gestionar Notas</h2>
+        <div style="background:white; padding:15px; border-radius:20px; margin-bottom:25px;">
+            <textarea id="note-text" placeholder="¿Qué tienes en mente?"></textarea>
+            <button class="btn-main" onclick="subirNota()">GUARDAR EN NUBE</button>
         </div>
-        <div id="vault-content" style="display:none;">
-            <h2>Bóveda</h2>
-            <input type="text" id="v-title" placeholder="Título">
-            <input type="text" id="v-secret" placeholder="Secreto">
-            <button class="btn-main" onclick="subirVault()" style="background:var(--card-vault)">GUARDAR</button>
-            <div id="vault-full-list" style="margin-top:20px;"></div>
-        </div>
+        <div id="notes-full-list"></div>
     </div>
 
     <nav class="pwa-nav" id="pwa-nav">
         <div class="nav-item active" onclick="navTo('dashboard')" id="n-home">🏠<br>Inicio</div>
         <div class="nav-item" onclick="navTo('mod-notes')" id="n-notes">📝<br>Notas</div>
-        <div class="nav-item" onclick="navTo('mod-vault')" id="n-vault">🔐<br>Bóveda</div>
         <div class="nav-item" onclick="location.reload()" style="color:var(--danger)">✕<br>Salir</div>
     </nav>
 
@@ -119,57 +99,61 @@
         // LOGIN
         window.handleLogin = async () => {
             const u = document.getElementById('userInput').value.trim();
-            if(!u || document.getElementById('passInput').value !== "1234") return alert("PIN incorrecto");
+            const p = document.getElementById('passInput').value;
+            if(!u || p !== "1234") return alert("Acceso denegado");
 
-            const userSnap = await getDoc(doc(db, "usuarios_autorizados", u));
-            if(userSnap.exists()){
-                window.currentUser = u;
-                document.getElementById('welcome-msg').innerText = "Hola, " + u;
-                document.getElementById('role-display').innerText = userSnap.data().rol.toUpperCase();
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('dashboard').classList.add('active');
-                document.getElementById('sys-bar').style.display = 'flex';
-                document.getElementById('pwa-nav').style.display = 'flex';
-                activarSinc(u);
-            } else { alert("No autorizado"); }
+            try {
+                const userSnap = await getDoc(doc(db, "usuarios_autorizados", u));
+                if(userSnap.exists()){
+                    window.currentUser = u;
+                    document.getElementById('welcome-msg').innerText = "Hola, " + u;
+                    document.getElementById('role-display').innerText = userSnap.data().rol.toUpperCase();
+                    
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('dashboard').classList.add('active');
+                    document.getElementById('sys-bar').style.display = 'flex';
+                    document.getElementById('pwa-nav').style.display = 'flex';
+                    
+                    activarSincronizacion(u);
+                } else { alert("Usuario no registrado en base de datos."); }
+            } catch(e) { alert("Error de conexión"); }
         };
 
-        // ACCIONES GLOBALES
-        window.borrar = async (col, id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, col, id)); };
+        // ACCIONES
+        window.borrarNota = async (id) => {
+            if(confirm("¿Eliminar recordatorio?")) await deleteDoc(doc(db, "recordatorios", id));
+        };
 
         window.subirNota = async () => {
             const t = document.getElementById('note-text').value;
-            if(t) await addDoc(collection(db, "recordatorios"), { usuario: window.currentUser, texto: t, timestamp: serverTimestamp() });
-            document.getElementById('note-text').value = "";
-        };
-
-        window.subirVault = async () => {
-            const t = document.getElementById('v-title').value;
-            const s = document.getElementById('v-secret').value;
-            if(t && s) await addDoc(collection(db, "boveda"), { usuario: window.currentUser, titulo: t, secreto: s, timestamp: serverTimestamp() });
-            document.getElementById('v-title').value = ""; document.getElementById('v-secret').value = "";
-        };
-
-        // SINCRONIZACIÓN (SinOrderBy para evitar errores de índice)
-        function activarSinc(user) {
-            // Notas
-            onSnapshot(query(collection(db, "recordatorios"), where("usuario", "==", user)), (snap) => {
-                let html = "";
-                snap.forEach(d => {
-                    html += `<div class="data-item"><span class="delete-btn" onclick="borrar('recordatorios','${d.id}')">✕</span>${d.data().texto}</div>`;
-                });
-                document.getElementById('notes-dash').innerHTML = html || "Sin notas.";
-                document.getElementById('notes-full-list').innerHTML = html;
+            if(!t) return;
+            await addDoc(collection(db, "recordatorios"), { 
+                usuario: window.currentUser, 
+                texto: t, 
+                timestamp: serverTimestamp() 
             });
+            document.getElementById('note-text').value = "";
+            navTo('dashboard');
+        };
 
-            // Bóveda
-            onSnapshot(query(collection(db, "boveda"), where("usuario", "==", user)), (snap) => {
+        // SINCRONIZACIÓN SIMPLIFICADA (Garantiza que se vea la lista)
+        function activarSincronizacion(user) {
+            const q = query(collection(db, "recordatorios"), where("usuario", "==", user));
+            onSnapshot(q, (snap) => {
                 let html = "";
                 snap.forEach(d => {
-                    html += `<div class="data-item"><span class="delete-btn" onclick="borrar('boveda','${d.id}')">✕</span><b>${d.data().titulo}</b><br>${d.data().secreto}</div>`;
+                    const data = d.data();
+                    html += `
+                        <div class="data-item">
+                            <span class="delete-btn" onclick="borrarNota('${d.id}')">✕</span>
+                            ${data.texto}
+                        </div>`;
                 });
-                document.getElementById('vault-full-list').innerHTML = html || "Vacío";
-                document.getElementById('vault-status').innerText = snap.size + " secretos guardados";
+                document.getElementById('notes-dash').innerHTML = html || "Sin recordatorios pendientes.";
+                document.getElementById('notes-full-list').innerHTML = html || "Lista vacía.";
+            }, (error) => {
+                document.getElementById('notes-dash').innerHTML = "Error al cargar datos.";
+                console.error(error);
             });
         }
     </script>
@@ -179,15 +163,14 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if(id === 'dashboard') document.getElementById('n-home').classList.add('active');
+            if(id === 'mod-notes') document.getElementById('n-notes').classList.add('active');
         }
-        const np = document.getElementById('numpad');
-        for(let i=1; i<=9; i++) np.innerHTML += `<button onclick="tec('${i}')" style="padding:15px; border-radius:10px; border:1px solid #ddd; background:white; font-weight:bold;">${i}</button>`;
-        let p = "";
-        window.tec = (n) => {
-            p += n; if(p === "1234") { document.getElementById('vault-auth').style.display='none'; document.getElementById('vault-content').style.display='block'; }
-            if(p.length >= 4 && p !== "1234") p = "";
-        }
-        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }, 1000);
+
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+        }, 1000);
     </script>
 </body>
 </html>
