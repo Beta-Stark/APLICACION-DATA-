@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DATA OS - Push Ready</title>
+    <title>DATA OS - Auto-Push v6</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #F7EFE2; --surface: #FFFFFF; --header: #2A3A4A; --accent: #BBCBBD; --danger: #EF4444; }
@@ -13,16 +13,10 @@
         .screen { display: none; padding: 20px; max-width: 500px; margin: 0 auto; }
         .active { display: block !important; }
         #login-screen.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-        
         .mod-card { background: var(--accent); padding: 20px; border-radius: 25px; margin-bottom: 20px; }
-        .data-item { 
-            background: white !important; color: #2A3A4A !important; 
-            padding: 15px; border-radius: 15px; margin-bottom: 10px; 
-            position: relative; border: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+        .data-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; position: relative; border: 1px solid #ddd; }
         .time-tag { font-size: 0.7rem; color: #888; display: block; margin-top: 5px; }
         .delete-btn { position: absolute; right: 10px; top: 10px; color: var(--danger); font-weight: 900; cursor: pointer; }
-
         .pwa-nav { background: white; position: fixed; bottom: 0; width: 100%; display: none; justify-content: space-around; padding: 15px; border-top: 1px solid #ddd; z-index: 1000; }
         input, textarea { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin: 10px 0; font-size: 1rem; }
         .btn-main { width: 100%; padding: 15px; background: var(--header); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
@@ -65,6 +59,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
+        import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-messaging.js";
         import { getFirestore, collection, addDoc, getDoc, doc, onSnapshot, query, where, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -78,16 +73,29 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const messaging = getMessaging(app);
 
-        // FUNCIÓN PARA PEDIR PERMISO DE NOTIFICACIONES
-        async function solicitarPermisoNotificaciones() {
-            if (!("Notification" in window)) {
-                console.log("Este navegador no soporta notificaciones.");
-                return;
-            }
-            const permiso = await Notification.requestPermission();
-            if (permiso === "granted") {
-                console.log("Permiso de notificaciones concedido.");
+        // FUNCIÓN AUTOMÁTICA DE VINCULACIÓN
+        async function vincularAutoPush(user) {
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    // RECUERDA: Genera tu clave en la consola de Firebase y pégala aquí
+                    const claveVapid = "TU_CLAVE_VAPID_GENERADA_AQUI"; 
+                    
+                    const token = await getToken(messaging, { vapidKey: claveVapid });
+                    if (token) {
+                        await addDoc(collection(db, "tokens_usuarios"), {
+                            usuario: user,
+                            token: token,
+                            dispositivo: navigator.userAgent, // Para saber si es PC o Móvil
+                            timestamp: serverTimestamp()
+                        });
+                        console.log("Push vinculado automáticamente.");
+                    }
+                }
+            } catch (err) {
+                console.log("Push no soportado o bloqueado.");
             }
         }
 
@@ -104,23 +112,19 @@
                 document.getElementById('sys-bar').style.display = 'flex';
                 document.getElementById('pwa-nav').style.display = 'flex';
                 
-                // PEDIR PERMISO JUSTO DESPUÉS DE LOGUEAR
-                solicitarPermisoNotificaciones();
+                // DISPARAR VINCULACIÓN AUTOMÁTICA AL ENTRAR
+                vincularAutoPush(u);
 
                 const q = query(collection(db, "recordatorios"), where("usuario", "==", u));
                 onSnapshot(q, (snap) => {
                     let html = "";
                     snap.forEach(d => {
                         const data = d.data();
-                        let fechaLegible = "";
-                        if(data.fecha_creacion) {
-                            const date = data.fecha_creacion.toDate();
-                            fechaLegible = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " - " + date.toLocaleDateString();
-                        }
+                        let f = data.fecha_creacion ? data.fecha_creacion.toDate().toLocaleString() : "...";
                         html += `<div class="data-item">
                             <span class="delete-btn" onclick="borrarNota('${d.id}')">✕</span>
                             ${data.texto}
-                            <span class="time-tag">${fechaLegible}</span>
+                            <span class="time-tag">${f}</span>
                         </div>`;
                     });
                     document.getElementById('notes-list').innerHTML = html || "No tienes notas aún.";
