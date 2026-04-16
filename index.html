@@ -3,58 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DATA OS - Auto-Push v6</title>
+    <title>DATA OS - YARVIS Core v7</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #F7EFE2; --surface: #FFFFFF; --header: #2A3A4A; --accent: #BBCBBD; --danger: #EF4444; }
+        :root { 
+            --bg: #F7EFE2; 
+            --surface: #FFFFFF; 
+            --header: #2A3A4A; 
+            --accent: #BBCBBD; 
+            --danger: #EF4444; 
+            --success: #4ADE80;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-        body { background: var(--bg); padding-bottom: 100px; }
-        .system-bar { background: var(--surface); padding: 15px; display: none; justify-content: space-between; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; }
-        .screen { display: none; padding: 20px; max-width: 500px; margin: 0 auto; }
+        body { background: var(--bg); padding-bottom: 100px; min-height: 100vh; overflow-x: hidden; }
+        
+        /* UI Components */
+        .system-bar { 
+            background: var(--surface); 
+            padding: 15px; 
+            display: none; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 2px solid var(--header); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+        }
+        .screen { display: none; padding: 20px; max-width: 500px; margin: 0 auto; animation: fadeIn 0.4s ease; }
         .active { display: block !important; }
         #login-screen.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-        .mod-card { background: var(--accent); padding: 20px; border-radius: 25px; margin-bottom: 20px; }
-        .data-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; position: relative; border: 1px solid #ddd; }
-        .time-tag { font-size: 0.7rem; color: #888; display: block; margin-top: 5px; }
-        .delete-btn { position: absolute; right: 10px; top: 10px; color: var(--danger); font-weight: 900; cursor: pointer; }
-        .pwa-nav { background: white; position: fixed; bottom: 0; width: 100%; display: none; justify-content: space-around; padding: 15px; border-top: 1px solid #ddd; z-index: 1000; }
-        input, textarea { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin: 10px 0; font-size: 1rem; }
-        .btn-main { width: 100%; padding: 15px; background: var(--header); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
+        
+        /* Cards & Items */
+        .mod-card { background: var(--accent); padding: 20px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .data-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 12px; position: relative; border-left: 5px solid var(--header); transition: transform 0.2s; }
+        .data-item:active { transform: scale(0.98); }
+        .time-tag { font-size: 0.7rem; color: #888; display: block; margin-top: 8px; font-weight: 600; }
+        .delete-btn { position: absolute; right: 15px; top: 15px; color: var(--danger); font-weight: 900; cursor: pointer; padding: 5px; }
+        
+        /* Navigation */
+        .pwa-nav { background: white; position: fixed; bottom: 0; width: 100%; display: none; justify-content: space-around; padding: 18px; border-top: 1px solid #ddd; z-index: 1000; box-shadow: 0 -5px 10px rgba(0,0,0,0.05); }
+        .nav-item { cursor: pointer; font-weight: 600; font-size: 0.9rem; color: var(--header); }
+        
+        /* Inputs & Buttons */
+        input, textarea { width: 100%; padding: 16px; border-radius: 14px; border: 1px solid #ccc; margin: 10px 0; font-size: 1rem; outline: none; background: #fff; }
+        input:focus { border-color: var(--header); box-shadow: 0 0 0 3px rgba(42, 58, 74, 0.1); }
+        .btn-main { width: 100%; padding: 16px; background: var(--header); color: white; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: all 0.3s; margin-top: 10px; }
+        .btn-main:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-main:disabled { background: #ccc; cursor: not-allowed; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div class="system-bar" id="sys-bar">
-        <div style="font-weight:900;">DATA OS</div>
-        <div id="role-display" style="background:#000; color:#fff; padding:2px 10px; border-radius:10px; font-size:0.7rem;">ADMIN</div>
+        <div style="font-weight:900; letter-spacing: 1px;">DATA OS // CORE</div>
+        <div id="role-display" style="background:var(--header); color:#fff; padding:4px 12px; border-radius:12px; font-size:0.65rem; font-weight: 900;">Cargando...</div>
     </div>
 
     <div id="login-screen" class="screen active">
-        <h1 style="font-size: 3rem; font-weight: 900;">DATA OS</h1>
-        <input type="text" id="userInput" placeholder="Usuario">
-        <input type="password" id="passInput" placeholder="PIN">
-        <button class="btn-main" onclick="handleLogin()">INICIAR</button>
+        <h1 style="font-size: 3.5rem; font-weight: 900; color: var(--header); line-height: 1;">DATA<br>OS</h1>
+        <p style="margin: 15px 0 25px; color: #777; text-align: center; font-weight: 300;">Authentication Required - YARVIS v7.0</p>
+        <input type="text" id="userInput" placeholder="Identificador de Usuario">
+        <input type="password" id="passInput" placeholder="PIN de Seguridad">
+        <button class="btn-main" id="btnLogin">INICIAR SISTEMA</button>
     </div>
 
     <div id="dashboard" class="screen">
-        <h2 id="welcome-msg">Hola</h2>
+        <h2 id="welcome-msg" style="margin-bottom: 20px; font-weight: 900; font-size: 1.8rem;">---</h2>
         <div class="mod-card">
-            <h3>📝 RECORDATORIOS</h3>
-            <div id="notes-list" style="margin-top:15px;">Cargando...</div>
+            <h3 style="font-size: 0.8rem; letter-spacing: 2px; opacity: 0.7;">CENTRAL DE REGISTROS</h3>
+            <div id="notes-list" style="margin-top:15px; max-height: 50vh; overflow-y: auto; padding-right: 5px;">Buscando datos en la nube...</div>
         </div>
-        <button class="btn-main" onclick="navTo('add-screen')">AÑADIR NUEVA NOTA</button>
+        <button class="btn-main" onclick="navTo('add-screen')">+ NUEVO REGISTRO</button>
     </div>
 
     <div id="add-screen" class="screen">
-        <h2>Nueva Nota</h2>
-        <textarea id="note-text" placeholder="Escribe aquí..."></textarea>
-        <button class="btn-main" id="btnSave">GUARDAR EN CLOUD</button>
+        <h2 style="font-weight: 900; margin-bottom: 10px;">Nuevo Registro</h2>
+        <p style="color: #666; margin-bottom: 20px; font-size: 0.9rem;">Los datos se cifrarán y sincronizarán automáticamente.</p>
+        <textarea id="note-text" rows="6" placeholder="Escribe aquí la información técnica o recordatorio..."></textarea>
+        <button class="btn-main" id="btnSave">SINCRONIZAR CON CLOUD</button>
+        <button class="btn-main" onclick="navTo('dashboard')" style="background: transparent; color: var(--header); border: 1px solid var(--header);">VOLVER</button>
     </div>
 
     <nav class="pwa-nav" id="pwa-nav">
-        <div onclick="navTo('dashboard')">🏠 Inicio</div>
-        <div onclick="navTo('add-screen')">📝 Notas</div>
-        <div onclick="location.reload()">✕ Salir</div>
+        <div class="nav-item" onclick="navTo('dashboard')">INICIO</div>
+        <div class="nav-item" onclick="navTo('add-screen')">REGISTROS</div>
+        <div class="nav-item" onclick="location.reload()" style="color: var(--danger);">SALIR</div>
     </nav>
 
     <script type="module">
@@ -62,6 +97,7 @@
         import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-messaging.js";
         import { getFirestore, collection, addDoc, getDoc, doc, onSnapshot, query, where, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
 
+        // CONFIGURACIÓN DE NÚCLEO
         const firebaseConfig = {
             apiKey: "AIzaSyDlmtpUfYjs33qa9tLE7Fv2C5yszSZEnUw",
             authDomain: "data-os-db30b.firebaseapp.com",
@@ -73,86 +109,138 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const messaging = getMessaging(app);
+        let messaging;
+        
+        try {
+            messaging = getMessaging(app);
+        } catch (e) {
+            console.log("Aviso: Notificaciones no disponibles en este entorno.");
+        }
 
-        // FUNCIÓN AUTOMÁTICA DE VINCULACIÓN
-        async function vincularAutoPush(user) {
+        // --- LÓGICA DE SEGURIDAD Y DATOS ---
+
+        const handleLogin = async () => {
+            const u = document.getElementById('userInput').value.trim().toLowerCase();
+            const p = document.getElementById('passInput').value.trim();
+
+            if(!u || !p) return alert("Ingrese credenciales.");
+
+            try {
+                // CONSULTA DINÁMICA A FIRESTORE
+                const userRef = doc(db, "usuarios_autorizados", u);
+                const userSnap = await getDoc(userRef);
+
+                if(userSnap.exists()){
+                    const userData = userSnap.data();
+                    
+                    // VALIDACIÓN DE PIN DESDE BASE DE DATOS
+                    if(userData.pin === p) {
+                        window.currentUser = u;
+                        document.getElementById('welcome-msg').innerText = "Bienvenido, " + u.toUpperCase();
+                        document.getElementById('role-display').innerText = userData.rol || "USER";
+                        
+                        // CAMBIO DE ESTADO UI
+                        document.getElementById('login-screen').classList.remove('active');
+                        document.getElementById('dashboard').classList.add('active');
+                        document.getElementById('sys-bar').style.display = 'flex';
+                        document.getElementById('pwa-nav').style.display = 'flex';
+                        
+                        vincularAutoPush(u);
+                        iniciarEscuchaNotas(u);
+                    } else {
+                        alert("PIN INCORRECTO");
+                    }
+                } else {
+                    alert("USUARIO NO AUTORIZADO");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("ERROR DE CONEXIÓN");
+            }
+        };
+
+        const vincularAutoPush = async (user) => {
+            if (!messaging) return;
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    // RECUERDA: Genera tu clave en la consola de Firebase y pégala aquí
                     const claveVapid = "BPqre3i_E99vzlH1LUr0iYibIU2nLffn_3J4iyjs2w4EFd1b87FZH01ltDkrQQng7ZSrHIJTdE0TnqaJQeOGKiA"; 
-                    
                     const token = await getToken(messaging, { vapidKey: claveVapid });
+                    
                     if (token) {
                         await addDoc(collection(db, "tokens_usuarios"), {
                             usuario: user,
                             token: token,
-                            dispositivo: navigator.userAgent, // Para saber si es PC o Móvil
-                            timestamp: serverTimestamp()
+                            plataforma: navigator.platform,
+                            actualizado: serverTimestamp()
                         });
-                        console.log("Push vinculado automáticamente.");
+                        console.log("YARVIS: Push Token vinculado.");
                     }
                 }
             } catch (err) {
-                console.log("Push no soportado o bloqueado.");
+                console.log("YARVIS: Salto de vinculación Push (bloqueado o no HTTPS).");
             }
-        }
+        };
 
-        window.handleLogin = async () => {
-            const u = document.getElementById('userInput').value.trim();
-            if(!u || document.getElementById('passInput').value !== "1234") return alert("PIN incorrecto");
-
-            const userSnap = await getDoc(doc(db, "usuarios_autorizados", u));
-            if(userSnap.exists()){
-                window.currentUser = u;
-                document.getElementById('welcome-msg').innerText = "Hola, " + u;
-                document.getElementById('login-screen').classList.remove('active');
-                document.getElementById('dashboard').classList.add('active');
-                document.getElementById('sys-bar').style.display = 'flex';
-                document.getElementById('pwa-nav').style.display = 'flex';
-                
-                // DISPARAR VINCULACIÓN AUTOMÁTICA AL ENTRAR
-                vincularAutoPush(u);
-
-                const q = query(collection(db, "recordatorios"), where("usuario", "==", u));
-                onSnapshot(q, (snap) => {
-                    let html = "";
-                    snap.forEach(d => {
-                        const data = d.data();
-                        let f = data.fecha_creacion ? data.fecha_creacion.toDate().toLocaleString() : "...";
-                        html += `<div class="data-item">
-                            <span class="delete-btn" onclick="borrarNota('${d.id}')">✕</span>
-                            ${data.texto}
-                            <span class="time-tag">${f}</span>
+        const iniciarEscuchaNotas = (u) => {
+            const q = query(collection(db, "recordatorios"), where("usuario", "==", u));
+            onSnapshot(q, (snap) => {
+                let html = "";
+                snap.forEach(d => {
+                    const data = d.data();
+                    let fecha = data.fecha_creacion ? data.fecha_creacion.toDate().toLocaleString('es-ES', { hour12: true }) : "Sincronizando...";
+                    html += `
+                        <div class="data-item">
+                            <span class="delete-btn" onclick="eliminarNota('${d.id}')">✕</span>
+                            <div style="font-size: 0.95rem; color: #333; line-height: 1.4;">${data.texto}</div>
+                            <span class="time-tag">ID: ${d.id.substring(0,6)} • ${fecha}</span>
                         </div>`;
-                    });
-                    document.getElementById('notes-list').innerHTML = html || "No tienes notas aún.";
                 });
-            } else { alert("Usuario no registrado"); }
-        };
-
-        window.borrarNota = async (id) => {
-            if(confirm("¿Borrar?")) await deleteDoc(doc(db, "recordatorios", id));
-        };
-
-        document.getElementById('btnSave').onclick = async () => {
-            const txt = document.getElementById('note-text').value;
-            if(!txt) return;
-            await addDoc(collection(db, "recordatorios"), { 
-                usuario: window.currentUser, 
-                texto: txt,
-                fecha_creacion: serverTimestamp() 
+                document.getElementById('notes-list').innerHTML = html || "<p style='text-align:center; opacity:0.5;'>Sin registros activos.</p>";
             });
-            document.getElementById('note-text').value = "";
-            navTo('dashboard');
         };
+
+        window.eliminarNota = async (id) => {
+            if(confirm("¿Confirmar eliminación permanente?")) {
+                await deleteDoc(doc(db, "recordatorios", id));
+            }
+        };
+
+        const guardarNota = async () => {
+            const txt = document.getElementById('note-text').value.trim();
+            if(!txt) return alert("El registro no puede estar vacío.");
+
+            const btn = document.getElementById('btnSave');
+            btn.disabled = true;
+            btn.innerText = "SINCRONIZANDO...";
+
+            try {
+                await addDoc(collection(db, "recordatorios"), { 
+                    usuario: window.currentUser, 
+                    texto: txt,
+                    fecha_creacion: serverTimestamp() 
+                });
+                document.getElementById('note-text').value = "";
+                navTo('dashboard');
+            } catch (e) {
+                alert("Error de escritura en nube.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "SINCRONIZAR CON CLOUD";
+            }
+        };
+
+        // ASIGNACIÓN DE DISPARADORES
+        document.getElementById('btnLogin').onclick = handleLogin;
+        document.getElementById('btnSave').onclick = guardarNota;
+
     </script>
 
     <script>
         function navTo(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
+            window.scrollTo(0,0);
         }
     </script>
 </body>
