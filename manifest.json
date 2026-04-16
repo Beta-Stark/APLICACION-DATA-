@@ -1,18 +1,16 @@
 {
-  "name": "DATA OS Enterprise",
-  "short_name": "DATA OS",
-  "description": "Sistema de gestión con notificaciones en Android.",
-  "start_url": "/APLICACION-DATA-/index.html",
-  "display": "standalone",
-  "background_color": "#1a237e",
-  "theme_color": "#1a237e",
-  "orientation": "portrait",
+  "short_name": "DATA_OS",
+  "name": "DATA OS - Stark Bóveda",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/1087/1087815.png",
-      "sizes": "512x512",
+      "src": "https://cdn-icons-png.flaticon.com/512/5968/5968534.png",
       "type": "image/png",
+      "sizes": "512x512",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#2A3A4A",
+  "background_color": "#F7EFE2"
 }
