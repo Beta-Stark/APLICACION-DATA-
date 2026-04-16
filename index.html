@@ -1,149 +1,50 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DATA OS - YARVIS Core v7.6</title>
-    <link rel="manifest" href="manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
-    <style>
-        :root { --bg: #F7EFE2; --surface: #FFFFFF; --header: #2A3A4A; --accent: #BBCBBD; --danger: #EF4444; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-        body { background: var(--bg); padding-bottom: 100px; min-height: 100vh; }
-        .system-bar { background: var(--surface); padding: 15px; display: none; justify-content: space-between; border-bottom: 2px solid var(--header); position: sticky; top: 0; z-index: 100; }
-        .screen { display: none; padding: 20px; max-width: 500px; margin: 0 auto; animation: fadeIn 0.4s ease; }
-        .active { display: block !important; }
-        #login-screen.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-        .mod-card { background: var(--accent); padding: 20px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 10px 15px rgba(0,0,0,0.05); }
-        .data-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 12px; position: relative; border-left: 5px solid var(--header); }
-        .time-tag { font-size: 0.7rem; color: #888; display: block; margin-top: 8px; font-weight: 600; }
-        .delete-btn { position: absolute; right: 15px; top: 15px; color: var(--danger); font-weight: 900; cursor: pointer; }
-        .pwa-nav { background: white; position: fixed; bottom: 0; width: 100%; display: none; justify-content: space-around; padding: 18px; border-top: 1px solid #ddd; z-index: 1000; }
-        input, textarea { width: 100%; padding: 16px; border-radius: 14px; border: 1px solid #ccc; margin: 10px 0; font-size: 1rem; outline: none; }
-        .btn-main { width: 100%; padding: 16px; background: var(--header); color: white; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; margin-top: 10px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
-</head>
-<body>
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+admin.initializeApp();
 
-    <div class="system-bar" id="sys-bar">
-        <div style="font-weight:900;">DATA OS // OPERADOR</div>
-        <div id="role-display" style="background:var(--header); color:#fff; padding:4px 12px; border-radius:12px; font-size:0.65rem; font-weight: 900;">...</div>
-    </div>
+/**
+ * Trigger: Se activa al crear una nueva entrada en la colección 'boveda'.
+ */
+exports.enviarNotificacionNuevaNota = functions.firestore
+    .document("boveda/{notaId}")
+    .onCreate(async (snap, context) => {
+        const nuevaNota = snap.data();
+        const usuarioId = nuevaNota.usuario;
+        const tituloNota = nuevaNota.titulo || "Nuevo Registro";
 
-    <div id="login-screen" class="screen active">
-        <h1 style="font-size: 3.5rem; font-weight: 900; color: var(--header);">DATA OS</h1>
-        <p style="margin-bottom: 20px; color: #666;">Ingrese Identificación</p>
-        <input type="text" id="userInput" placeholder="Usuario">
-        <input type="password" id="passInput" placeholder="PIN">
-        <button class="btn-main" id="btnLogin">ENTRAR</button>
-    </div>
+        // 1. Buscar los tokens del dispositivo de este usuario
+        const tokensSnapshot = await admin.firestore()
+            .collection("tokens_usuarios")
+            .where("usuario", "==", usuarioId)
+            .get();
 
-    <div id="dashboard" class="screen">
-        <h2 id="welcome-msg" style="margin-bottom: 20px; font-weight: 900;">Hola</h2>
-        <div class="mod-card">
-            <h3 style="font-size: 0.8rem; letter-spacing: 2px; opacity: 0.7;">SECRETOS RECUPERADOS</h3>
-            <div id="notes-list" style="margin-top:15px; max-height: 50vh; overflow-y: auto;">Accediendo...</div>
-        </div>
-        <button class="btn-main" onclick="navTo('add-screen')">+ NUEVO REGISTRO</button>
-    </div>
-
-    <div id="add-screen" class="screen">
-        <h2 style="font-weight: 900;">Nuevo Registro</h2>
-        <input type="text" id="note-title" placeholder="Título">
-        <textarea id="note-text" rows="6" placeholder="Contenido..."></textarea>
-        <button class="btn-main" id="btnSave">GUARDAR</button>
-        <button class="btn-main" onclick="navTo('dashboard')" style="background: transparent; color: var(--header); border: 1px solid var(--header);">VOLVER</button>
-    </div>
-
-    <nav class="pwa-nav" id="pwa-nav">
-        <div onclick="navTo('dashboard')" style="cursor:pointer; font-weight:900;">🏠 INICIO</div>
-        <div onclick="navTo('add-screen')" style="cursor:pointer; font-weight:900;">📝 NUEVO</div>
-        <div onclick="location.reload()" style="cursor:pointer; color: var(--danger); font-weight:900;">✕ SALIR</div>
-    </nav>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDoc, doc, onSnapshot, query, where, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDlmtpUfYjs33qa9tLE7Fv2C5yszSZEnUw",
-            authDomain: "data-os-db30b.firebaseapp.com",
-            projectId: "data-os-db30b",
-            storageBucket: "data-os-db30b.firebasestorage.app",
-            messagingSenderId: "149593183974",
-            appId: "1:149593183974:web:e588fbee9a618e21980d27"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // Registro de Service Worker para PWA
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-                .then(() => console.log("YARVIS: Service Worker registrado."))
-                .catch(err => console.log("YARVIS: Fallo en SW", err));
+        if (tokensSnapshot.empty) {
+            console.log("No hay tokens registrados para el usuario:", usuarioId);
+            return null;
         }
 
-        window.handleLogin = async () => {
-            const u = document.getElementById('userInput').value.trim();
-            const p = document.getElementById('passInput').value.trim();
-            try {
-                const userRef = doc(db, "usuarios_autorizados", u);
-                const userSnap = await getDoc(userRef);
-                if(userSnap.exists() && String(userSnap.data().pin) === p) {
-                    window.currentUser = u;
-                    document.getElementById('welcome-msg').innerText = "Hola, " + u;
-                    document.getElementById('role-display').innerText = userSnap.data().rol || "ADMIN";
-                    document.getElementById('login-screen').classList.remove('active');
-                    document.getElementById('dashboard').classList.add('active');
-                    document.getElementById('sys-bar').style.display = 'flex';
-                    document.getElementById('pwa-nav').style.display = 'flex';
-                    iniciarEscucha(u);
-                } else { alert("Acceso Denegado"); }
-            } catch (e) { alert("Error de red"); }
+        const tokens = [];
+        tokensSnapshot.forEach(doc => {
+            tokens.push(doc.data().token);
+        });
+
+        // 2. Construir el mensaje de notificación
+        const payload = {
+            notification: {
+                title: `🛡️ DATA OS: ${tituloNota}`,
+                body: `Se ha sincronizado un nuevo secreto en tu bóveda.`,
+                icon: "https://cdn-icons-png.flaticon.com/512/5968/5968534.png",
+                clickAction: "https://data-os-db30b.web.app" // Tu URL de Firebase Hosting
+            }
         };
 
-        const iniciarEscucha = (u) => {
-            const q = query(collection(db, "boveda"), where("usuario", "==", u));
-            onSnapshot(q, (snap) => {
-                let html = "";
-                snap.forEach(d => {
-                    const data = d.data();
-                    html += `<div class="data-item">
-                                <span class="delete-btn" onclick="eliminar('${d.id}')">✕</span>
-                                <div style="font-weight:900;">${data.titulo || 'Registro'}</div>
-                                <div>${data.secreto || ''}</div>
-                             </div>`;
-                });
-                document.getElementById('notes-list').innerHTML = html || "Bóveda vacía.";
-            });
-        };
-
-        window.eliminar = async (id) => {
-            if(confirm("¿Borrar?")) await deleteDoc(doc(db, "boveda", id));
-        };
-
-        document.getElementById('btnSave').onclick = async () => {
-            const tit = document.getElementById('note-title').value.trim();
-            const sec = document.getElementById('note-text').value.trim();
-            if(!sec) return;
-            await addDoc(collection(db, "boveda"), { 
-                usuario: window.currentUser, 
-                titulo: tit || "Nota",
-                secreto: sec,
-                timestamp: serverTimestamp() 
-            });
-            navTo('dashboard');
-        };
-
-        document.getElementById('btnLogin').onclick = handleLogin;
-    </script>
-    <script>
-        function navTo(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+        // 3. Enviar a todos los dispositivos vinculados
+        try {
+            const response = await admin.messaging().sendToDevice(tokens, payload);
+            console.log("Notificaciones enviadas con éxito:", response.successCount);
+            return response;
+        } catch (error) {
+            console.error("Error enviando notificación:", error);
+            return null;
         }
-    </script>
-</body>
-</html>
+    });
