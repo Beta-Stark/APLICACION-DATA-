@@ -1,0 +1,50 @@
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+admin.initializeApp();
+
+/**
+ * Trigger: Se activa al crear una nueva entrada en la colección 'boveda'.
+ */
+exports.enviarNotificacionNuevaNota = functions.firestore
+    .document("boveda/{notaId}")
+    .onCreate(async (snap, context) => {
+        const nuevaNota = snap.data();
+        const usuarioId = nuevaNota.usuario;
+        const tituloNota = nuevaNota.titulo || "Nuevo Registro";
+
+        // 1. Buscar los tokens del dispositivo de este usuario
+        const tokensSnapshot = await admin.firestore()
+            .collection("tokens_usuarios")
+            .where("usuario", "==", usuarioId)
+            .get();
+
+        if (tokensSnapshot.empty) {
+            console.log("No hay tokens registrados para el usuario:", usuarioId);
+            return null;
+        }
+
+        const tokens = [];
+        tokensSnapshot.forEach(doc => {
+            tokens.push(doc.data().token);
+        });
+
+        // 2. Construir el mensaje de notificación
+        const payload = {
+            notification: {
+                title: `🛡️ DATA OS: ${tituloNota}`,
+                body: `Se ha sincronizado un nuevo secreto en tu bóveda.`,
+                icon: "https://cdn-icons-png.flaticon.com/512/5968/5968534.png",
+                clickAction: "https://data-os-db30b.web.app" // Tu URL de Firebase Hosting
+            }
+        };
+
+        // 3. Enviar a todos los dispositivos vinculados
+        try {
+            const response = await admin.messaging().sendToDevice(tokens, payload);
+            console.log("Notificaciones enviadas con éxito:", response.successCount);
+            return response;
+        } catch (error) {
+            console.error("Error enviando notificación:", error);
+            return null;
+        }
+    });
