@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DATA OS - YARVIS Core v7.5</title>
+    <title>DATA OS - YARVIS Core v7.6</title>
+    <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #F7EFE2; --surface: #FFFFFF; --header: #2A3A4A; --accent: #BBCBBD; --danger: #EF4444; }
@@ -14,54 +15,51 @@
         .active { display: block !important; }
         #login-screen.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
         .mod-card { background: var(--accent); padding: 20px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 10px 15px rgba(0,0,0,0.05); }
-        .data-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 12px; position: relative; border-left: 5px solid var(--header); animation: slideIn 0.3s ease; }
+        .data-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 12px; position: relative; border-left: 5px solid var(--header); }
         .time-tag { font-size: 0.7rem; color: #888; display: block; margin-top: 8px; font-weight: 600; }
         .delete-btn { position: absolute; right: 15px; top: 15px; color: var(--danger); font-weight: 900; cursor: pointer; }
         .pwa-nav { background: white; position: fixed; bottom: 0; width: 100%; display: none; justify-content: space-around; padding: 18px; border-top: 1px solid #ddd; z-index: 1000; }
-        input, textarea { width: 100%; padding: 16px; border-radius: 14px; border: 1px solid #ccc; margin: 10px 0; font-size: 1rem; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--header); }
+        input, textarea { width: 100%; padding: 16px; border-radius: 14px; border: 1px solid #ccc; margin: 10px 0; font-size: 1rem; outline: none; }
         .btn-main { width: 100%; padding: 16px; background: var(--header); color: white; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; margin-top: 10px; }
-        .btn-main:active { transform: scale(0.98); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
 
     <div class="system-bar" id="sys-bar">
-        <div style="font-weight:900; letter-spacing:1px;">DATA OS // ACCESS</div>
+        <div style="font-weight:900;">DATA OS // OPERADOR</div>
         <div id="role-display" style="background:var(--header); color:#fff; padding:4px 12px; border-radius:12px; font-size:0.65rem; font-weight: 900;">...</div>
     </div>
 
     <div id="login-screen" class="screen active">
-        <h1 style="font-size: 3.5rem; font-weight: 900; color: var(--header); text-align: center;">DATA<br>OS</h1>
-        <p style="margin: 10px 0 20px; color: #666; font-weight: 600;">IDENTIFICACIÓN REQUERIDA</p>
-        <input type="text" id="userInput" placeholder="Identificador (Stark)">
-        <input type="password" id="passInput" placeholder="PIN Secreto">
-        <button class="btn-main" id="btnLogin">ENTRAR AL NÚCLEO</button>
+        <h1 style="font-size: 3.5rem; font-weight: 900; color: var(--header);">DATA OS</h1>
+        <p style="margin-bottom: 20px; color: #666;">Ingrese Identificación</p>
+        <input type="text" id="userInput" placeholder="Usuario">
+        <input type="password" id="passInput" placeholder="PIN">
+        <button class="btn-main" id="btnLogin">ENTRAR</button>
     </div>
 
     <div id="dashboard" class="screen">
-        <h2 id="welcome-msg" style="margin-bottom: 20px; font-weight: 900; font-size: 1.8rem;">Hola</h2>
+        <h2 id="welcome-msg" style="margin-bottom: 20px; font-weight: 900;">Hola</h2>
         <div class="mod-card">
-            <h3 style="font-size: 0.75rem; letter-spacing: 2px; opacity: 0.8; font-weight: 900;">REGISTROS EN LA NUBE</h3>
-            <div id="notes-list" style="margin-top:15px; max-height: 50vh; overflow-y: auto;">Accediendo a la bóveda...</div>
+            <h3 style="font-size: 0.8rem; letter-spacing: 2px; opacity: 0.7;">SECRETOS RECUPERADOS</h3>
+            <div id="notes-list" style="margin-top:15px; max-height: 50vh; overflow-y: auto;">Accediendo...</div>
         </div>
-        <button class="btn-main" onclick="navTo('add-screen')">+ NUEVA ENTRADA</button>
+        <button class="btn-main" onclick="navTo('add-screen')">+ NUEVO REGISTRO</button>
     </div>
 
     <div id="add-screen" class="screen">
         <h2 style="font-weight: 900;">Nuevo Registro</h2>
-        <input type="text" id="note-title" placeholder="Título del Registro">
-        <textarea id="note-text" rows="6" placeholder="Escribe la información técnica o secreta..."></textarea>
-        <button class="btn-main" id="btnSave">GUARDAR Y SINCRONIZAR</button>
-        <button class="btn-main" onclick="navTo('dashboard')" style="background: transparent; color: var(--header); border: 1px solid var(--header);">CANCELAR</button>
+        <input type="text" id="note-title" placeholder="Título">
+        <textarea id="note-text" rows="6" placeholder="Contenido..."></textarea>
+        <button class="btn-main" id="btnSave">GUARDAR</button>
+        <button class="btn-main" onclick="navTo('dashboard')" style="background: transparent; color: var(--header); border: 1px solid var(--header);">VOLVER</button>
     </div>
 
     <nav class="pwa-nav" id="pwa-nav">
-        <div onclick="navTo('dashboard')" style="cursor:pointer; font-weight:900; font-size: 0.8rem;">BÓVEDA</div>
-        <div onclick="navTo('add-screen')" style="cursor:pointer; font-weight:900; font-size: 0.8rem;">NUEVO</div>
-        <div onclick="location.reload()" style="cursor:pointer; color: var(--danger); font-weight:900; font-size: 0.8rem;">SALIR</div>
+        <div onclick="navTo('dashboard')" style="cursor:pointer; font-weight:900;">🏠 INICIO</div>
+        <div onclick="navTo('add-screen')" style="cursor:pointer; font-weight:900;">📝 NUEVO</div>
+        <div onclick="location.reload()" style="cursor:pointer; color: var(--danger); font-weight:900;">✕ SALIR</div>
     </nav>
 
     <script type="module">
@@ -80,105 +78,71 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- SISTEMA DE ACCESO ---
+        // Registro de Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log("YARVIS: Service Worker registrado."))
+                .catch(err => console.log("YARVIS: Fallo en SW", err));
+        }
+
         window.handleLogin = async () => {
             const u = document.getElementById('userInput').value.trim();
             const p = document.getElementById('passInput').value.trim();
-
-            if(!u || !p) return alert("Ingrese sus credenciales.");
-
             try {
-                // Buscamos directamente el documento por ID (Stark)
                 const userRef = doc(db, "usuarios_autorizados", u);
                 const userSnap = await getDoc(userRef);
-
-                if(userSnap.exists()){
-                    const data = userSnap.data();
-                    // Comparación estricta de PIN (Firestore es Case-Sensitive)
-                    if(String(data.pin) === p) {
-                        window.currentUser = u;
-                        document.getElementById('welcome-msg').innerText = "Hola, " + u;
-                        document.getElementById('role-display').innerText = (data.rol || "ADMIN").toUpperCase();
-                        
-                        // Animación de Entrada
-                        document.getElementById('login-screen').classList.remove('active');
-                        document.getElementById('dashboard').classList.add('active');
-                        document.getElementById('sys-bar').style.display = 'flex';
-                        document.getElementById('pwa-nav').style.display = 'flex';
-                        
-                        iniciarEscucha(u);
-                    } else {
-                        alert("PIN INCORRECTO.");
-                    }
-                } else {
-                    alert("USUARIO NO RECONOCIDO.");
-                }
-            } catch (e) {
-                console.error("Error YARVIS:", e);
-                alert("Error de conexión con el núcleo.");
-            }
+                if(userSnap.exists() && String(userSnap.data().pin) === p) {
+                    window.currentUser = u;
+                    document.getElementById('welcome-msg').innerText = "Hola, " + u;
+                    document.getElementById('role-display').innerText = userSnap.data().rol || "ADMIN";
+                    document.getElementById('login-screen').classList.remove('active');
+                    document.getElementById('dashboard').classList.add('active');
+                    document.getElementById('sys-bar').style.display = 'flex';
+                    document.getElementById('pwa-nav').style.display = 'flex';
+                    iniciarEscucha(u);
+                } else { alert("Acceso Denegado"); }
+            } catch (e) { alert("Error de red"); }
         };
 
-        // --- SINCRONIZACIÓN DE BÓVEDA ---
         const iniciarEscucha = (u) => {
             const q = query(collection(db, "boveda"), where("usuario", "==", u));
             onSnapshot(q, (snap) => {
                 let html = "";
                 snap.forEach(d => {
                     const data = d.data();
-                    let f = data.timestamp ? data.timestamp.toDate().toLocaleString() : "Sync...";
-                    html += `
-                        <div class="data-item">
-                            <span class="delete-btn" onclick="eliminar('${d.id}')">✕</span>
-                            <div style="font-weight:900; color:var(--header); font-size: 1.1rem;">${data.titulo || 'Sin Título'}</div>
-                            <div style="margin-top:5px; color: #444; line-height: 1.4;">${data.secreto || data.texto || ''}</div>
-                            <span class="time-tag">MODIFICADO: ${f}</span>
-                        </div>`;
+                    html += `<div class="data-item">
+                                <span class="delete-btn" onclick="eliminar('${d.id}')">✕</span>
+                                <div style="font-weight:900;">${data.titulo || 'Registro'}</div>
+                                <div>${data.secreto || ''}</div>
+                             </div>`;
                 });
-                document.getElementById('notes-list').innerHTML = html || "<p style='text-align:center; opacity:0.5; margin-top:20px;'>Bóveda lista. Esperando datos...</p>";
+                document.getElementById('notes-list').innerHTML = html || "Bóveda vacía.";
             });
         };
 
         window.eliminar = async (id) => {
-            if(confirm("¿Destruir este registro de la nube?")) await deleteDoc(doc(db, "boveda", id));
+            if(confirm("¿Borrar?")) await deleteDoc(doc(db, "boveda", id));
         };
 
         document.getElementById('btnSave').onclick = async () => {
             const tit = document.getElementById('note-title').value.trim();
             const sec = document.getElementById('note-text').value.trim();
-            if(!sec) return alert("El registro está vacío.");
-
-            const btn = document.getElementById('btnSave');
-            btn.innerText = "SINCRONIZANDO...";
-            btn.disabled = true;
-
-            try {
-                await addDoc(collection(db, "boveda"), { 
-                    usuario: window.currentUser, 
-                    titulo: tit || "Entrada Nueva",
-                    secreto: sec,
-                    timestamp: serverTimestamp() 
-                });
-                
-                document.getElementById('note-title').value = "";
-                document.getElementById('note-text').value = "";
-                navTo('dashboard');
-            } catch (e) {
-                alert("Error de escritura.");
-            } finally {
-                btn.innerText = "GUARDAR Y SINCRONIZAR";
-                btn.disabled = false;
-            }
+            if(!sec) return;
+            await addDoc(collection(db, "boveda"), { 
+                usuario: window.currentUser, 
+                titulo: tit || "Nota",
+                secreto: sec,
+                timestamp: serverTimestamp() 
+            });
+            navTo('dashboard');
         };
 
         document.getElementById('btnLogin').onclick = handleLogin;
     </script>
-
     <script>
         function navTo(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            window.scrollTo(0,0);
         }
     </script>
 </body>
