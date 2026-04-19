@@ -9,10 +9,10 @@
     <style>
         /* VARIABLES DE ESTILO EXACTAS DEL DISEÑO DE BÓVEDA OSCURA */
         :root { 
-            --bg: #141414; /* Fondo oscuro profundo */
-            --surface-glass: rgba(30, 30, 30, 0.7); /* Efecto cristal para tarjetas */
-            --header: #1a1a1a; /* Header sólido */
-            --accent: #D1FFCC; /* Verde pálido Stark para acentos/iconos */
+            --bg: #141414; 
+            --surface-glass: rgba(30, 30, 30, 0.7); 
+            --header: #1a1a1a; 
+            --accent: #D1FFCC; 
             --danger: #EF4444; 
             --text-primary: #FFFFFF;
             --text-secondary: rgba(255, 255, 255, 0.6);
@@ -22,7 +22,6 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
         
-        /* Evitar scroll horizontal y configurar base */
         body { 
             background: var(--bg); 
             color: var(--text-primary);
@@ -30,23 +29,20 @@
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent; /* Quitar highlight de toque en móvil */
+            -webkit-tap-highlight-color: transparent; 
         }
 
         /* --- SISTEMA DE NAVEGACIÓN RESPONSIVE PRO --- */
-        
-        /* Contenedor Maestro para separar Nav de Contenido en Desktop */
         .main-wrapper {
             display: flex;
             flex-direction: column;
             flex: 1;
         }
 
-        /* Header "Boveda" y Filtros (Responsive) */
         .system-bar { 
             background: var(--header); 
             padding: 15px 20px; 
-            display: none; /* Se activa por JS */
+            display: none; 
             border-bottom: 1px solid var(--border-glass); 
             position: sticky; 
             top: 0; 
@@ -63,18 +59,39 @@
 
         .bar-content h1 { font-weight: 900; font-size: 1.5em; letter-spacing: 1px; }
 
-        .search-icon { color: var(--text-secondary); cursor: pointer; font-size: 1.2em; display: flex; align-items: center; gap: 8px;}
-        .search-icon:hover { color: var(--accent); }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-        /* Filtros horizontales exactos de la imagen */
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            object-fit: cover;
+        }
+
+        .logout-btn {
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: 900;
+            text-transform: uppercase;
+            padding: 5px 10px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 8px;
+        }
+
         .filter-tags {
             display: flex;
             gap: 10px;
             overflow-x: auto;
             padding-bottom: 5px;
-            -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+            -webkit-overflow-scrolling: touch; 
         }
-        .filter-tags::-webkit-scrollbar { display: none; } /* Ocultar scrollbar */
+        .filter-tags::-webkit-scrollbar { display: none; } 
 
         .tag {
             background: rgba(255, 255, 255, 0.05);
@@ -94,10 +111,8 @@
             font-weight: 600;
         }
 
-        /* Contenedor de pantallas */
         .screen-container { flex: 1; }
 
-        /* Pantallas individuales */
         .screen { 
             display: none; 
             padding: 20px; 
@@ -108,10 +123,10 @@
         }
         .active { display: block !important; }
 
-        /* --- ESTRUCTURA DE TARJETA DETALLADA (EXACTA A LA IMAGEN) --- */
+        /* --- ESTRUCTURA DE TARJETA --- */
         .data-item {
             background: var(--surface-glass);
-            backdrop-filter: blur(10px); /* Efecto cristal */
+            backdrop-filter: blur(10px); 
             padding: 20px;
             border-radius: 20px;
             margin-bottom: 15px;
@@ -124,7 +139,6 @@
         }
         .data-item:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
 
-        /* Icono de tipo de secreto */
         .item-icon-wrapper {
             background: rgba(255, 255, 255, 0.05);
             color: var(--accent);
@@ -135,31 +149,27 @@
             border: 1px solid var(--border-glass);
         }
 
-        /* Contenido de texto */
         .item-details { flex: 1; }
-
         .item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-        
         .item-title { font-weight: 900; color: var(--text-primary); font-size: 1.1em; letter-spacing: 0.5px; }
         .item-label { background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); padding: 4px 10px; border-radius: 15px; font-size: 0.7em; text-transform: uppercase; font-weight: 600;}
-
-        .item-name { color: var(--text-secondary); font-size: 0.95em; }
+        
+        /* Contraseña oculta */
+        .item-name { color: var(--text-secondary); font-size: 0.95em; letter-spacing: 2px; font-family: monospace; }
         .item-options { color: var(--text-secondary); cursor: pointer; opacity: 0.7; }
         .item-options:hover { color: var(--accent); opacity: 1; }
 
-        /* Pie de tarjeta: tiempo y lugar */
         .item-footer { display: flex; align-items: center; gap: 10px; font-size: 0.75em; color: var(--text-secondary); margin-top: 8px;}
         .item-footer span { display: flex; align-items: center; gap: 5px; }
 
-        /* Botones de acción flotantes (Editar, Borrar, etc.) exactos de la imagen */
         .action-float-btns {
             position: sticky;
-            bottom: 100px; /* Sobre la nav en móvil, más alto en desktop */
+            bottom: 100px; 
             left: 0; width: 100%;
-            display: none; /* Se activa por JS */
+            display: none; 
             justify-content: center;
             gap: 20px;
-            pointer-events: none; /* No bloquear toques en el contenido inferior */
+            pointer-events: none; 
             z-index: 100;
         }
         .float-btn {
@@ -169,7 +179,7 @@
             border-radius: 50%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             border: 2px solid var(--border-glass);
-            pointer-events: auto; /* Reactivar toques para el botón */
+            pointer-events: auto; 
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             transition: 0.3s;
@@ -177,9 +187,8 @@
         .float-btn:hover { background: #333; transform: translateY(-3px); }
         .float-btn b { font-size: 1.5em; margin-bottom: 2px; }
         .float-btn span { font-size: 0.65em; text-transform: uppercase; font-weight: 600; }
-        .btn-center { background: var(--header); width: 80px; height: 80px;} /* Botón central más grande */
+        .btn-center { background: var(--header); width: 80px; height: 80px;} 
 
-        /* Navegación PWA (Móvil: Inferior / Desktop: Lateral) */
         .pwa-nav {
             background: var(--header);
             color: var(--text-secondary);
@@ -200,68 +209,26 @@
         .nav-item.active-link { opacity: 1; color: var(--accent); }
         .nav-item b { display: block; font-size: 1.5em; margin-bottom: 2px; }
 
-        /* --- BREAKPOINT PARA COMPUTADORA PRO --- */
         @media (min-width: 992px) {
             body { flex-direction: row; }
-            
-            .main-wrapper {
-                margin-left: var(--sidebar-width);
-                width: calc(100% - var(--sidebar-width));
-            }
-
-            .system-bar {
-                position: relative;
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 30px;
-            }
+            .main-wrapper { margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); }
+            .system-bar { position: relative; width: 100%; display: flex; flex-direction: column; align-items: flex-start; padding: 30px; }
             .bar-content { width: 100%; margin-bottom: 20px; }
-
             .pwa-nav {
-                width: var(--sidebar-width);
-                height: 100vh;
-                left: 0;
-                top: 0;
-                flex-direction: column;
-                justify-content: flex-start;
-                padding: 50px 20px;
-                border-top: none;
-                border-right: 1px solid var(--border-glass);
+                width: var(--sidebar-width); height: 100vh; left: 0; top: 0;
+                flex-direction: column; justify-content: flex-start; padding: 50px 20px;
+                border-top: none; border-right: 1px solid var(--border-glass);
             }
-
             .nav-item {
-                width: 100%;
-                text-align: left;
-                padding: 15px 20px;
-                margin-bottom: 10px;
-                border-radius: 12px;
-                font-size: 1.1em;
-                display: flex;
-                align-items: center;
-                gap: 15px;
+                width: 100%; text-align: left; padding: 15px 20px; margin-bottom: 10px;
+                border-radius: 12px; font-size: 1.1em; display: flex; align-items: center; gap: 15px;
             }
             .nav-item:hover { background: rgba(255,255,255,0.05); }
             .nav-item.active-link { background: rgba(209, 255, 204, 0.1); color: var(--accent); }
-
-            .screen {
-                max-width: 900px;
-                padding: 60px;
-            }
-
-            /* Botones flotantes integrados en el dashboard en desktop */
+            .screen { max-width: 900px; padding: 60px; }
             .action-float-btns {
-                position: relative;
-                bottom: 0;
-                width: 100%;
-                display: flex;
-                justify-content: flex-start;
-                gap: 20px;
-                pointer-events: auto;
-                margin-bottom: 30px;
-                padding-left: 20px;
-                z-index: 10;
+                position: relative; bottom: 0; width: 100%; display: flex; justify-content: flex-start;
+                gap: 20px; pointer-events: auto; margin-bottom: 30px; padding-left: 20px; z-index: 10;
             }
             .float-btn { width: 100px; height: 100px; border-radius: 15px; }
             .float-btn span { font-size: 0.7em;}
@@ -270,13 +237,11 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Inputs y Botones Estilo Stark Pro */
         input, textarea { 
             width: 100%; padding: 18px; margin-bottom: 15px; 
             border: 2px solid transparent; background: rgba(255, 255, 255, 0.05); 
             border-radius: 15px; font-size: 1em; outline: none;
-            color: var(--text-primary);
-            transition: 0.3s;
+            color: var(--text-primary); transition: 0.3s;
         }
         input:focus, textarea:focus { border-color: var(--accent); background: rgba(255, 255, 255, 0.1); }
         
@@ -284,11 +249,16 @@
             background: var(--header); color: var(--text-primary); padding: 18px; 
             border: 1px solid var(--border-glass); border-radius: 15px; width: 100%; 
             font-weight: 900; cursor: pointer; text-transform: uppercase;
-            letter-spacing: 2px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: 0.3s;
+            letter-spacing: 2px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.3s;
         }
         .btn-primary:hover { background: #222; border-color: var(--accent); color: var(--accent); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+        
+        /* Estilo específico para el botón de Google */
+        .btn-google {
+            background: #FFFFFF; color: #1a1a1a;
+            display: flex; align-items: center; justify-content: center; gap: 15px;
+        }
+        .btn-google:hover { background: #f0f0f0; border-color: transparent; color: #1a1a1a; }
     </style>
 </head>
 <body>
@@ -303,7 +273,10 @@
         <header class="system-bar" id="sys-bar">
             <div class="bar-content">
                 <h1>Boveda</h1>
-                <div class="search-icon">🔍 BUSCAR</div>
+                <div class="user-profile">
+                    <img id="user-avatar" class="user-avatar" src="" alt="User">
+                    <div class="logout-btn" onclick="handleLogout()">Salir</div>
+                </div>
             </div>
             <div class="filter-tags">
                 <div class="tag active-tag">All</div>
@@ -311,7 +284,6 @@
                 <div class="tag">Finanzas</div>
                 <div class="tag">Contraseñas</div>
                 <div class="tag">Notas</div>
-                <div class="tag">Salud</div>
             </div>
         </header>
 
@@ -322,23 +294,24 @@
                         <b style="font-size: 2.5em; color: var(--accent);">D</b>
                     </div>
                     <h1 style="font-weight: 900; font-size: 2.5em; color: var(--text-primary); letter-spacing: 2px;">DATA OS Pro</h1>
-                    <p style="color: var(--text-secondary); opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">YARVIS Core v7.7</p>
+                    <p style="color: var(--text-secondary); opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Protocolo Biométrico</p>
                 </div>
-                <div class="data-item" style="padding: 30px; display: block;">
-                    <label style="display: block; margin-bottom: 15px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); text-align: center; letter-spacing: 1px;">PIN DE ACCESO CRÍTICO</label>
-                    <input type="password" id="pin" placeholder="••••" style="text-align: center; font-size: 2.5em; letter-spacing: 15px; background: rgba(0,0,0,0.1); border: 2px solid transparent;">
-                    <button class="btn-primary" id="btnLogin">DESBLOQUEAR BÓVEDA Pro</button>
+                <div class="data-item" style="padding: 30px; display: block; text-align: center;">
+                    <label style="display: block; margin-bottom: 25px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px;">ACCESO AUTORIZADO REQUERIDO</label>
+                    <button class="btn-primary btn-google" id="btnGoogleLogin">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="24" height="24" alt="Google">
+                        ENTRAR CON GMAIL
+                    </button>
                 </div>
             </div>
 
             <div id="dashboard" class="screen" style="position: relative;">
                 <div class="action-float-btns" id="action-btns">
                     <div class="float-btn" onclick="navTo('add-note')"><b>✎</b><span>EDITAR</span></div>
-                    <div class="float-btn btn-center" onclick="alert('Bóveda Bloqueada por Seguridad')"><b>🔒</b><span>Lock</span></div>
+                    <div class="float-btn btn-center" onclick="alert('Bóveda Bloqueada')"><b>🔒</b><span>Lock</span></div>
                     <div class="float-btn" style="color:var(--danger);" onclick="alert('Selecciona un elemento para borrar')"><b>✕</b><span>BORRAR</span></div>
                 </div>
-
-                <div id="notes-list" style="margin-top: 20px; padding-bottom: 100px;">Cargando registros...</div>
+                <div id="notes-list" style="margin-top: 20px; padding-bottom: 100px;">Verificando credenciales...</div>
             </div>
 
             <div id="add-note" class="screen">
@@ -360,8 +333,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-auth.js";
 
-        // CONFIGURACIÓN ORIGINAL (Mantén tus llaves aquí)
+        // CONFIGURACIÓN ORIGINAL
         const firebaseConfig = {
             apiKey: "AIzaSyDlmtpUfYjs33qa9tLE7Fv2C5yszSZEnUw",
             authDomain: "data-os-db30b.firebaseapp.com",
@@ -373,53 +347,86 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-        // Lógica de Autenticación Exacta
-        window.handleLogin = () => {
-            const pinValue = document.getElementById('pin').value;
-            if (pinValue === "1234") {
-                window.currentUser = "user1";
-                document.getElementById('sys-bar').style.display = 'block'; /* Se muestra como block en móvil */
+        let unsubscribeSnapshot = null;
+
+        // INICIO DE SESIÓN CON GOOGLE
+        document.getElementById('btnGoogleLogin').onclick = () => {
+            signInWithPopup(auth, provider).catch((error) => {
+                alert("Error de autenticación: " + error.message);
+            });
+        };
+
+        // CIERRE DE SESIÓN
+        window.handleLogout = () => {
+            signOut(auth).then(() => {
+                if(unsubscribeSnapshot) unsubscribeSnapshot();
+            });
+        };
+
+        // OBSERVADOR DE ESTADO DE AUTENTICACIÓN
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Usuario autenticado
+                window.currentUser = user.uid; // Usamos el UID único de Google para asegurar sus datos
+                
+                // Actualizar UI
+                document.getElementById('user-avatar').src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                document.getElementById('sys-bar').style.display = 'block';
                 document.getElementById('main-nav').style.display = 'flex';
                 document.getElementById('action-btns').style.display = 'flex';
+                
                 navTo('dashboard');
                 loadNotes();
             } else {
-                alert("ACCESO DENEGADO: PIN INCORRECTO");
+                // Usuario no autenticado
+                window.currentUser = null;
+                
+                // Ocultar elementos de UI
+                document.getElementById('sys-bar').style.display = 'none';
+                document.getElementById('main-nav').style.display = 'none';
+                document.getElementById('action-btns').style.display = 'none';
+                document.getElementById('notes-list').innerHTML = "Verificando credenciales...";
+                
+                navTo('login');
             }
-        };
+        });
 
-        // Lógica de Carga con Estructura Detallada (Exacta a la imagen)
         const loadNotes = () => {
+            if(unsubscribeSnapshot) unsubscribeSnapshot(); // Limpiar listener previo
+
             const q = query(collection(db, "boveda"), where("usuario", "==", window.currentUser));
-            onSnapshot(q, (snapshot) => {
+            unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
                 let html = "";
                 snapshot.forEach((d) => {
                     const data = d.data();
                     const fecha = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "New";
                     
-                    // Generación de tarjeta exacta a la imagen
+                    // Secreto oculto por asteriscos para seguridad contra mirones
+                    const secretoOculto = "••••••••••••"; 
+                    
                     html += `
                         <div class="data-item">
                             <div class="item-icon-wrapper"><b>🔒</b></div>
                             <div class="item-details">
                                 <div class="item-row">
                                     <div class="item-title">${data.titulo || 'Registro'}</div>
-                                    <div class="item-label">Contraseña</div>
+                                    <div class="item-label">Secreto</div>
                                 </div>
                                 <div class="item-row" style="margin-bottom: 0;">
-                                    <div class="item-name">${data.secreto || ''}</div>
-                                    <div class="item-options"><b>⋮</b></div>
+                                    <div class="item-name" title="${data.secreto}">${secretoOculto}</div>
+                                    <div class="item-options" onclick="alert('Tu secreto es: \\n${data.secreto}')"><b>👁️</b></div>
                                 </div>
                                 <div class="item-footer">
-                                    <span>🕒 ${fecha} PM</span>
-                                    <span>🌐 Ciudad Guatemala</span>
-                                    <span style="margin-left:auto; color:var(--danger); font-size: 1.1em;" onclick="eliminar('${d.id}')">✕</span>
+                                    <span>🕒 ${fecha}</span>
+                                    <span style="margin-left:auto; color:var(--danger); font-size: 1.1em; cursor:pointer;" onclick="eliminar('${d.id}')">✕</span>
                                 </div>
                             </div>
                         </div>`;
                 });
-                document.getElementById('notes-list').innerHTML = html || "<p style='color:var(--text-secondary); text-align:center;'>Bóveda vacía. No hay secretos registrados.</p>";
+                document.getElementById('notes-list').innerHTML = html || "<p style='color:var(--text-secondary); text-align:center;'>Bóveda vacía. Registra tu primer secreto.</p>";
             });
         };
 
@@ -445,26 +452,20 @@
             document.getElementById('note-text').value = "";
             navTo('dashboard');
         };
-
-        document.getElementById('btnLogin').onclick = handleLogin;
     </script>
 
     <script>
-        // Función de navegación global con actualización de link activo
         function navTo(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             
-            // Actualizar el estado activo en la barra de navegación inferior
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active-link'));
             if(id === 'dashboard') document.querySelectorAll('.nav-item')[0].classList.add('active-link');
             if(id === 'add-note') document.querySelectorAll('.nav-item')[1].classList.add('active-link');
 
-            // Scroll al inicio al cambiar de pantalla
             window.scrollTo(0,0);
         }
 
-        // Lógica de tags activos
         document.querySelectorAll('.tag').forEach(tag => {
             tag.addEventListener('click', () => {
                 document.querySelectorAll('.tag').forEach(t => t.classList.remove('active-tag'));
