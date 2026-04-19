@@ -2,32 +2,38 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DATA OS - YARVIS Core v7.7</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DATA OS - Stark Bóveda Pro</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
-        /* Mantenemos tus variables exactas */
+        /* VARIABLES DE ESTILO EXACTAS DEL DISEÑO DE BÓVEDA OSCURA */
         :root { 
-            --bg: #F7EFE2; 
-            --surface: #FFFFFF; 
-            --header: #2A3A4A; 
-            --accent: #BBCBBD; 
+            --bg: #141414; /* Fondo oscuro profundo */
+            --surface-glass: rgba(30, 30, 30, 0.7); /* Efecto cristal para tarjetas */
+            --header: #1a1a1a; /* Header sólido */
+            --accent: #D1FFCC; /* Verde pálido Stark para acentos/iconos */
             --danger: #EF4444; 
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --border-glass: rgba(255, 255, 255, 0.1);
             --sidebar-width: 280px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-
+        
+        /* Evitar scroll horizontal y configurar base */
         body { 
             background: var(--bg); 
+            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent; /* Quitar highlight de toque en móvil */
         }
 
-        /* --- SISTEMA DE NAVEGACIÓN RESPONSIVE --- */
+        /* --- SISTEMA DE NAVEGACIÓN RESPONSIVE PRO --- */
         
         /* Contenedor Maestro para separar Nav de Contenido en Desktop */
         .main-wrapper {
@@ -36,21 +42,62 @@
             flex: 1;
         }
 
-        /* System Bar Original (Superior) */
+        /* Header "Boveda" y Filtros (Responsive) */
         .system-bar { 
-            background: var(--surface); 
-            padding: 15px 25px; 
+            background: var(--header); 
+            padding: 15px 20px; 
             display: none; /* Se activa por JS */
-            justify-content: space-between; 
-            align-items: center;
-            border-bottom: 2px solid var(--header); 
+            border-bottom: 1px solid var(--border-glass); 
             position: sticky; 
             top: 0; 
             z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        /* Pantallas */
+        .bar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .bar-content h1 { font-weight: 900; font-size: 1.5em; letter-spacing: 1px; }
+
+        .search-icon { color: var(--text-secondary); cursor: pointer; font-size: 1.2em; display: flex; align-items: center; gap: 8px;}
+        .search-icon:hover { color: var(--accent); }
+
+        /* Filtros horizontales exactos de la imagen */
+        .filter-tags {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+        }
+        .filter-tags::-webkit-scrollbar { display: none; } /* Ocultar scrollbar */
+
+        .tag {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            cursor: pointer;
+            border: 1px solid transparent;
+            white-space: nowrap;
+            transition: 0.3s;
+        }
+        .tag:hover { background: rgba(255, 255, 255, 0.1); color: var(--text-primary); }
+        .tag.active-tag {
+            background: var(--accent);
+            color: var(--header);
+            font-weight: 600;
+        }
+
+        /* Contenedor de pantallas */
+        .screen-container { flex: 1; }
+
+        /* Pantallas individuales */
         .screen { 
             display: none; 
             padding: 20px; 
@@ -61,24 +108,81 @@
         }
         .active { display: block !important; }
 
-        /* Tarjetas de Datos (Mejoradas) */
+        /* --- ESTRUCTURA DE TARJETA DETALLADA (EXACTA A LA IMAGEN) --- */
         .data-item {
-            background: var(--surface);
+            background: var(--surface-glass);
+            backdrop-filter: blur(10px); /* Efecto cristal */
             padding: 20px;
-            border-radius: 15px;
+            border-radius: 20px;
             margin-bottom: 15px;
-            border: 1px solid rgba(42, 58, 74, 0.1);
-            position: relative;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            transition: transform 0.2s ease;
+            border: 1px solid var(--border-glass);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .data-item:hover { transform: translateY(-2px); }
-        .delete-btn { color: var(--danger); cursor: pointer; float: right; font-weight: 900; font-size: 1.2em; }
+        .data-item:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+
+        /* Icono de tipo de secreto */
+        .item-icon-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--accent);
+            width: 50px; height: 50px;
+            border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5em;
+            border: 1px solid var(--border-glass);
+        }
+
+        /* Contenido de texto */
+        .item-details { flex: 1; }
+
+        .item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        
+        .item-title { font-weight: 900; color: var(--text-primary); font-size: 1.1em; letter-spacing: 0.5px; }
+        .item-label { background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); padding: 4px 10px; border-radius: 15px; font-size: 0.7em; text-transform: uppercase; font-weight: 600;}
+
+        .item-name { color: var(--text-secondary); font-size: 0.95em; }
+        .item-options { color: var(--text-secondary); cursor: pointer; opacity: 0.7; }
+        .item-options:hover { color: var(--accent); opacity: 1; }
+
+        /* Pie de tarjeta: tiempo y lugar */
+        .item-footer { display: flex; align-items: center; gap: 10px; font-size: 0.75em; color: var(--text-secondary); margin-top: 8px;}
+        .item-footer span { display: flex; align-items: center; gap: 5px; }
+
+        /* Botones de acción flotantes (Editar, Borrar, etc.) exactos de la imagen */
+        .action-float-btns {
+            position: sticky;
+            bottom: 100px; /* Sobre la nav en móvil, más alto en desktop */
+            left: 0; width: 100%;
+            display: none; /* Se activa por JS */
+            justify-content: center;
+            gap: 20px;
+            pointer-events: none; /* No bloquear toques en el contenido inferior */
+            z-index: 100;
+        }
+        .float-btn {
+            background: #2a2a2a;
+            color: var(--text-primary);
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border: 2px solid var(--border-glass);
+            pointer-events: auto; /* Reactivar toques para el botón */
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: 0.3s;
+        }
+        .float-btn:hover { background: #333; transform: translateY(-3px); }
+        .float-btn b { font-size: 1.5em; margin-bottom: 2px; }
+        .float-btn span { font-size: 0.65em; text-transform: uppercase; font-weight: 600; }
+        .btn-center { background: var(--header); width: 80px; height: 80px;} /* Botón central más grande */
 
         /* Navegación PWA (Móvil: Inferior / Desktop: Lateral) */
         .pwa-nav {
             background: var(--header);
-            color: white;
+            color: var(--text-secondary);
             padding: 15px;
             display: flex;
             justify-content: space-around;
@@ -87,14 +191,16 @@
             bottom: 0;
             width: 100%;
             z-index: 1000;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid var(--border-glass);
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.2);
         }
 
         .nav-item { cursor: pointer; text-align: center; font-size: 0.8em; opacity: 0.7; transition: 0.3s; }
-        .nav-item:hover, .nav-item.active-link { opacity: 1; }
+        .nav-item:hover { opacity: 1; color: var(--text-primary); }
+        .nav-item.active-link { opacity: 1; color: var(--accent); }
         .nav-item b { display: block; font-size: 1.5em; margin-bottom: 2px; }
 
-        /* --- BREAKPOINT PARA COMPUTADORA --- */
+        /* --- BREAKPOINT PARA COMPUTADORA PRO --- */
         @media (min-width: 992px) {
             body { flex-direction: row; }
             
@@ -103,6 +209,16 @@
                 width: calc(100% - var(--sidebar-width));
             }
 
+            .system-bar {
+                position: relative;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 30px;
+            }
+            .bar-content { width: 100%; margin-bottom: 20px; }
+
             .pwa-nav {
                 width: var(--sidebar-width);
                 height: 100vh;
@@ -110,9 +226,9 @@
                 top: 0;
                 flex-direction: column;
                 justify-content: flex-start;
-                padding: 40px 20px;
+                padding: 50px 20px;
                 border-top: none;
-                border-right: 1px solid rgba(255,255,255,0.1);
+                border-right: 1px solid var(--border-glass);
             }
 
             .nav-item {
@@ -120,82 +236,123 @@
                 text-align: left;
                 padding: 15px 20px;
                 margin-bottom: 10px;
-                border-radius: 10px;
+                border-radius: 12px;
                 font-size: 1.1em;
                 display: flex;
                 align-items: center;
                 gap: 15px;
             }
             .nav-item:hover { background: rgba(255,255,255,0.05); }
+            .nav-item.active-link { background: rgba(209, 255, 204, 0.1); color: var(--accent); }
 
             .screen {
                 max-width: 900px;
                 padding: 60px;
             }
 
-            .system-bar {
+            /* Botones flotantes integrados en el dashboard en desktop */
+            .action-float-btns {
                 position: relative;
+                bottom: 0;
                 width: 100%;
+                display: flex;
+                justify-content: flex-start;
+                gap: 20px;
+                pointer-events: auto;
+                margin-bottom: 30px;
+                padding-left: 20px;
+                z-index: 10;
             }
+            .float-btn { width: 100px; height: 100px; border-radius: 15px; }
+            .float-btn span { font-size: 0.7em;}
+            .btn-center { background: #2a2a2a; border-radius: 15px;}
         }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Inputs y Botones Estilo Stark */
+        /* Inputs y Botones Estilo Stark Pro */
         input, textarea { 
-            width: 100%; padding: 15px; margin-bottom: 15px; 
-            border: 2px solid transparent; background: white; 
-            border-radius: 12px; font-size: 1em; outline: none;
+            width: 100%; padding: 18px; margin-bottom: 15px; 
+            border: 2px solid transparent; background: rgba(255, 255, 255, 0.05); 
+            border-radius: 15px; font-size: 1em; outline: none;
+            color: var(--text-primary);
             transition: 0.3s;
         }
-        input:focus { border-color: var(--accent); }
+        input:focus, textarea:focus { border-color: var(--accent); background: rgba(255, 255, 255, 0.1); }
         
         .btn-primary { 
-            background: var(--header); color: white; padding: 15px; 
-            border: none; border-radius: 12px; width: 100%; 
+            background: var(--header); color: var(--text-primary); padding: 18px; 
+            border: 1px solid var(--border-glass); border-radius: 15px; width: 100%; 
             font-weight: 900; cursor: pointer; text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: 0.3s;
         }
+        .btn-primary:hover { background: #222; border-color: var(--accent); color: var(--accent); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
     <nav class="pwa-nav" id="main-nav" style="display: none;">
-        <div class="nav-item" onclick="navTo('dashboard')"><b>🏠</b> INICIO</div>
-        <div class="nav-item" onclick="navTo('add-note')"><b>➕</b> NUEVO</div>
-        <div class="nav-item" onclick="location.reload()"><b>🔄</b> SYNC</div>
+        <div class="nav-item active-link" onclick="navTo('dashboard')"><b>🏠</b>INICIO</div>
+        <div class="nav-item" onclick="navTo('add-note')"><b>➕</b>NUEVO</div>
+        <div class="nav-item" onclick="location.reload()"><b>🔄</b>SYNC</div>
     </nav>
 
     <div class="main-wrapper">
         <header class="system-bar" id="sys-bar">
-            <div style="font-weight: 900; letter-spacing: 2px;">STARK BÓVEDA</div>
-            <div id="user-tag" style="font-size: 0.8em; background: var(--accent); padding: 4px 10px; border-radius: 20px;">USER: ACTIVE</div>
+            <div class="bar-content">
+                <h1>Boveda</h1>
+                <div class="search-icon">🔍 BUSCAR</div>
+            </div>
+            <div class="filter-tags">
+                <div class="tag active-tag">All</div>
+                <div class="tag">Importantes</div>
+                <div class="tag">Finanzas</div>
+                <div class="tag">Contraseñas</div>
+                <div class="tag">Notas</div>
+                <div class="tag">Salud</div>
+            </div>
         </header>
 
-        <div id="login" class="screen active">
-            <div style="text-align: center; margin-bottom: 40px; margin-top: 50px;">
-                <h1 style="font-weight: 900; font-size: 2.5em; color: var(--header);">DATA OS</h1>
-                <p style="color: var(--header); opacity: 0.6;">YARVIS Core v7.7</p>
+        <div class="screen-container">
+            <div id="login" class="screen active">
+                <div style="text-align: center; margin-bottom: 50px; margin-top: 50px;">
+                    <div style="background: var(--header); width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; border: 2px solid var(--border-glass);">
+                        <b style="font-size: 2.5em; color: var(--accent);">D</b>
+                    </div>
+                    <h1 style="font-weight: 900; font-size: 2.5em; color: var(--text-primary); letter-spacing: 2px;">DATA OS Pro</h1>
+                    <p style="color: var(--text-secondary); opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">YARVIS Core v7.7</p>
+                </div>
+                <div class="data-item" style="padding: 30px; display: block;">
+                    <label style="display: block; margin-bottom: 15px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); text-align: center; letter-spacing: 1px;">PIN DE ACCESO CRÍTICO</label>
+                    <input type="password" id="pin" placeholder="••••" style="text-align: center; font-size: 2.5em; letter-spacing: 15px; background: rgba(0,0,0,0.1); border: 2px solid transparent;">
+                    <button class="btn-primary" id="btnLogin">DESBLOQUEAR BÓVEDA Pro</button>
+                </div>
             </div>
-            <div class="data-item" style="padding: 30px;">
-                <label style="display: block; margin-bottom: 10px; font-weight: 600;">PIN DE ACCESO CRÍTICO</label>
-                <input type="password" id="pin" placeholder="••••" style="text-align: center; font-size: 2em; letter-spacing: 10px;">
-                <button class="btn-primary" id="btnLogin">DESBLOQUEAR BÓVEDA</button>
+
+            <div id="dashboard" class="screen" style="position: relative;">
+                <div class="action-float-btns" id="action-btns">
+                    <div class="float-btn" onclick="navTo('add-note')"><b>✎</b><span>EDITAR</span></div>
+                    <div class="float-btn btn-center" onclick="alert('Bóveda Bloqueada por Seguridad')"><b>🔒</b><span>Lock</span></div>
+                    <div class="float-btn" style="color:var(--danger);" onclick="alert('Selecciona un elemento para borrar')"><b>✕</b><span>BORRAR</span></div>
+                </div>
+
+                <div id="notes-list" style="margin-top: 20px; padding-bottom: 100px;">Cargando registros...</div>
             </div>
-        </div>
 
-        <div id="dashboard" class="screen">
-            <h2 style="margin-bottom: 20px; font-weight: 900;">BÓVEDA ACTIVA</h2>
-            <div id="notes-list">Cargando registros...</div>
-        </div>
-
-        <div id="add-note" class="screen">
-            <h2 style="margin-bottom: 20px; font-weight: 900;">NUEVO REGISTRO</h2>
-            <div class="data-item">
-                <input type="text" id="note-title" placeholder="Identificador / Título">
-                <textarea id="note-text" placeholder="Contenido del secreto..." rows="5"></textarea>
-                <button class="btn-primary" id="btnSave">ENCRIPTAR Y GUARDAR</button>
-                <button onclick="navTo('dashboard')" style="background:none; border:none; width:100%; margin-top:10px; cursor:pointer; color:var(--header); opacity:0.5;">Cancelar</button>
+            <div id="add-note" class="screen">
+                <h2 style="margin-bottom: 30px; font-weight: 900; letter-spacing: 1px;">NUEVO REGISTRO ENCRIPTADO</h2>
+                <div class="data-item" style="display: block; padding: 30px;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--text-secondary);">IDENTIFICADOR / TÍTULO</label>
+                    <input type="text" id="note-title" placeholder="Ej: Gimnasio, Banco, Wi-Fi">
+                    
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--text-secondary); margin-top: 15px;">CONTENIDO DEL SECRETO</label>
+                    <textarea id="note-text" placeholder="Ingresa el secreto, contraseña o dato crítico..." rows="6"></textarea>
+                    
+                    <button class="btn-primary" id="btnSave">ENCRIPTAR Y GUARDAR Pro</button>
+                    <button onclick="navTo('dashboard')" style="background:none; border:none; width:100%; margin-top:15px; cursor:pointer; color:var(--text-secondary); opacity:0.5; font-size: 0.9em;">Cancelar Operación</button>
+                </div>
             </div>
         </div>
     </div>
@@ -222,8 +379,9 @@
             const pinValue = document.getElementById('pin').value;
             if (pinValue === "1234") {
                 window.currentUser = "user1";
-                document.getElementById('sys-bar').style.display = 'flex';
+                document.getElementById('sys-bar').style.display = 'block'; /* Se muestra como block en móvil */
                 document.getElementById('main-nav').style.display = 'flex';
+                document.getElementById('action-btns').style.display = 'flex';
                 navTo('dashboard');
                 loadNotes();
             } else {
@@ -231,26 +389,42 @@
             }
         };
 
-        // Lógica de Carga con tu estructura original de d.id
+        // Lógica de Carga con Estructura Detallada (Exacta a la imagen)
         const loadNotes = () => {
             const q = query(collection(db, "boveda"), where("usuario", "==", window.currentUser));
             onSnapshot(q, (snapshot) => {
                 let html = "";
                 snapshot.forEach((d) => {
                     const data = d.data();
+                    const fecha = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "New";
+                    
+                    // Generación de tarjeta exacta a la imagen
                     html += `
                         <div class="data-item">
-                            <span class="delete-btn" onclick="eliminar('${d.id}')">✕</span>
-                            <div style="font-weight:900; color:var(--header); margin-bottom:5px;">${data.titulo || 'Registro'}</div>
-                            <div style="font-size:0.95em; line-height:1.5; opacity:0.8;">${data.secreto || ''}</div>
+                            <div class="item-icon-wrapper"><b>🔒</b></div>
+                            <div class="item-details">
+                                <div class="item-row">
+                                    <div class="item-title">${data.titulo || 'Registro'}</div>
+                                    <div class="item-label">Contraseña</div>
+                                </div>
+                                <div class="item-row" style="margin-bottom: 0;">
+                                    <div class="item-name">${data.secreto || ''}</div>
+                                    <div class="item-options"><b>⋮</b></div>
+                                </div>
+                                <div class="item-footer">
+                                    <span>🕒 ${fecha} PM</span>
+                                    <span>🌐 Ciudad Guatemala</span>
+                                    <span style="margin-left:auto; color:var(--danger); font-size: 1.1em;" onclick="eliminar('${d.id}')">✕</span>
+                                </div>
+                            </div>
                         </div>`;
                 });
-                document.getElementById('notes-list').innerHTML = html || "Bóveda vacía. No hay secretos registrados.";
+                document.getElementById('notes-list').innerHTML = html || "<p style='color:var(--text-secondary); text-align:center;'>Bóveda vacía. No hay secretos registrados.</p>";
             });
         };
 
         window.eliminar = async (id) => {
-            if(confirm("¿Confirmas la purga de este registro?")) {
+            if(confirm("¿Confirmas la purga de este registro crítico?")) {
                 await deleteDoc(doc(db, "boveda", id));
             }
         };
@@ -276,14 +450,27 @@
     </script>
 
     <script>
-        // Función de navegación global
+        // Función de navegación global con actualización de link activo
         function navTo(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             
+            // Actualizar el estado activo en la barra de navegación inferior
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active-link'));
+            if(id === 'dashboard') document.querySelectorAll('.nav-item')[0].classList.add('active-link');
+            if(id === 'add-note') document.querySelectorAll('.nav-item')[1].classList.add('active-link');
+
             // Scroll al inicio al cambiar de pantalla
             window.scrollTo(0,0);
         }
+
+        // Lógica de tags activos
+        document.querySelectorAll('.tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                document.querySelectorAll('.tag').forEach(t => t.classList.remove('active-tag'));
+                tag.classList.add('active-tag');
+            });
+        });
     </script>
 </body>
 </html>
