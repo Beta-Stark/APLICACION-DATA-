@@ -9,9 +9,8 @@
     <style>
         :root { 
             --bg: #F7EFE2; 
-            --surface: rgba(255, 255, 255, 0.8); 
+            --surface: rgba(255, 255, 255, 0.9); 
             --header: #2A3A4A; 
-            --accent: #BBCBBD; 
             --danger: #EF4444;
             --text: #1a1a1a;
         }
@@ -26,90 +25,73 @@
             flex-direction: column;
         }
 
-        /* Layout Base */
-        .app-container {
-            flex: 1;
+        /* Contenedor Principal */
+        .app-layout {
+            display: flex;
+            flex-direction: column;
             width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
         }
 
-        .screen { display: none; animation: fadeIn 0.4s ease; }
-        .active { display: block !important; }
+        /* Pantallas */
+        .screen { display: none; padding: 20px; width: 100%; max-width: 800px; margin: 0 auto; }
+        .active { display: block; animation: fadeIn 0.4s ease; }
 
-        /* Estilo de Tarjetas Glassmorphism */
+        /* Estilo de Tarjetas */
         .data-item {
             background: var(--surface);
-            backdrop-filter: blur(15px);
             padding: 20px;
-            border-radius: 16px;
+            border-radius: 12px;
             margin-bottom: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0,0,0,0.1);
             position: relative;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
         .delete-btn { color: var(--danger); cursor: pointer; float: right; font-weight: 900; }
 
-        /* Navegación (Mobile First) */
-        .pwa-nav {
+        /* Navegación Móvil */
+        .nav-bar {
             background: var(--header);
             color: white;
             padding: 15px;
             text-align: center;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            z-index: 1000;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
         }
 
-        /* Desktop Mode (Media Query) */
+        /* Estilos Responsive para Desktop */
         @media (min-width: 768px) {
-            body { flex-direction: row; }
-            .pwa-nav {
-                width: 250px;
-                height: 100vh;
-                top: 0;
-                bottom: auto;
-                border-radius: 0;
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start;
-                padding-top: 50px;
-            }
-            .app-container { margin-left: 250px; padding: 50px; }
+            .app-layout { flex-direction: row; }
+            .nav-bar { width: 250px; height: 100vh; text-align: left; padding: 40px; }
+            .screen { margin: 40px; }
         }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        input, button { padding: 12px; width: 100%; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ccc; }
+        input, textarea, button { padding: 12px; width: 100%; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ccc; display: block; }
         button { background: var(--header); color: white; border: none; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <nav class="pwa-nav">
-        <h3>DATA OS v7.7</h3>
-        <p>Stark Bóveda</p>
-    </nav>
+    <div class="app-layout">
+        <nav class="nav-bar">
+            <h3>DATA OS</h3>
+            <p>Stark Bóveda</p>
+        </nav>
 
-    <div class="app-container">
-        <div id="login" class="screen active">
-            <h2>Acceso a Bóveda</h2>
-            <input type="password" id="pin" placeholder="Ingresa PIN de seguridad">
-            <button id="btnLogin">Desbloquear</button>
-        </div>
+        <div class="content-area">
+            <div id="login" class="screen active">
+                <h2>Acceso a Bóveda</h2>
+                <input type="password" id="pin" placeholder="Ingresa PIN">
+                <button id="btnLogin">Desbloquear</button>
+            </div>
 
-        <div id="dashboard" class="screen">
-            <h3>Secretos Almacenados</h3>
-            <div id="notes-list"></div>
-            <hr style="margin: 20px 0;">
-            <input type="text" id="note-title" placeholder="Título">
-            <textarea id="note-text" placeholder="Contenido del secreto"></textarea>
-            <button id="btnSave">Guardar en Bóveda</button>
+            <div id="dashboard" class="screen">
+                <h3>Secretos Almacenados</h3>
+                <div id="notes-list"></div>
+                <hr style="margin: 20px 0;">
+                <input type="text" id="note-title" placeholder="Título">
+                <textarea id="note-text" placeholder="Contenido del secreto"></textarea>
+                <button id="btnSave">Guardar en Bóveda</button>
+            </div>
         </div>
     </div>
 
@@ -117,25 +99,30 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
 
-        // Configuración (Debes mantener la tuya)
+        // Configuración (Mantén tus llaves originales aquí)
         const firebaseConfig = {
-            /* Inserta aquí tu config original */
+             // ... tu configuración ...
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Lógica de Login
-        window.handleLogin = () => {
+        // Variables globales
+        window.currentUser = null;
+
+        // Login Logic
+        document.getElementById('btnLogin').onclick = () => {
             const pin = document.getElementById('pin').value;
-            if (pin === "1234") { // Tu lógica de PIN
+            if (pin === "1234") { 
                 window.currentUser = "user1";
-                navTo('dashboard');
+                document.getElementById('login').classList.remove('active');
+                document.getElementById('dashboard').classList.add('active');
                 loadNotes();
             } else {
                 alert("PIN Incorrecto");
             }
         };
 
+        // Cargar notas
         const loadNotes = () => {
             const q = query(collection(db, "boveda"), where("usuario", "==", window.currentUser));
             onSnapshot(q, (snapshot) => {
@@ -152,10 +139,12 @@
             });
         };
 
+        // Eliminar nota
         window.eliminar = async (id) => {
             if(confirm("¿Borrar elemento?")) await deleteDoc(doc(db, "boveda", id));
         };
 
+        // Guardar nota
         document.getElementById('btnSave').onclick = async () => {
             const tit = document.getElementById('note-title').value.trim();
             const sec = document.getElementById('note-text').value.trim();
@@ -169,13 +158,6 @@
             document.getElementById('note-title').value = "";
             document.getElementById('note-text').value = "";
         };
-
-        document.getElementById('btnLogin').onclick = handleLogin;
-
-        function navTo(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
     </script>
 </body>
 </html>
