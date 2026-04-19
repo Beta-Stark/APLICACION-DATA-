@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DATA OS - Stark Bóveda Pro</title>
+    <title>DATA OS - Stark Bóveda Pro (Dev Mode)</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
@@ -71,6 +71,7 @@
             border-radius: 50%;
             border: 2px solid var(--accent);
             object-fit: cover;
+            background: #333;
         }
 
         .logout-btn {
@@ -252,13 +253,6 @@
             letter-spacing: 2px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.3s;
         }
         .btn-primary:hover { background: #222; border-color: var(--accent); color: var(--accent); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
-        
-        /* Estilo específico para el botón de Google */
-        .btn-google {
-            background: #FFFFFF; color: #1a1a1a;
-            display: flex; align-items: center; justify-content: center; gap: 15px;
-        }
-        .btn-google:hover { background: #f0f0f0; border-color: transparent; color: #1a1a1a; }
     </style>
 </head>
 <body>
@@ -274,7 +268,7 @@
             <div class="bar-content">
                 <h1>Boveda</h1>
                 <div class="user-profile">
-                    <img id="user-avatar" class="user-avatar" src="" alt="User">
+                    <div class="user-avatar" style="display:flex; justify-content:center; align-items:center; font-weight:bold;">DEV</div>
                     <div class="logout-btn" onclick="handleLogout()">Salir</div>
                 </div>
             </div>
@@ -294,14 +288,12 @@
                         <b style="font-size: 2.5em; color: var(--accent);">D</b>
                     </div>
                     <h1 style="font-weight: 900; font-size: 2.5em; color: var(--text-primary); letter-spacing: 2px;">DATA OS Pro</h1>
-                    <p style="color: var(--text-secondary); opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Protocolo Biométrico</p>
+                    <p style="color: var(--accent); opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;">MODO DESARROLLO / DISEÑO</p>
                 </div>
                 <div class="data-item" style="padding: 30px; display: block; text-align: center;">
-                    <label style="display: block; margin-bottom: 25px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px;">ACCESO AUTORIZADO REQUERIDO</label>
-                    <button class="btn-primary btn-google" id="btnGoogleLogin">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="24" height="24" alt="Google">
-                        ENTRAR CON GMAIL
-                    </button>
+                    <label style="display: block; margin-bottom: 15px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px;">ACCESO RÁPIDO (PIN: 1234)</label>
+                    <input type="password" id="pin" placeholder="••••" style="text-align: center; font-size: 2.5em; letter-spacing: 15px; background: rgba(0,0,0,0.1); border: 2px solid transparent;">
+                    <button class="btn-primary" id="btnDevLogin">DESBLOQUEAR ENTORNO</button>
                 </div>
             </div>
 
@@ -311,7 +303,7 @@
                     <div class="float-btn btn-center" onclick="alert('Bóveda Bloqueada')"><b>🔒</b><span>Lock</span></div>
                     <div class="float-btn" style="color:var(--danger);" onclick="alert('Selecciona un elemento para borrar')"><b>✕</b><span>BORRAR</span></div>
                 </div>
-                <div id="notes-list" style="margin-top: 20px; padding-bottom: 100px;">Verificando credenciales...</div>
+                <div id="notes-list" style="margin-top: 20px; padding-bottom: 100px;">Cargando registros...</div>
             </div>
 
             <div id="add-note" class="screen">
@@ -333,7 +325,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-auth.js";
+        
+        // Autenticación de Google eliminada temporalmente para facilitar el diseño
 
         // CONFIGURACIÓN ORIGINAL
         const firebaseConfig = {
@@ -347,33 +340,16 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
 
         let unsubscribeSnapshot = null;
 
-        // INICIO DE SESIÓN CON GOOGLE
-        document.getElementById('btnGoogleLogin').onclick = () => {
-            signInWithPopup(auth, provider).catch((error) => {
-                alert("Error de autenticación: " + error.message);
-            });
-        };
-
-        // CIERRE DE SESIÓN
-        window.handleLogout = () => {
-            signOut(auth).then(() => {
-                if(unsubscribeSnapshot) unsubscribeSnapshot();
-            });
-        };
-
-        // OBSERVADOR DE ESTADO DE AUTENTICACIÓN
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Usuario autenticado
-                window.currentUser = user.uid; // Usamos el UID único de Google para asegurar sus datos
+        // INICIO DE SESIÓN MODO DESARROLLO (PIN 1234)
+        document.getElementById('btnDevLogin').onclick = () => {
+            const pinValue = document.getElementById('pin').value;
+            if (pinValue === "1234") {
+                window.currentUser = "dev_user_001"; // Usuario ficticio para pruebas
                 
-                // Actualizar UI
-                document.getElementById('user-avatar').src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                // Mostrar UI
                 document.getElementById('sys-bar').style.display = 'block';
                 document.getElementById('main-nav').style.display = 'flex';
                 document.getElementById('action-btns').style.display = 'flex';
@@ -381,21 +357,26 @@
                 navTo('dashboard');
                 loadNotes();
             } else {
-                // Usuario no autenticado
-                window.currentUser = null;
-                
-                // Ocultar elementos de UI
-                document.getElementById('sys-bar').style.display = 'none';
-                document.getElementById('main-nav').style.display = 'none';
-                document.getElementById('action-btns').style.display = 'none';
-                document.getElementById('notes-list').innerHTML = "Verificando credenciales...";
-                
-                navTo('login');
+                alert("Para modo desarrollo usa el PIN: 1234");
             }
-        });
+        };
+
+        // CIERRE DE SESIÓN MODO DESARROLLO
+        window.handleLogout = () => {
+            if(unsubscribeSnapshot) unsubscribeSnapshot();
+            window.currentUser = null;
+            
+            // Ocultar UI
+            document.getElementById('sys-bar').style.display = 'none';
+            document.getElementById('main-nav').style.display = 'none';
+            document.getElementById('action-btns').style.display = 'none';
+            document.getElementById('pin').value = '';
+            
+            navTo('login');
+        };
 
         const loadNotes = () => {
-            if(unsubscribeSnapshot) unsubscribeSnapshot(); // Limpiar listener previo
+            if(unsubscribeSnapshot) unsubscribeSnapshot();
 
             const q = query(collection(db, "boveda"), where("usuario", "==", window.currentUser));
             unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
@@ -426,7 +407,7 @@
                             </div>
                         </div>`;
                 });
-                document.getElementById('notes-list').innerHTML = html || "<p style='color:var(--text-secondary); text-align:center;'>Bóveda vacía. Registra tu primer secreto.</p>";
+                document.getElementById('notes-list').innerHTML = html || "<p style='color:var(--text-secondary); text-align:center;'>Bóveda vacía. Registra tu primer secreto de prueba.</p>";
             });
         };
 
