@@ -3,35 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stark Reminder Lite</title>
+    <title>Stark Reminder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; background: #141414; color: #fff; padding: 20px; }
-        .container { max-width: 500px; margin: auto; }
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
-        button { background: #D1FFCC; cursor: pointer; font-weight: bold; }
-        .card { background: #222; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #D1FFCC; }
+        :root { --bg: #141414; --accent: #D1FFCC; --text: #fff; }
+        body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; margin: 0; padding-bottom: 80px; }
+        .container { max-width: 600px; margin: auto; padding: 20px; }
+        h1 { font-weight: 900; margin-bottom: 20px; }
+        .card { background: #222; padding: 20px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+        input, select, button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; font-size: 1rem; }
+        button { background: var(--accent); color: #000; font-weight: 900; cursor: pointer; }
+        .nav { position: fixed; bottom: 0; width: 100%; background: #1a1a1a; display: flex; justify-content: space-around; padding: 20px; border-top: 1px solid #333; }
+        .btn-nav { background: none; color: #fff; width: auto; font-size: 1.5rem; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Stark Reminder</h1>
-    <input type="text" id="task-text" placeholder="Escribe tu recordatorio...">
-    <select id="task-cat">
-        <option value="Salud">Salud</option>
-        <option value="Universidad">Universidad</option>
-        <option value="Personal">Personal</option>
-    </select>
-    <button onclick="guardarTarea()">Guardar Recordatorio</button>
+<div class="container" id="app">
+    <h1>Mis Recordatorios</h1>
     
-    <div id="lista-tareas"></div>
+    <div id="form-section">
+        <input type="text" id="task-title" placeholder="¿Qué debes hacer?">
+        <select id="task-cat">
+            <option value="Salud">Salud</option>
+            <option value="Universidad">Universidad</option>
+            <option value="Personal">Personal</option>
+        </select>
+        <button onclick="saveReminder()">Guardar</button>
+    </div>
+
+    <div id="reminder-list">
+        </div>
+</div>
+
+<div class="nav">
+    <button class="btn-nav" onclick="location.reload()">🏠</button>
+    <button class="btn-nav" onclick="alert('Funcionalidad en desarrollo')">⚙️</button>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore-compat.js"></script>
 
 <script>
-    // Configuración extraída de tu proyecto
     const firebaseConfig = {
         apiKey: "AIzaSyDlmtpUfYjs33qa9tLE7Fv2C5yszSZEnUw",
         authDomain: "data-os-db30b.firebaseapp.com",
@@ -44,40 +57,45 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Función para guardar
-    async function guardarTarea() {
-        const text = document.getElementById('task-text').value;
+    // Guardar recordatorio
+    window.saveReminder = async () => {
+        const title = document.getElementById('task-title').value;
         const cat = document.getElementById('task-cat').value;
         
-        if(!text) return alert("Escribe algo primero");
+        if(!title) return alert("Escribe un título");
 
-        try {
-            await db.collection("tareas").add({
-                texto: text,
-                categoria: cat,
-                fecha: new Date()
-            });
-            document.getElementById('task-text').value = "";
-            alert("Recordatorio guardado");
-        } catch (e) {
-            console.error("Error:", e);
-        }
-    }
+        await db.collection("recordatorios").add({
+            titulo: title,
+            categoria: cat,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        document.getElementById('task-title').value = "";
+        alert("¡Guardado!");
+    };
 
-    // Leer tareas en tiempo real
-    db.collection("tareas").orderBy("fecha", "desc").onSnapshot(snapshot => {
-        const lista = document.getElementById('lista-tareas');
-        lista.innerHTML = "";
+    // Cargar recordatorios (Tiempo real)
+    db.collection("recordatorios").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+        const list = document.getElementById('reminder-list');
+        list.innerHTML = "";
         snapshot.forEach(doc => {
             const data = doc.data();
-            lista.innerHTML += `
+            list.innerHTML += `
                 <div class="card">
-                    <strong>${data.categoria}</strong><br>
-                    ${data.texto}
+                    <div>
+                        <strong>${data.titulo}</strong><br>
+                        <small style="color: #888;">${data.categoria}</small>
+                    </div>
+                    <button style="width: auto; background: #ff4444; color: white;" onclick="deleteDoc('${doc.id}')">✕</button>
                 </div>
             `;
         });
     });
+
+    // Función borrar
+    window.deleteDoc = async (id) => {
+        await db.collection("recordatorios").doc(id).delete();
+    };
 </script>
 
 </body>
