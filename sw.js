@@ -1,32 +1,30 @@
-const CACHE_NAME = 'data-os-v1';
-const ASSETS = [
-  '/',
-  '/index.html',
-  'https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap'
-];
+importScripts('https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.1.0/firebase-messaging-compat.js');
 
-// Instalación y Cache de archivos base
+const CACHE_NAME = 'stark-rem-v1';
+const ASSETS = ['./', './index.html', './app.js'];
+
+// Inicializar Firebase en el SW
+firebase.initializeApp({
+    apiKey: "TU_API_KEY_AQUI",
+    projectId: "data-os-db30b",
+    messagingSenderId: "149593183974"
+});
+
+const messaging = firebase.messaging();
+
 self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
+    e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
 });
 
-// Estrategia: Primero Red, si falla, Caché
 self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
-  );
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
 });
 
-// Escucha de Notificaciones Push
-self.addEventListener('push', (e) => {
-  const data = e.data.json();
-  const options = {
-    body: data.body,
-    icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968534.png',
-    badge: 'https://cdn-icons-png.flaticon.com/512/5968/5968534.png',
-    vibrate: [200, 100, 200]
-  };
-  e.waitUntil(self.registration.showNotification(data.title, options));
+// Manejo de Notificaciones
+messaging.onBackgroundMessage((payload) => {
+    self.registration.showNotification(payload.notification.title, {
+        body: payload.notification.body,
+        icon: 'https://cdn-icons-png.flaticon.com/512/3209/3209260.png'
+    });
 });
