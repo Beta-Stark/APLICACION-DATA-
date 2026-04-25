@@ -1,16 +1,16 @@
 {
-  "short_name": "DATA_OS",
-  "name": "DATA OS - Stark Bóveda",
+  "short_name": "StarkRem",
+  "name": "Stark Reminder - Gestión Inteligente",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/5968/5968534.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/3209/3209260.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "./index.html",
   "display": "standalone",
-  "theme_color": "#2A3A4A",
-  "background_color": "#F7EFE2"
+  "theme_color": "#141414",
+  "background_color": "#141414"
 }
